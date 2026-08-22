@@ -1,15 +1,17 @@
 # Project State
 
 ## Current Phase
-- Planning / Task Specification
+- M01 – Architecture
 
 ## Completed
 - Project documentation
 - Roadmap
 - M01 task specification
+- M01.01 – Initialize Repository
+- M01.02 – Set up Next.js framework
 
 ## Next Step
-- Begin implementation of M01.01
+- Begin implementation of M01.03 – Configure TypeScript
 
 ## Important Technical Information
 - **Preferred stack (from PRD):**
