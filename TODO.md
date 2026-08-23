@@ -1,5 +1,5 @@
 # Immediate Next Actions
 
-1. Begin implementation of M01.03 – Configure TypeScript
+1. Begin implementation of M01.04 – Set up linting & formatting
 
 *Further tasks will be added as the project progresses.*
