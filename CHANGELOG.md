@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5] - 2026-08-24
+
+- Set up environment validation (M01.05)
+
 ## [0.1.4] - 2026-08-24
+
+- Set up linting & formatting (M01.04)## [0.1.4] - 2026-08-24
 
 - Set up linting & formatting (M01.04)
 

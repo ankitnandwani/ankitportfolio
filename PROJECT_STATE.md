@@ -13,7 +13,8 @@
 - M01.02 – Set up Next.js framework
 - M01.03 – Configure TypeScript
 - M01.04 – Set up linting & formatting
+- M01.05 – Set up environment validation
 
 ## Next Step
 
-- Begin implementation of M01.05 – Set up environment validation
+- Begin implementation of M01.06 – Application architecture & CI workflow
