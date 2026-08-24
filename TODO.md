@@ -1,5 +1,5 @@
 # Immediate Next Actions
 
-1. Begin implementation of M01.04 – Set up linting & formatting
+1. Begin implementation of M01.05 – Set up environment validation
 
-*Further tasks will be added as the project progresses.*
+_Further tasks will be added as the project progresses._
