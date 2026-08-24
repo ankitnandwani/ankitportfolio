@@ -16,6 +16,7 @@
 - M01.05 – Set up environment validation
 - M01.06 – Application architecture & CI workflow
 - M01.07 – Design token scaffold
+- CI pipeline fixed: corrected syntax error in app/layout.tsx and removed conflicting src/pages directory
 
 ## Next Step
 
