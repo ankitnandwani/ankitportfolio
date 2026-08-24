@@ -2,7 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.5] - 2026-08-24
+## [0.1.6] - 2026-08-24
+
+- Implemented design token scaffold (M01.07)
 
 - Set up environment validation (M01.05)
 

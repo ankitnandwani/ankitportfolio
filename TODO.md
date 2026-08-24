@@ -1,5 +1,5 @@
 # Immediate Next Actions
 
-1. Begin implementation of M01.07 – Design token scaffold
+1. Implement M01.07 – Design token scaffold (Completed)
 
 _Further tasks will be added as the project progresses._
