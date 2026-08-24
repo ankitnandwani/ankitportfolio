@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.8] - 2026-08-24
+- Created task specifications for Milestone 2 (Design System).
+
 ## [0.1.7] - 2026-08-24
 - Fix CI pipeline: correct syntax error in app/layout.tsx and remove conflicting src/pages directory.
 

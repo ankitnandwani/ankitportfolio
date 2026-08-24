@@ -2,9 +2,21 @@
 
 ## Current Phase
 
-- M01 – Architecture
+- Planning
 
-## Completed
+## Current Milestone
+
+- M02 – Design System
+
+## Status
+
+- Task specification created / awaiting implementation
+
+## Next Task
+
+- M02.01 – Install NeoPOP and configure Tailwind with design tokens
+
+## Completed (Milestone 01)
 
 - Project documentation
 - Roadmap
@@ -13,11 +25,8 @@
 - M01.02 – Set up Next.js framework
 - M01.03 – Configure TypeScript
 - M01.04 – Set up linting & formatting
-- M01.05 – Set up environment validation
+- M02.05 – Set up environment validation
 - M01.06 – Application architecture & CI workflow
 - M01.07 – Design token scaffold
 - CI pipeline fixed: corrected syntax error in app/layout.tsx and removed conflicting src/pages directory
 
-## Next Step
-
-- None – milestone M01 completed
