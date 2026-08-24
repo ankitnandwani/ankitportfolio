@@ -35,11 +35,13 @@ Milestone 1’s “Configure … environment validation” ensures the applica
 ## Scope
 
 ### In scope
+
 - Adding `zod` as a dependency.
 - Creating `src/lib/env.ts` and `.env.example`.
 - Adding the `env:check` npm script.
 
 ### Out of scope
+
 - Loading values from external secret stores (e.g., Vault). That will be addressed in later milestones.
 - Providing actual secret values.
 

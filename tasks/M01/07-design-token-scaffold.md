@@ -54,19 +54,21 @@ The Architecture milestone calls for “Create design‑token architecture scaff
    - `themes/dark.ts` – Export a `darkTheme` object that adapts colors for dark mode (e.g., `background: "#121212"`).
 3. Add an `index.ts` file inside `design/` that re‑exports the tokens and themes:
    ```ts
-   export { tokens } from "./tokens";
-   export { lightTheme } from "./themes/light";
-   export { darkTheme } from "./themes/dark";
+   export { tokens } from './tokens';
+   export { lightTheme } from './themes/light';
+   export { darkTheme } from './themes/dark';
    ```
 4. Commit the new files.
 
 ## Scope
 
 ### In scope
+
 - Creation of the `design/` directory and token/theme files.
 - Exporting the token objects for later consumption.
 
 ### Out of scope
+
 - Integrating the tokens into UI components (that will happen in later milestones).
 - Adding a full design‑system library (NeoPOP will be added later).
 

@@ -5,6 +5,7 @@ The task may have been partially implemented by a previous AI session.
 Never assume the task is untouched.
 
 Inspect:
+
 - git status
 - git diff
 - recent commits
@@ -16,6 +17,7 @@ Inspect:
 Determine whether partial implementation exists.
 
 If partial implementation exists:
+
 - preserve useful work
 - continue from the existing state
 - do not duplicate implementation
@@ -28,6 +30,7 @@ correct it using the smallest safe change.
 Continue the project with the next unfinished task in the current milestone.
 
 First read:
+
 - AGENTS.md
 - PROJECT_STATE.md
 - ROADMAP.md
@@ -46,6 +49,7 @@ Do not start subsequent tasks or future milestones.
 Follow the task specification and its acceptance criteria exactly.
 
 Before making changes:
+
 - inspect the existing implementation
 - check git status
 - understand the architecture already established
@@ -54,6 +58,7 @@ Before making changes:
 - do not introduce new technologies or dependencies unless required
 
 During implementation:
+
 - follow AGENTS.md
 - follow the approved PRD and roadmap
 - preserve existing functionality

@@ -36,10 +36,12 @@ The roadmap’s Architecture milestone calls for “Configure TypeScript, lintin
 ## Scope
 
 ### In scope
+
 - Modifying `tsconfig.json`.
 - Adding the `typecheck` script.
 
 ### Out of scope
+
 - Changing any application logic.
 - Adding third‑party TypeScript libraries.
 

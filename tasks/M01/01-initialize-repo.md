@@ -19,10 +19,12 @@ The first step of Milestone 1 (Architecture) in the ROADMAP requires establi
 ## Scope
 
 ### In scope
+
 - Repository initialization.
 - Adding `.gitignore` and committing existing documentation.
 
 ### Out of scope
+
 - Pushing to a remote origin.
 - Setting up branch protection rules or CI pipelines (handled in later tasks).
 

@@ -1,6 +1,7 @@
 # Architecture Overview
 
 ## High‑Level Diagram (textual)
+
 ```
 Client (Browser)
 │
@@ -27,6 +28,7 @@ Client (Browser)
 ```
 
 ## Data Flow
+
 1. **Static Content** – Markdown/JSON files under `content/` are compiled at build time and serve as the single source of truth for the website.
 2. **Dynamic Knowledge Base** – Professional knowledge is stored in Supabase, chunked, embedded, and queried by Gemini for AI answers.
 3. **AI Interaction** – The front‑end sends a user query to the `/api/ai` route, which:
@@ -38,6 +40,7 @@ Client (Browser)
 5. **Analytics & Monitoring** – UI events fire to PostHog; errors are reported to Sentry.
 
 ## Key Principles Reflected from PRD
+
 - **Single Source of Truth** – Content and knowledge live in version‑controlled files or Supabase, never duplicated.
 - **Free‑Tier Friendly** – Only essential services are used; no Pinecone, no Kubernetes, no custom backend servers.
 - **Privacy‑First** – Phone number redaction, PII detection, and guardrails are baked into the AI pipeline.
@@ -45,4 +48,4 @@ Client (Browser)
 
 ---
 
-*This document supplements the roadmap and decisions, providing a quick reference for contributors and AI agents.*
+_This document supplements the roadmap and decisions, providing a quick reference for contributors and AI agents._

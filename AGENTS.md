@@ -45,18 +45,21 @@ Before stopping:
 AI agents must work on one task at a time.
 
 Before starting a task:
+
 1. Read the task specification.
 2. Verify all dependencies are complete.
 3. Inspect the current implementation.
 4. Verify the repository is healthy.
 
 During implementation:
+
 - Do not implement future tasks.
 - Do not modify unrelated functionality.
 - Do not introduce architectural changes without recording them in DECISIONS.md.
 - Do not mark a task complete without satisfying its acceptance criteria.
 
 After implementation:
+
 - Run tests.
 - Run lint.
 - Run typecheck/build where applicable.
@@ -66,6 +69,7 @@ After implementation:
 - Commit the task.
 
 If the repository is broken before starting the task:
+
 - Stop.
 - Diagnose the problem.
 - Do not proceed with new functionality until the prerequisite issue is resolved.
@@ -128,11 +132,13 @@ Before continuing:
 Determine what was successfully completed before making further changes.
 
 If useful partial work exists:
+
 - preserve it
 - continue from it
 - do not duplicate it
 
 If previous work is incorrect:
+
 - understand why before replacing it
 - make the smallest safe correction
 
@@ -151,6 +157,7 @@ only when it is clear they are not required.
 Do not modify unrelated files or functionality.
 
 If an unrelated change is discovered:
+
 - do not silently overwrite it
 - preserve it unless it is clearly an accidental artifact created by the
   current task

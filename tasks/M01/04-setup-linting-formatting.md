@@ -25,10 +25,10 @@ The Architecture milestone includes “Configure TypeScript, linting, formatting
     ],
     "plugins": ["@typescript-eslint"],
     "parser": "@typescript-eslint/parser",
-    "parserOptions": {"project": "./tsconfig.json"},
+    "parserOptions": { "project": "./tsconfig.json" },
     "rules": {
       "prettier/prettier": "error",
-      "@typescript-eslint/no-unused-vars": ["error", {"argsIgnorePattern": "^_"}]
+      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
     }
   }
   ```
@@ -56,10 +56,12 @@ The Architecture milestone includes “Configure TypeScript, linting, formatting
 ## Scope
 
 ### In scope
+
 - Creation and configuration of ESLint and Prettier.
 - Adding npm scripts for linting and formatting.
 
 ### Out of scope
+
 - Enforcing code style in existing source files beyond the scaffold (those will be addressed in later milestones).
 - Integrating custom lint rules beyond the basic set.
 

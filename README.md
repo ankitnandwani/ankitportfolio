@@ -1,6 +1,7 @@
 # Ankit Nandwani Professional Portfolio & AI Recruiter Assistant
 
 ## Overview
+
 This repository contains the source code and supporting documentation for a premium, interactive personal portfolio website that showcases **Ankit Nandwani** – a Senior SDET / Automation Engineer. The site serves two primary purposes:
 
 1. **Recruiter‑focused portfolio** – quickly conveys who Ankit is, his seniority, technical strengths, and key achievements.
@@ -9,6 +10,7 @@ This repository contains the source code and supporting documentation for a prem
 The project is deliberately engineered as a **single‑page, server‑rendered Next.js application** with a minimal, free‑tier‑friendly stack (see PRD).
 
 ## Repository Structure
+
 ```
 /                # Project root
 ├─ app/          # Next.js pages / route handlers
@@ -28,17 +30,19 @@ The project is deliberately engineered as a **single‑page, server‑rendered N
 ```
 
 ## Key Documentation Files
-| File | Purpose |
-|------|---------|
-| `ROADMAP.md` | Logical milestones, tasks, dependencies, and acceptance criteria derived from **PRD.md**. |
-| `PROJECT_STATE.md` | Current project status, known blockers, and important technical facts. |
-| `DECISIONS.md` | All architectural and product decisions already made (and pending decisions). |
-| `CHANGELOG.md` | Chronological record of notable changes. |
-| `TODO.md` | Immediate actionable tasks to bootstrap the repo. |
-| `README.md` (this file) | High‑level project summary and contributor guidance. |
-| `docs/` | Supporting docs such as architecture overview, design rationale, etc. |
+
+| File                    | Purpose                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `ROADMAP.md`            | Logical milestones, tasks, dependencies, and acceptance criteria derived from **PRD.md**. |
+| `PROJECT_STATE.md`      | Current project status, known blockers, and important technical facts.                    |
+| `DECISIONS.md`          | All architectural and product decisions already made (and pending decisions).             |
+| `CHANGELOG.md`          | Chronological record of notable changes.                                                  |
+| `TODO.md`               | Immediate actionable tasks to bootstrap the repo.                                         |
+| `README.md` (this file) | High‑level project summary and contributor guidance.                                      |
+| `docs/`                 | Supporting docs such as architecture overview, design rationale, etc.                     |
 
 ## Getting Started (for future contributors / AI agents)
+
 1. **Clone the repository** and install dependencies:
    ```bash
    git clone <repo‑url>
@@ -68,6 +72,7 @@ The project is deliberately engineered as a **single‑page, server‑rendered N
    - Run tests and lint before committing any code.
 
 ## Contributing / AI Agent Workflow
+
 - **Before starting any work**: read `AGENTS.md`, `PROJECT_STATE.md`, and `ROADMAP.md`.
 - **When a milestone is finished**:
   1. Update `PROJECT_STATE.md` (current milestone, completed tasks).
@@ -77,8 +82,9 @@ The project is deliberately engineered as a **single‑page, server‑rendered N
 - **If you encounter missing information** (e.g., exact years of experience), add a `TODO` entry and request clarification – do **not** guess.
 
 ## License
+
 The code in this repository is released under the MIT License. The NeoPOP design system is Apache‑2.0 licensed, and its usage complies with that license.
 
 ---
 
-*This README was generated as part of the initial project documentation setup. No implementation code has been added yet.*
+_This README was generated as part of the initial project documentation setup. No implementation code has been added yet._

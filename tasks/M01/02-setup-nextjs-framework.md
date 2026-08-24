@@ -23,11 +23,13 @@ Milestone 1 (Architecture) requires selecting and configuring the primary fr
 ## Scope
 
 ### In scope
+
 - Generating the Next.js project scaffold.
 - Adding the necessary configuration files.
 - Initial commit of the scaffold.
 
 ### Out of scope
+
 - Adding additional libraries beyond the scaffold (e.g., NeoPOP, Supabase client). Those will be added in later milestones.
 - Customizing Tailwind themes beyond the default.
 

@@ -32,11 +32,13 @@ Milestone 1 requires “Create initial application architecture (folders, CI w
 ## Scope
 
 ### In scope
+
 - Creating the folder hierarchy and placeholder README files.
 - Implementing the GitHub Actions workflow.
 - Adding the CI script to the repository.
 
 ### Out of scope
+
 - Populating the directories with actual application code (that will happen in later milestones).
 - Implementing test suites (the test script can be a no‑op placeholder).
 

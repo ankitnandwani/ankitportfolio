@@ -2,13 +2,13 @@
 
 ## Architectural & Technology Decisions (already made)
 
-- **Frontend framework:** Next.js (React) with TypeScript – defined in PRD section *Recommended Technical Architecture*.
+- **Frontend framework:** Next.js (React) with TypeScript – defined in PRD section _Recommended Technical Architecture_.
 - **Design system:** Custom NeoPOP‑inspired design system, built on top of NeoPOP components.
 - **Styling:** Tailwind CSS with custom design tokens.
 - **Animation library:** Framer Motion / Motion as specified in PRD.
 - **Backend / data store:** Supabase PostgreSQL with pgvector for vector search (PRD §51). No Pinecone initially.
 - **LLM provider:** Google Gemini API (PRD §49). Wrapped behind an `LLMProvider` abstraction.
-- **Authentication (admin‑only):** Clerk **or** Supabase Auth – decision pending (see *Open Decisions*).
+- **Authentication (admin‑only):** Clerk **or** Supabase Auth – decision pending (see _Open Decisions_).
 - **Hosting:** Vercel for the Next.js app, Cloudflare for DNS and edge caching (PRD §82).
 - **Version control:** GitHub repository (PRD §102).
 - **CI/CD:** GitHub Actions (PRD §104 – unit, integration, e2e tests).
@@ -16,7 +16,7 @@
 - **Monitoring:** Sentry (optional, free tier) for error tracking (PRD §79).
 - **Caching / rate limiting:** Upstash Redis **optional** – not required for MVP (PRD §53 – optional).
 - **No CMS:** Content managed via version‑controlled JSON/Markdown files (PRD §55).
-- **No Kubernetes / microservices:** Avoided per PRD *Non‑Goals* and *Simplification Rule*.
+- **No Kubernetes / microservices:** Avoided per PRD _Non‑Goals_ and _Simplification Rule_.
 - **Free‑tier focus:** All services chosen to stay within free tier limits (PRD §83).
 - **Privacy & security:** Phone number redaction, PII detection, prompt‑injection guardrails, output validation (PRD §§36‑40, §80).
 - **Accessibility target:** WCAG 2.2 AA (PRD §71).
@@ -34,4 +34,4 @@
 
 ---
 
-*All decisions listed are derived directly from the PRD; no new decisions have been invented.*
+_All decisions listed are derived directly from the PRD; no new decisions have been invented._
