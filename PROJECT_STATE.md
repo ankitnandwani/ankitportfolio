@@ -14,7 +14,8 @@
 - M01.03 – Configure TypeScript
 - M01.04 – Set up linting & formatting
 - M01.05 – Set up environment validation
+- M01.06 – Application architecture & CI workflow
 
 ## Next Step
 
-- Begin implementation of M01.06 – Application architecture & CI workflow
+- Begin implementation of M01.07 – Design token scaffold
