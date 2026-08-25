@@ -15,15 +15,15 @@
   "dependencies": {
     "@cred/neopop-web": "^1.0.0",
     "next": "16.3.2",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^8.67.0",
     "@typescript-eslint/parser": "^8.67.0",
     "dotenv": "^17.4.2",
