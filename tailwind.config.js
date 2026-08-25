@@ -10,6 +10,13 @@ module.exports = {
     './design/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
+    screens: {
+      sm: tokens.breakpoints.sm,
+      md: tokens.breakpoints.md,
+      lg: tokens.breakpoints.lg,
+      xl: tokens.breakpoints.xl,
+      // xxl: tokens.breakpoints.xxl,
+    },
     extend: {
       colors: {
         primary: tokens.colors.primary,

@@ -2,7 +2,7 @@
 
 Design system scaffolding, tokens, and themes.
 
-The design tokens are integrated with Tailwind CSS via `tailwind.config.js`. The tokens include elevation (shadow) levels that are also integrated with Tailwind.
+The design tokens are integrated with Tailwind CSS via `tailwind.config.js`. The tokens include elevation (shadow) levels and breakpoint values that are also integrated with Tailwind.
 
 See [NEOPOP_EVALUATION.md](./NEOPOP_EVALUATION.md) for the evaluation of NeoPOP components and usage decisions.
 
@@ -20,3 +20,7 @@ These components map our design tokens (colors, spacing, radius) to appropriate 
 ## Motion
 
 We have defined a set of reusable animation presets using Framer Motion in `design/motion.ts`. These variants include fade, scale, slide, and float animations that can be used with Framer Motion's `motion` components to ensure consistent transitions and interactions across the application.
+
+## Breakpoints
+
+We have defined responsive breakpoint tokens in `design/tokens.ts` and integrated them with Tailwind's `screens` configuration. This allows consistent use of responsive utilities like `sm:`, `md:`, `lg:` etc. across the application.

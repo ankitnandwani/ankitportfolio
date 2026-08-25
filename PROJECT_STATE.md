@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task M02.05 completed
+- Task M02.06 completed
 
 ## Next Task
 
-- M02.06 – Define breakpoints
+- M02.07 – Refine and finalize design tokens
 
 ## Completed (Milestone 01)
 
@@ -37,4 +37,5 @@
 - M02.03 – Create compatibility layer
 - M02.04 – Define elevations (shadow levels) and integrate with Tailwind
 - M02.05 – Define motion (animation presets) using Framer Motion
+- M02.06 – Define breakpoints and integrate with Tailwind
 
