@@ -2,7 +2,7 @@
 
 Design system scaffolding, tokens, and themes.
 
-The design tokens are integrated with Tailwind CSS via `tailwind.config.js`.
+The design tokens are integrated with Tailwind CSS via `tailwind.config.js`. The tokens include elevation (shadow) levels that are also integrated with Tailwind.
 
 See [NEOPOP_EVALUATION.md](./NEOPOP_EVALUATION.md) for the evaluation of NeoPOP components and usage decisions.
 

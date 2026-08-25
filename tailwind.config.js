@@ -28,6 +28,10 @@ module.exports = {
       fontSize: tokens.typography.fontSize,
       lineHeight: tokens.typography.lineHeight,
       borderRadius: tokens.radius, // Tailwind uses borderRadius for radius
+      boxShadow: ({ theme }) => ({
+        ...theme('boxShadow'),
+        ...tokens.elevation,
+      }),
     },
   },
   plugins: [],

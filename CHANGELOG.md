@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.12] - 2026-08-26
+- Defined elevation tokens and integrated with Tailwind (M02.04)
+
 ## [0.1.11] - 2026-08-26
 - Created compatibility layer for NeoPOP components (M02.03)
 

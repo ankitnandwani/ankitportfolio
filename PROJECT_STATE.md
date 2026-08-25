@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task M02.03 completed
+- Task M02.04 completed
 
 ## Next Task
 
-- M02.04 – Define elevations
+- M02.05 – Define motion
 
 ## Completed (Milestone 01)
 
@@ -35,4 +35,5 @@
 - M02.01 – Install NeoPOP and configure Tailwind with design tokens
 - M02.02 – Evaluate NeoPOP components and document selection
 - M02.03 – Create compatibility layer
+- M02.04 – Define elevations (shadow levels) and integrate with Tailwind
 
