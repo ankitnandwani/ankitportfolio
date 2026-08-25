@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task M02.01 completed
+- Task M02.02 completed
 
 ## Next Task
 
-- M02.02 – Evaluate NeoPOP components and document selection
+- M02.03 – Create compatibility layer
 
 ## Completed (Milestone 01)
 
@@ -33,4 +33,5 @@
 ## Completed (Milestone 02)
 
 - M02.01 – Install NeoPOP and configure Tailwind with design tokens
+- M02.02 – Evaluate NeoPOP components and document selection
 
