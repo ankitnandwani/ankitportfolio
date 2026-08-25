@@ -69,3 +69,15 @@ We have defined a set of reusable animation presets using Framer Motion in `desi
 ## Breakpoints
 
 We have defined responsive breakpoint tokens in `design/tokens.ts` and integrated them with Tailwind's `screens` configuration. This allows consistent use of responsive utilities like `sm:`, `md:`, `lg:` etc. across the application.
+
+## Themes
+
+We have implemented a theme system that allows switching between light and dark modes.
+
+The theme system uses a React context (`ThemeProvider`) that provides the current theme and a toggle function.
+
+The theme is applied by adding a `dark` class to the `<html>` element and setting CSS variables for `--background` and `--foreground` on the root element.
+
+To use the theme in your components, you can use the `useTheme` hook from `design/themeContext`.
+
+The theme tokens (colors, elevations, etc.) are also available via the context and are used by the compatibility layer components (Button, Card, Badge) to ensure they adapt to the current theme.

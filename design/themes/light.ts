@@ -1,6 +1,8 @@
 import { tokens } from "../tokens";
 
+/**
+ * Light theme - uses the base token values.
+ */
 export const lightTheme = {
   ...tokens,
-  // Light theme can override specific values if needed.
 };

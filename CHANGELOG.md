@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.16] - 2026-08-26
+- Implemented dark/light themes with token overrides (M02.08)
+
 ## [0.1.15] - 2026-08-26
 - Refined and finalized design tokens (M02.07)
 

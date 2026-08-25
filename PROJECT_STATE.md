@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task M02.07 completed
+- Task M02.08 completed
 
 ## Next Task
 
-- M02.08 – Implement dark/light themes
+- M02.09 – Create design system showcase route
 
 ## Completed (Milestone 01)
 
@@ -39,4 +39,4 @@
 - M02.05 – Define motion (animation presets) using Framer Motion
 - M02.06 – Define breakpoints and integrate with Tailwind
 - M02.07 – Refine and finalize design tokens
-
+- M02.08 – Implement dark/light themes with token overrides

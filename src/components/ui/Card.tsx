@@ -1,24 +1,24 @@
 import React, { forwardRef, ReactNode } from 'react';
 // @ts-expect-error TS7016
 import ElevatedCard from '@cred/neopop-web/lib-esm/components/ElevatedCard';
-import { tokens } from '../../../design/tokens';
+import { useTheme } from '../../../design/themeContext';
 
 interface CardProps extends React.ComponentPropsWithRef<typeof ElevatedCard> {
   /**
    * Background color from our design tokens
    * @default 'surface'
    */
-  bgColor?: keyof typeof tokens.colors;
+  bgColor?: keyof typeof import('../../../design/tokens').tokens.colors;
   /**
    * Size/padding - we'll map to Tailwind classes via className
    * @default 'md'
    */
-  size?: keyof typeof tokens.spacing;
+  size?: keyof typeof import('../../../design/tokens').tokens.spacing;
   /**
    * Radius from our design tokens
    * @default 'md'
    */
-  radius?: keyof typeof tokens.radius;
+  radius?: keyof typeof import('../../../design/tokens').tokens.radius;
   children: ReactNode;
   className?: string;
 }
@@ -32,6 +32,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     className,
     ...props
   }, ref) => {
+    const { getThemeTokens } = useTheme();
+    const tokens = getThemeTokens();
     // Get the actual color value
     const bgColorValue = tokens.colors[bgColor] || tokens.colors.surface;
     

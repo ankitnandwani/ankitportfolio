@@ -1,19 +1,19 @@
 import React, { forwardRef, ReactNode } from 'react';
 // @ts-expect-error TS7016
 import Tag from '@cred/neopop-web/lib-esm/components/Tags';
-import { tokens } from '../../../design/tokens';
+import { useTheme } from '../../../design/themeContext';
 
 interface BadgeProps extends React.ComponentPropsWithRef<typeof Tag> {
   /**
    * Color variant from our design tokens
    * @default 'primary'
    */
-  variant?: keyof typeof tokens.colors;
+  variant?: keyof typeof import('../../../design/tokens').tokens.colors;
   /**
    * Size - we'll map to Tailwind classes for padding and text size
    * @default 'md'
    */
-  size?: keyof typeof tokens.spacing;
+  size?: keyof typeof import('../../../design/tokens').tokens.spacing;
   /**
    * Color scheme for light/dark mode
    * @default 'light'
@@ -32,6 +32,8 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     className,
     ...props
   }, ref) => {
+    const { getThemeTokens } = useTheme();
+    const tokens = getThemeTokens();
     // Get the color value for background
     const bgColor = tokens.colors[variant] || tokens.colors.primary;
     // For text color, we'll use contrast based on background - simplify: use text token for light backgrounds, surface for dark
@@ -55,11 +57,10 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       16: 'text-3xl',
     };
     const textSize = textSizeMap[horizontal] || 'text-base';
-    
-    const sizeClass = `px-${horizontal} py-${vertical} ${textSize}`;
+    const sizeClass = 'px-' + horizontal + ' py-' + vertical + ' ' + textSize;
     
     // Combine classes
-    const combinedClass = `${sizeClass} ${className || ''}`.trim();
+    const combinedClass = sizeClass + (className ? ' ' + className : '');
     
     return (
       <Tag

@@ -9,6 +9,7 @@ module.exports = {
     './src/**/*.{js,ts,jsx,tsx}',
     './design/**/*.{js,ts,jsx,tsx}',
   ],
+  darkMode: 'class', // enable dark mode via class strategy
   theme: {
     screens: {
       sm: tokens.breakpoints.sm,
