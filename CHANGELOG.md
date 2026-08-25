@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.15] - 2026-08-26
+- Refined and finalized design tokens (M02.07)
+
 ## [0.1.14] - 2026-08-26
 - Defined breakpoint tokens and integrated with Tailwind (M02.06)
 

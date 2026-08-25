@@ -25,16 +25,15 @@ module.exports = {
         text: tokens.colors.text,
         accent: tokens.colors.accent,
       },
-      spacing: {
-        xs: tokens.spacing.xs / 4, // 4px -> 1
-        sm: tokens.spacing.sm / 4, // 8px -> 2
-        md: tokens.spacing.md / 4, // 16px -> 4
-        lg: tokens.spacing.lg / 4, // 24px -> 6
-        xl: tokens.spacing.xl / 4, // 32px -> 8
-      },
+      spacing: Object.keys(tokens.spacing).reduce((acc, key) => {
+        acc[key] = tokens.spacing[key] / 4;
+        return acc;
+      }, {}),
       fontSize: tokens.typography.fontSize,
       lineHeight: tokens.typography.lineHeight,
-      borderRadius: tokens.radius, // Tailwind uses borderRadius for radius
+      fontWeight: tokens.typography.fontWeight,
+      letterSpacing: tokens.typography.letterTracking,
+      borderRadius: tokens.radius,
       boxShadow: ({ theme }) => ({
         ...theme('boxShadow'),
         ...tokens.elevation,

@@ -13,7 +13,7 @@ interface CardProps extends React.ComponentPropsWithRef<typeof ElevatedCard> {
    * Size/padding - we'll map to Tailwind classes via className
    * @default 'md'
    */
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: keyof typeof tokens.spacing;
   /**
    * Radius from our design tokens
    * @default 'md'
@@ -41,16 +41,21 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       sm: 'rounded-sm',
       md: 'rounded-md',
       lg: 'rounded-lg',
+      xl: 'rounded-3xl', // 24px
+      pill: 'rounded-full',
     };
     const radiusClass = radiusMap[radius] || 'rounded-md';
     
     // Map size to Tailwind padding classes
     const sizeMap: Record<keyof typeof tokens.spacing, string> = {
-      xs: 'p-1',   // 4px padding -> 0.25rem -> p-1 (since 1 = 0.25rem)
-      sm: 'p-2',   // 8px -> 0.5rem -> p-2
-      md: 'p-4',   // 16px -> 1rem -> p-4
-      lg: 'p-6',   // 24px -> 1.5rem -> p-6
-      xl: 'p-8',   // 32px -> 2rem -> p-8
+      xxs: 'p-0.5', // 2px
+      xs: 'p-1',    // 4px
+      sm: 'p-2',    // 8px
+      md: 'p-4',    // 16px
+      lg: 'p-6',    // 24px
+      xl: 'p-8',    // 32px
+      xxl: 'p-12',  // 48px
+      xxxl: 'p-16', // 64px
     };
     const sizeClass = sizeMap[size] || 'p-4';
     

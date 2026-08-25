@@ -13,7 +13,7 @@ interface BadgeProps extends React.ComponentPropsWithRef<typeof Tag> {
    * Size - we'll map to Tailwind classes for padding and text size
    * @default 'md'
    */
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: keyof typeof tokens.spacing;
   /**
    * Color scheme for light/dark mode
    * @default 'light'
@@ -40,14 +40,23 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     const textColor = tokens.colors.text;
     
     // Map size to Tailwind classes for padding and text size
-    const sizeMap: Record<string, string> = {
-      xs: 'px-1 py-0.5 text-xs',   // 4px px, 2px py -> 0.25rem, 0.125rem
-      sm: 'px-2 py-1 text-sm',     // 8px px, 4px py -> 0.5rem, 0.25rem
-      md: 'px-3 py-1.5 text-base', // 12px px, 6px py -> 0.75rem, 0.375rem
-      lg: 'px-4 py-2 text-lg',     // 16px px, 8px py -> 1rem, 0.5rem
-      xl: 'px-5 py-2.5 text-xl',   // 20px px, 10px py -> 1.25rem, 0.625rem
+    const spacingValue = tokens.spacing[size];
+    const horizontal = spacingValue / 4; // in rem units (since 1 unit = 0.25rem)
+    const vertical = spacingValue / 8;   // in rem units
+    // Map horizontal padding to text size: we'll define a map from horizontal value to text size class
+    const textSizeMap: Record<number, string> = {
+      0.5: 'text-xs',
+      1: 'text-xs',
+      2: 'text-sm',
+      4: 'text-base',
+      6: 'text-lg',
+      8: 'text-xl',
+      12: 'text-2xl',
+      16: 'text-3xl',
     };
-    const sizeClass = sizeMap[size] || 'px-3 py-1.5 text-base';
+    const textSize = textSizeMap[horizontal] || 'text-base';
+    
+    const sizeClass = `px-${horizontal} py-${vertical} ${textSize}`;
     
     // Combine classes
     const combinedClass = `${sizeClass} ${className || ''}`.trim();
