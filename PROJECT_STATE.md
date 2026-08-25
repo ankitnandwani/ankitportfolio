@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task M02.04 completed
+- Task M02.05 completed
 
 ## Next Task
 
-- M02.05 – Define motion
+- M02.06 – Define breakpoints
 
 ## Completed (Milestone 01)
 
@@ -36,4 +36,5 @@
 - M02.02 – Evaluate NeoPOP components and document selection
 - M02.03 – Create compatibility layer
 - M02.04 – Define elevations (shadow levels) and integrate with Tailwind
+- M02.05 – Define motion (animation presets) using Framer Motion
 

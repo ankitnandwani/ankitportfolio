@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.13] - 2026-08-26
+- Defined motion presets with Framer Motion (M02.05)
+
 ## [0.1.12] - 2026-08-26
 - Defined elevation tokens and integrated with Tailwind (M02.04)
 

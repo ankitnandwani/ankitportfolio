@@ -16,3 +16,7 @@ Currently wrapped components:
 - Badge
 
 These components map our design tokens (colors, spacing, radius) to appropriate NeoPOP props or Tailwind classes, enabling easy consumption across the application.
+
+## Motion
+
+We have defined a set of reusable animation presets using Framer Motion in `design/motion.ts`. These variants include fade, scale, slide, and float animations that can be used with Framer Motion's `motion` components to ensure consistent transitions and interactions across the application.
