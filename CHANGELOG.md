@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.9] - 2026-08-25
+- Installed NeoPOP and configured Tailwind with design tokens (M02.01)
+
 ## [0.1.8] - 2026-08-24
 - Created task specifications for Milestone 2 (Design System).
 

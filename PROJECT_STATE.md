@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task specification created / awaiting implementation
+- Task M02.01 completed
 
 ## Next Task
 
-- M02.01 – Install NeoPOP and configure Tailwind with design tokens
+- M02.02 – Evaluate NeoPOP components and document selection
 
 ## Completed (Milestone 01)
 
@@ -29,4 +29,8 @@
 - M01.06 – Application architecture & CI workflow
 - M01.07 – Design token scaffold
 - CI pipeline fixed: corrected syntax error in app/layout.tsx and removed conflicting src/pages directory
+
+## Completed (Milestone 02)
+
+- M02.01 – Install NeoPOP and configure Tailwind with design tokens
 
