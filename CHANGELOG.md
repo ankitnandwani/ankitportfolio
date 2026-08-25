@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.11] - 2026-08-26
+- Created compatibility layer for NeoPOP components (M02.03)
+
 ## [0.1.10] - 2026-08-25
 - Completed NeoPOP component evaluation (M02.02)
 
