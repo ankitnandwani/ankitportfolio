@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [0.1.28] - 2026-08-27
 - Implemented Secondary CTA buttons (M04.03)
 
+## [0.1.29] - 2026-08-27
+- Implemented NeoPOP visual composition (M04.04)
+
 ## [0.1.27] - 2026-08-26
 - Implemented Primary CTA buttons (M04.02)
 

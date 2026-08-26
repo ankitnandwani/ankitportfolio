@@ -13,10 +13,11 @@
 - M04.01 – Hero typography and basic layout (completed)
 - M04.02 – Primary CTA buttons (completed)
 - M04.03 – Secondary CTA buttons (completed)
+- M04.04 – NeoPOP visual composition (completed)
 
 ## Next Task
 
-- Begin implementation of M04.04
+- Begin implementation of M04.05
 
 ## Completed (Milestone 01)
 
