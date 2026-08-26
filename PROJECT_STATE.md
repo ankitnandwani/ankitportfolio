@@ -6,11 +6,11 @@
 
 ## Current Milestone
 
-- M02 – Design System
+- M03 – Site Shell
 
 ## Status
 
-- Task M02.09 completed
+- Task specification created / awaiting implementation
 
 ## Next Task
 
@@ -41,3 +41,13 @@
 - M02.07 – Refine and finalize design tokens
 - M02.08 – Implement dark/light themes with token overrides
 - M02.09 – Create design system showcase route
+
+## Completed (Milestone 03)
+
+- Task specifications created for Milestone 3 (Site Shell)
+  - M03.01 – Navigation bar
+  - M03.02 – Footer
+  - M03.03 – Responsive container
+  - M03.04 – Page transitions and theme switching
+  - M03.05 – Command palette
+  - M03.06 – SEO foundation (metadata, sitemap, robots)

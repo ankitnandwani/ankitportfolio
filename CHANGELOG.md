@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.18] - 2026-08-26
+- Created task specifications for Milestone 3 (Site Shell)
+
 ## [0.1.17] - 2026-08-26
 - Created design system showcase route (M02.09)
 
