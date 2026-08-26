@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.26] - 2026-08-26
+- Implemented Hero typography and basic layout (M04.01)
+
 ## [0.1.25] - 2026-08-26
 - Created task specifications for Milestone 4 – Hero Section
 

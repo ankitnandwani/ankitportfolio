@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task specification created for Milestone 4 – Hero Section
+- M04.01 – Hero typography and basic layout (completed)
 
 ## Next Task
 
-- Begin implementation of M04.01
+- Begin implementation of M04.02
 
 ## Completed (Milestone 01)
 
@@ -50,3 +50,6 @@
 - M03.04 – Page transitions and theme switching (completed)
 - M03.05 – Command palette (completed)
 - M03.06 – SEO foundation (metadata, sitemap, robots) (completed)
+
+## Completed (Milestone 04)
+- M04.01 – Hero typography and basic layout (completed)
