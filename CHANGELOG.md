@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.31] - 2026-08-27
+- Implemented Responsive behavior and reduced-motion support (M04.06)
+
 ## [0.1.30] - 2026-08-27
 - Implemented Animations using Framer Motion (M04.05)
 

@@ -15,10 +15,11 @@
 - M04.03 – Secondary CTA buttons (completed)
 - M04.04 – NeoPOP visual composition (completed)
 - M04.05 – Animations using Framer Motion (completed)
+- M04.06 – Responsive behavior and reduced-motion support (completed)
 
 ## Next Task
 
-- Begin implementation of M04.06
+- Begin implementation of M04.07
 
 ## Completed (Milestone 01)
 
@@ -60,3 +61,4 @@
 - M04.02 – Primary CTA buttons (completed)
 - M04.03 – Secondary CTA buttons (completed)
 - M04.05 – Animations using Framer Motion (completed)
+- M04.06 – Responsive behavior and reduced-motion support (completed)
