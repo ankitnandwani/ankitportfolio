@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.22] - 2026-08-26
+- Implemented page transitions and theme switching (M03.04)
+- Added PageTransitions component using Framer Motion's AnimatePresence
+- Integrated page transitions into root layout
+- Respects reduced motion preferences
+
 ## [0.1.21] - 2026-08-26
 - Implemented responsive container component (M03.03)
 - Updated layout and page files to use ResponsiveContainer

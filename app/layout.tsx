@@ -6,6 +6,7 @@ import './globals.css';
 import { ThemeProvider } from '../design/themeContext.tsx';
 import { NavigationBar } from '@/src/components/navigation';
 import { Footer } from '@/src/components/footer';
+import { PageTransitions } from '@/src/components/layout';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,7 +32,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             Skip to main content
           </a>
           <NavigationBar />
-          <main id="content" className="flex-grow-1">{children}</main>
+          <main id="content" className="flex-grow-1">
+            <PageTransitions>{children}</PageTransitions>
+          </main>
           <Footer />
         </body>
       </html>

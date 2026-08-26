@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task specification created and implemented for M03.01 – Navigation bar, M03.02 – Footer, and M03.03 – Responsive container
+- Task specification created and implemented for M03.01 – Navigation bar, M03.02 – Footer, M03.03 – Responsive container, and M03.04 – Page transitions and theme switching
 
 ## Next Task
 
-- M03.04 – Page transitions and theme switching
+- M03.05 – Command palette
 
 ## Completed (Milestone 01)
 
