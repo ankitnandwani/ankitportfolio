@@ -14,10 +14,11 @@
 - M04.02 – Primary CTA buttons (completed)
 - M04.03 – Secondary CTA buttons (completed)
 - M04.04 – NeoPOP visual composition (completed)
+- M04.05 – Animations using Framer Motion (completed)
 
 ## Next Task
 
-- Begin implementation of M04.05
+- Begin implementation of M04.06
 
 ## Completed (Milestone 01)
 
@@ -58,3 +59,4 @@
 - M04.01 – Hero typography and basic layout (completed)
 - M04.02 – Primary CTA buttons (completed)
 - M04.03 – Secondary CTA buttons (completed)
+- M04.05 – Animations using Framer Motion (completed)

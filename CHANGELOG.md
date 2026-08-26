@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.30] - 2026-08-27
+- Implemented Animations using Framer Motion (M04.05)
+
 ## [0.1.28] - 2026-08-27
 - Implemented Secondary CTA buttons (M04.03)
 

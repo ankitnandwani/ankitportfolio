@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
 import { Card } from '@/src/components/ui/Card';
 import { useTheme } from '@/design/themeContext';
@@ -21,6 +22,87 @@ export const Hero = ({ className = '' }: HeroProps) => {
 
   // Get text color from tokens (adapts to light/dark mode)
   const textColor = tokens.colors.text;
+
+  // Hook to detect if user prefers reduced motion
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      setPrefersReducedMotion(event.matches);
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Define animation variants
+  const floatVariantY = {
+    initial: { y: 0 },
+    animate: { 
+      y: [-10, 0, -10], 
+      transition: { 
+        duration: 6, 
+        repeat: Infinity 
+      } 
+    },
+  };
+
+  const floatVariantX = {
+    initial: { x: 0 },
+    animate: { 
+      x: [-8, 0, -8], 
+      transition: { 
+        duration: 5, 
+        repeat: Infinity 
+      } 
+    },
+  };
+
+  const floatVariantRotate = {
+    initial: { rotate: 0 },
+    animate: { 
+      rotate: [5, 0, 5], 
+      transition: { 
+        duration: 6, 
+        repeat: Infinity 
+      } 
+    },
+  };
+
+  const floatVariantYUp = {
+    initial: { y: 0 },
+    animate: { 
+      y: [10, 0, 10], 
+      transition: { 
+        duration: 7, 
+        repeat: Infinity 
+      } 
+    },
+  };
+
+  const hoverVariant = {
+    whileHover: { 
+      scale: 1.02, 
+      transition: { duration: 0.2 } 
+    },
+  };
+
+  const entranceVariant = {
+    initial: { opacity: 0, scale: 0.95 },
+    animate: { 
+      opacity: 1, 
+      scale: 1, 
+      transition: { 
+        duration: 0.5 
+      } 
+    },
+  };
 
   return (
     <div className={className}>
@@ -47,106 +129,139 @@ export const Hero = ({ className = '' }: HeroProps) => {
         />
         {/* Floating technology tokens */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div className="absolute top-10 left-10 w-6 h-6 rounded-full" style={{ backgroundColor: tokens.colors.primary, opacity: 0.2 }}></div>
-          <div className="absolute top-20 right-10 w-8 h-8 rounded-full" style={{ backgroundColor: tokens.colors.accent, opacity: 0.15 }}></div>
-          <div className="absolute bottom-10 left-20 w-7 h-7 rounded-full" style={{ backgroundColor: tokens.colors.primary, opacity: 0.15 }}></div>
-          <div className="absolute bottom-20 right-20 w-5 h-5 rounded-full" style={{ backgroundColor: tokens.colors.accent, opacity: 0.1 }}></div>
+          <motion.div 
+            className="absolute top-10 left-10 w-6 h-6 rounded-full"
+            style={{ backgroundColor: tokens.colors.primary, opacity: 0.2 }}
+            initial={prefersReducedMotion ? undefined : floatVariantY.initial}
+            animate={prefersReducedMotion ? undefined : floatVariantY.animate}
+          />
+          <motion.div 
+            className="absolute top-20 right-10 w-8 h-8 rounded-full"
+            style={{ backgroundColor: tokens.colors.accent, opacity: 0.15 }}
+            initial={prefersReducedMotion ? undefined : floatVariantYUp.initial}
+            animate={prefersReducedMotion ? undefined : floatVariantYUp.animate}
+          />
+          <motion.div 
+            className="absolute bottom-10 left-20 w-7 h-7 rounded-full"
+            style={{ backgroundColor: tokens.colors.primary, opacity: 0.15 }}
+            initial={prefersReducedMotion ? undefined : floatVariantX.initial}
+            animate={prefersReducedMotion ? undefined : floatVariantX.animate}
+          />
+          <motion.div 
+            className="absolute bottom-20 right-20 w-5 h-5 rounded-full"
+            style={{ backgroundColor: tokens.colors.accent, opacity: 0.1 }}
+            initial={prefersReducedMotion ? undefined : floatVariantRotate.initial}
+            animate={prefersReducedMotion ? undefined : floatVariantRotate.animate}
+          />
         </div>
         {/* Foreground layer - main content */}
-        <Card
-          elevation="md"
-          className="relative z-10 inset-0 p-md"
-          style={{ 
-            backgroundColor: tokens.colors.background,
-          }}
+        <motion.div
+          initial={prefersReducedMotion ? undefined : entranceVariant.initial}
+          animate={prefersReducedMotion ? undefined : entranceVariant.animate}
         >
-          <h1 
-            style={{ color: textColor }}
-            className="text-5xl font-black leading-tight tracking-tighter mb-lg"
+          <Card
+            elevation="md"
+            className="relative z-10 inset-0 p-md"
+            style={{ 
+              backgroundColor: tokens.colors.background,
+            }}
           >
-            ANKIT NANDWANI
-          </h1>
-          <h2 
-            style={{ color: textColor }}
-            className="text-lg font-semibold mb-md"
-          >
-            Senior SDET / Automation Engineer
-          </h2>
-          <div className="space-y-sm mb-lg">
+            <h1 
+              style={{ color: textColor }}
+              className="text-5xl font-black leading-tight tracking-tighter mb-lg"
+            >
+              ANKIT NANDWANI
+            </h1>
+            <h2 
+              style={{ color: textColor }}
+              className="text-lg font-semibold mb-md"
+            >
+              Senior SDET / Automation Engineer
+            </h2>
+            <div className="space-y-sm mb-lg">
+              <p 
+                style={{ color: textColor }}
+                className="text-base font-medium"
+              >
+                Quality Engineering.
+              </p>
+              <p 
+                style={{ color: textColor }}
+                className="text-base font-medium"
+              >
+                Backend Automation.
+              </p>
+              <p 
+                style={{ color: textColor }}
+                className="text-base font-medium"
+              >
+                Cloud.
+              </p>
+              <p 
+                style={{ color: textColor }}
+                className="text-base font-medium"
+              >
+                AI.
+              </p>
+            </div>
             <p 
               style={{ color: textColor }}
-              className="text-base font-medium"
+              className="text-base font-normal"
             >
-              Quality Engineering.
+              Building reliable software and engineering systems across complex technology stacks.
             </p>
-            <p 
-              style={{ color: textColor }}
-              className="text-base font-medium"
-            >
-              Backend Automation.
-            </p>
-            <p 
-              style={{ color: textColor }}
-              className="text-base font-medium"
-            >
-              Cloud.
-            </p>
-            <p 
-              style={{ color: textColor }}
-              className="text-base font-medium"
-            >
-              AI.
-            </p>
-          </div>
-          <p 
-            style={{ color: textColor }}
-            className="text-base font-normal"
-          >
-            Building reliable software and engineering systems across complex technology stacks.
-          </p>
-          <div className="mt-lg flex flex-col sm:flex-row gap-x-md gap-y-sm">
-            <Link href="/work" prefetch>
-              <Button variant="primary" size="lg">
-                Explore My Work
-              </Button>
-            </Link>
-            <Link href="/ask-ai" prefetch>
-              <Button variant="primary" size="lg">
-                Ask My AI
-              </Button>
-            </Link>
-          </div>
+            <div className="mt-lg flex flex-col sm:flex-row gap-x-md gap-y-sm">
+              <Link href="/work" prefetch>
+                <motion.div
+                  whileHover={prefersReducedMotion ? undefined : hoverVariant.whileHover}
+                >
+                  <Button variant="primary" size="lg">
+                    Explore My Work
+                  </Button>
+                </motion.div>
+              </Link>
+              <Link href="/ask-ai" prefetch>
+                <motion.div
+                  whileHover={prefersReducedMotion ? undefined : hoverVariant.whileHover}
+                >
+                  <Button variant="primary" size="lg">
+                    Ask My AI
+                  </Button>
+                </motion.div>
+              </Link>
+            </div>
 
-          {/* Secondary CTAs */}
-          <div className="mt-lg flex flex-col sm:flex-row gap-x-md gap-y-sm">
-            {/* Download Resume */}
-            <Link href="/resume.pdf" prefetch>
-              <Button variant="secondary" size="lg">
-                Download Resume
-              </Button>
-            </Link>
-            {/* LinkedIn */}
-            <a
-              href={siteConfig.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors duration-200"
-            >
-              <FiLinkedin className="h-4 w-4" />
-              LinkedIn
-            </a>
-            {/* GitHub */}
-            <a
-              href={siteConfig.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors duration-200"
-            >
-              <FiGithub className="h-4 w-4" />
-              GitHub
-            </a>
-          </div>
-        </Card>
+            {/* Secondary CTAs */}
+            <div className="mt-lg flex flex-col sm:flex-row gap-x-md gap-y-sm">
+              {/* Download Resume */}
+              <Link href="/resume.pdf" prefetch>
+                <Button variant="secondary" size="lg">
+                  Download Resume
+                </Button>
+              </Link>
+              {/* LinkedIn */}
+              <a
+                href={siteConfig.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors duration-200"
+              >
+                <FiLinkedin className="h-4 w-4" />
+                LinkedIn
+              </a>
+              {/* GitHub */}
+              <a
+                href={siteConfig.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors duration-200"
+              >
+                <FiGithub className="h-4 w-4" />
+                GitHub
+              </a>
+            </div>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
