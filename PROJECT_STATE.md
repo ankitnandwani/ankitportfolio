@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task specification created and implemented for M03.01 – Navigation bar, M03.02 – Footer, M03.03 – Responsive container, M03.04 – Page transitions and theme switching, M03.05 – Command palette, and M03.06 – SEO foundation (metadata, sitemap, robots)
+- Task specification created for Milestone 4 – Hero Section
 
 ## Next Task
 
-- Create task specifications for Milestone 4 – Hero Section
+- Begin implementation of M04.01
 
 ## Completed (Milestone 01)
 

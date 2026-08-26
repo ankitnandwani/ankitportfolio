@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.25] - 2026-08-26
+- Created task specifications for Milestone 4 – Hero Section
+
 ## [0.1.24] - 2026-08-26
 - Implemented SEO foundation (M03.06)
 - Added dynamic metadata generation for all routes
