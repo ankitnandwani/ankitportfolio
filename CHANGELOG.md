@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.21] - 2026-08-26
+- Implemented responsive container component (M03.03)
+- Updated layout and page files to use ResponsiveContainer
+
 ## [0.1.20] - 2026-08-26
 - Implemented footer component (M03.02)
 
@@ -39,11 +43,11 @@ All notable changes to this project will be documented in this file.
 ## [0.1.9] - 2026-08-25
 - Installed NeoPOP and configured Tailwind with design tokens (M02.01)
 
-## [0.1.8] - 2026-08-24
-- Created task specifications for Milestone 2 (Design System).
+## [0.1.8] - 2026-08-25
+- Fix CI pipeline: correct syntax error in app/layout.tsx and remove conflicting src/pages directory.
 
 ## [0.1.7] - 2026-08-24
-- Fix CI pipeline: correct syntax error in app/layout.tsx and remove conflicting src/pages directory.
+- Created task specifications for Milestone 2 (Design System).
 
 ## [0.1.6] - 2026-08-24
 - Implemented design token scaffold (M01.07)

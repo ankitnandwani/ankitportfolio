@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-Begin implementation of M03.03 – Responsive container.
+Begin implementation of M03.04 – Page transitions and theme switching.
