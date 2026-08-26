@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.32] - 2026-08-27
+- Integrated Hero component into app/page.tsx and performed final polishing (M04.07)
+
 ## [0.1.31] - 2026-08-27
 - Implemented Responsive behavior and reduced-motion support (M04.06)
 
