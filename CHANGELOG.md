@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.23] - 2026-08-26
+- Implemented command palette (M03.05)
+- Added CommandPalette component with Mod+K keyboard shortcut
+- Implemented search/filtering with fuzzy matching
+- Added keyboard navigation (arrow keys, enter, escape)
+- Added click-to-select and click-outside-to-close behavior
+- Integrated Framer Motion for smooth animations
+- Ensured accessibility compliance with focus management
+- Styled according to design system tokens
+
 ## [0.1.22] - 2026-08-26
 - Implemented page transitions and theme switching (M03.04)
 - Added PageTransitions component using Framer Motion's AnimatePresence

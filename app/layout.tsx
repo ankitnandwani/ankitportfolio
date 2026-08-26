@@ -7,6 +7,7 @@ import { ThemeProvider } from '../design/themeContext.tsx';
 import { NavigationBar } from '@/src/components/navigation';
 import { Footer } from '@/src/components/footer';
 import { PageTransitions } from '@/src/components/layout';
+import { CommandPalette } from '@/src/components/command-palette';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <PageTransitions>{children}</PageTransitions>
           </main>
           <Footer />
+          <CommandPalette className="pointer-events-none" />
         </body>
       </html>
     </ThemeProvider>
