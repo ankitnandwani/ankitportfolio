@@ -9,6 +9,7 @@ interface ButtonProps extends React.ComponentPropsWithRef<typeof NeoButton> {
   colorScheme?: 'light' | 'dark';
   children: ReactNode;
   className?: string;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

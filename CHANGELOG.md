@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.17] - 2026-08-26
+- Created design system showcase route (M02.09)
+
 ## [0.1.16] - 2026-08-26
 - Implemented dark/light themes with token overrides (M02.08)
 

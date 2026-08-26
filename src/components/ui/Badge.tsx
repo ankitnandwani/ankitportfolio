@@ -1,6 +1,6 @@
 import React, { forwardRef, ReactNode } from 'react';
 // @ts-expect-error TS7016
-import Tag from '@cred/neopop-web/lib-esm/components/Tags';
+import Tag from '@cred/neopop-web/lib-esm/components/Tags/index.js';
 import { useTheme } from '../../../design/themeContext';
 
 interface BadgeProps extends React.ComponentPropsWithRef<typeof Tag> {

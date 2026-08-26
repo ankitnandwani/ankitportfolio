@@ -1,9 +1,9 @@
 import React, { forwardRef, ReactNode } from 'react';
 // @ts-expect-error TS7016
-import ElevatedCard from '@cred/neopop-web/lib-esm/components/ElevatedCard';
+import { Components } from '@cred/neopop-web/lib-esm';
 import { useTheme } from '../../../design/themeContext';
 
-interface CardProps extends React.ComponentPropsWithRef<typeof ElevatedCard> {
+interface CardProps extends React.ComponentPropsWithRef<typeof Components.ElevatedCard> {
   /**
    * Background color from our design tokens
    * @default 'surface'
