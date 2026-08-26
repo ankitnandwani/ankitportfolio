@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { Button } from '@/src/components/ui/Button';
 import { useTheme } from '@/design/themeContext';
 
 interface HeroProps {
@@ -63,6 +65,18 @@ export const Hero = ({ className = '' }: HeroProps) => {
       >
         Building reliable software and engineering systems across complex technology stacks.
       </p>
+      <div className="mt-lg flex flex-col sm:flex-row gap-x-md gap-y-sm">
+        <Link href="/work" prefetch>
+          <Button variant="primary" size="lg">
+            Explore My Work
+          </Button>
+        </Link>
+        <Link href="/ask-ai" prefetch>
+          <Button variant="primary" size="lg">
+            Ask My AI
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }
