@@ -6,6 +6,8 @@ export const siteConfig = {
     name: "Ankit Nandwani",
     email: "contact@ankitnandwani.com", // Using a generic contact email, not personal phone
   },
+  linkedin: "https://linkedin.com/in/ankitnandwani",
+  github: "https://github.com/ankitnaadwani",
   keywords: [
     "Senior SDET",
     "Automation Engineer",

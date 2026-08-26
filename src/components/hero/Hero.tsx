@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/src/components/ui/Button';
 import { useTheme } from '@/design/themeContext';
+import { siteConfig } from '../../siteConfig';
+import { FiLinkedin, FiGithub } from 'react-icons/fi';
 
 interface HeroProps {
   /**
@@ -76,6 +78,36 @@ export const Hero = ({ className = '' }: HeroProps) => {
             Ask My AI
           </Button>
         </Link>
+      </div>
+
+      {/* Secondary CTAs */}
+      <div className="mt-lg flex flex-col sm:flex-row gap-x-md gap-y-sm">
+        {/* Download Resume */}
+        <Link href="/resume.pdf" prefetch>
+          <Button variant="secondary" size="lg">
+            Download Resume
+          </Button>
+        </Link>
+        {/* LinkedIn */}
+        <a
+          href={siteConfig.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors duration-200"
+        >
+          <FiLinkedin className="h-4 w-4" />
+          LinkedIn
+        </a>
+        {/* GitHub */}
+        <a
+          href={siteConfig.github}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors duration-200"
+        >
+          <FiGithub className="h-4 w-4" />
+          GitHub
+        </a>
       </div>
     </div>
   );

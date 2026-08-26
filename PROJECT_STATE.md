@@ -12,10 +12,11 @@
 
 - M04.01 – Hero typography and basic layout (completed)
 - M04.02 – Primary CTA buttons (completed)
+- M04.03 – Secondary CTA buttons (completed)
 
 ## Next Task
 
-- Begin implementation of M04.03
+- Begin implementation of M04.04
 
 ## Completed (Milestone 01)
 
@@ -55,3 +56,4 @@
 ## Completed (Milestone 04)
 - M04.01 – Hero typography and basic layout (completed)
 - M04.02 – Primary CTA buttons (completed)
+- M04.03 – Secondary CTA buttons (completed)
