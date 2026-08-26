@@ -6,15 +6,15 @@
 
 ## Current Milestone
 
-- M03 – Site Shell
+- M04 – Hero Section
 
 ## Status
 
-- Task specification created and implemented for M03.01 – Navigation bar, M03.02 – Footer, M03.03 – Responsive container, M03.04 – Page transitions and theme switching, and M03.05 – Command palette
+- Task specification created and implemented for M03.01 – Navigation bar, M03.02 – Footer, M03.03 – Responsive container, M03.04 – Page transitions and theme switching, M03.05 – Command palette, and M03.06 – SEO foundation (metadata, sitemap, robots)
 
 ## Next Task
 
-- M03.06 – SEO foundation (metadata, sitemap, robots)
+- Create task specifications for Milestone 4 – Hero Section
 
 ## Completed (Milestone 01)
 
@@ -47,6 +47,6 @@
 - M03.01 – Navigation bar (completed)
 - M03.02 – Footer (completed)
 - M03.03 – Responsive container (completed)
-- M03.04 – Page transitions and theme switching
-- M03.05 – Command palette
-- M03.06 – SEO foundation (metadata, sitemap, robots)
+- M03.04 – Page transitions and theme switching (completed)
+- M03.05 – Command palette (completed)
+- M03.06 – SEO foundation (metadata, sitemap, robots) (completed)

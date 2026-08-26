@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.24] - 2026-08-26
+- Implemented SEO foundation (M03.06)
+- Added dynamic metadata generation for all routes
+- Implemented Open Graph and Twitter Card meta tags
+- Added JSON-LD structured data for Organization schema
+- Created sitemap.xml route handler
+- Created robots.txt route handler
+- Set canonical URLs to prevent duplicate content
+- Updated layout and pages with proper metadata
+
 ## [0.1.23] - 2026-08-26
 - Implemented command palette (M03.05)
 - Added CommandPalette component with Mod+K keyboard shortcut
