@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-Begin implementation of M03.02 (Footer).
+Begin implementation of M03.03 – Responsive container.
