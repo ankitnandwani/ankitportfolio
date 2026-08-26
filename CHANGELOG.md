@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.19] - 2026-08-26
+- Implemented navigation bar component (M03.01)
+
 ## [0.1.18] - 2026-08-26
 - Created task specifications for Milestone 3 (Site Shell)
 

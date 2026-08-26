@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '../design/themeContext.tsx';
+import { NavigationBar } from '@/src/components/navigation';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -24,7 +25,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
       <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-        <body className={''}>{children}</body>
+        <body className={''}>
+          <a href="#content" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-2">
+            Skip to main content
+          </a>
+          <NavigationBar />
+          <main id="content">{children}</main>
+        </body>
       </html>
     </ThemeProvider>
   );
