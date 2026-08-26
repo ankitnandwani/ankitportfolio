@@ -1,9 +1,9 @@
 import React, { forwardRef, ReactNode } from 'react';
 // @ts-expect-error TS7016
-import NeoButton from '@cred/neopop-web';
+import { Components } from '@cred/neopop-web';
 import { useTheme } from '../../../design/themeContext';
 
-interface ButtonProps extends React.ComponentPropsWithRef<typeof NeoButton> {
+interface ButtonProps extends React.ComponentPropsWithRef<typeof Components.Button> {
   variant?: 'primary' | 'secondary' | 'accent';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   colorScheme?: 'light' | 'dark';
@@ -35,7 +35,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const neoSize = sizeMap[size] || 'medium';
     
     return (
-      <NeoButton
+      <Components.Button
         variant={neoVariant}
         colorMode={neoColorMode}
         size={neoSize}
@@ -44,7 +44,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {children}
-      </NeoButton>
+      </Components.Button>
     );
   }
 );

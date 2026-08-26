@@ -1,3 +1,5 @@
+'use client';
+
 import { useTheme } from '@/design/themeContext';
 
 import { motionVariants } from '@/design/motion';

@@ -1,6 +1,6 @@
 import React, { forwardRef, ReactNode } from 'react';
 // @ts-expect-error TS7016
-import { Components } from '@cred/neopop-web/lib-esm';
+import { Components } from '@cred/neopop-web';
 import { useTheme } from '../../../design/themeContext';
 
 interface CardProps extends React.ComponentPropsWithRef<typeof Components.ElevatedCard> {
@@ -65,14 +65,14 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     const combinedClass = `${sizeClass} ${radiusClass} ${className || ''}`.trim();
     
     return (
-      <ElevatedCard
+      <Components.ElevatedCard
         ref={ref}
         style={{ backgroundColor: bgColorValue }}
         className={combinedClass}
         {...props}
       >
         {children}
-      </ElevatedCard>
+      </Components.ElevatedCard>
     );
   }
 );

@@ -1,9 +1,9 @@
 import React, { forwardRef, ReactNode } from 'react';
 // @ts-expect-error TS7016
-import Tag from '@cred/neopop-web/lib-esm/components/Tags/index.js';
+import { Components } from '@cred/neopop-web';
 import { useTheme } from '../../../design/themeContext';
 
-interface BadgeProps extends React.ComponentPropsWithRef<typeof Tag> {
+interface BadgeProps extends React.ComponentPropsWithRef<typeof Components.Tag> {
   /**
    * Color variant from our design tokens
    * @default 'primary'
@@ -63,7 +63,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     const combinedClass = sizeClass + (className ? ' ' + className : '');
     
     return (
-      <Tag
+      <Components.Tag
         ref={ref}
         colorMode={colorScheme}
         colorConfig={{
@@ -74,7 +74,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
         {...props}
       >
         {children}
-      </Tag>
+      </Components.Tag>
     );
   }
 );
