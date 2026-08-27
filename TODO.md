@@ -1,3 +1,3 @@
 # Immediate Next Actions
  
-- Begin implementation of M08.05 (Create project index page)
+- Begin implementation of M08.06 (Create project detail page)

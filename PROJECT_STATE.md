@@ -21,10 +21,12 @@
 - M08.01 (Define project data model) completed
 - M08.02 (Populate project data) completed
 - M08.03 (Create project card component) completed
+- M08.04 (Create project list component) completed
+- M08.05 (Create project index page) completed
 
 ## Next Task
 
-- Begin implementation of M08.04 (Create project list component)
+- Begin implementation of M08.06 (Create project detail page)
 
 ## Completed (Milestone 01)
 
