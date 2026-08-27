@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.34] - 2026-08-27
+- Defined professional snapshot data model (M05.01)
+
 ## [0.1.33] - 2026-08-27
 - Created task specifications for Milestone 5 – Professional Snapshot
 
