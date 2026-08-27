@@ -16,10 +16,11 @@
 - M07.04 (Create achievements section container) completed
 - M07.05 (Implement mobile layout adaptation) completed
 - M07.06 (Add animations using Framer Motion) completed
+- M07.07 (Ensure accessibility and keyboard navigation) completed
 
 ## Next Task
 
-- Begin implementation of M07.07 (Ensure accessibility and keyboard navigation)
+- Begin implementation of M07.08 (Integrate achievements section into homepage)
 
 ## Completed (Milestone 01)
 

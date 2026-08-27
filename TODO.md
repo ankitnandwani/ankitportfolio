@@ -1,3 +1,3 @@
 # Immediate Next Actions
  
-- Begin implementation of M07.07 (Ensure accessibility and keyboard navigation)
+- Begin implementation of M07.08 (Integrate achievements section into homepage)

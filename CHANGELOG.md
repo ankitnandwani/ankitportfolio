@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.54] - 2026-08-27
+- Completed M07.07: Ensure accessibility and keyboard navigation (`src/components/achievements/AchievementCard.tsx`)
+
 ## [0.1.53] - 2026-08-27
 - Completed M07.06: Add animations using Framer Motion (`src/components/achievements/AchievementCard.tsx`, `src/components/achievements/AchievementsSection.tsx`)
 

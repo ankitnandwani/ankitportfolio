@@ -65,12 +65,20 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
     whileTap: { scale: 0.98 },
   };
 
+  const focusVariant = {
+    whileFocus: { 
+      scale: 1.02, 
+      transition: { duration: 0.2 } 
+    },
+  };
+
   return (
-    <motion.div
+    <motion.article
       initial={prefersReducedMotion ? undefined : entranceVariant.initial}
       animate={prefersReducedMotion ? undefined : entranceVariant.animate}
       whileHover={prefersReducedMotion ? undefined : hoverVariant.whileHover}
       whileTap={prefersReducedMotion ? undefined : hoverVariant.whileTap}
+      whileFocus={prefersReducedMotion ? undefined : focusVariant.whileFocus}
       className={`w-full flex flex-col justify-between p-4 sm:p-5 md:p-6 transition-all ${className}`}
     >
       <Card
@@ -214,6 +222,6 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
           </ul>
         </div>
       </Card>
-    </motion.div>
+    </motion.article>
   );
 };
