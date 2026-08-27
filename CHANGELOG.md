@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.61] - 2026-08-28
+- Completed M08.06: Create project detail page (`app/projects/[slug]/page.tsx` and `app/projects/[slug]/project-detail-content.tsx`)
+
 ## [0.1.60] - 2026-08-27
 - Completed M08.05: Create project index page (`app/projects/page.tsx` and `app/projects/projects-client.tsx`)
 

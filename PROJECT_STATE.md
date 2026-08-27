@@ -23,10 +23,11 @@
 - M08.03 (Create project card component) completed
 - M08.04 (Create project list component) completed
 - M08.05 (Create project index page) completed
+- M08.06 (Create project detail page) completed
 
 ## Next Task
 
-- Begin implementation of M08.06 (Create project detail page)
+- Begin implementation of M08.07 (Implement filtering and categories)
 
 ## Completed (Milestone 01)
 
