@@ -1,0 +1,1 @@
+export { ProfessionalSnapshot } from './index.tsx';

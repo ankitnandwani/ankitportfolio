@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.35] - 2026-08-27
+- Created ProfessionalSnapshot component with metric cards (M05.02)
+
 ## [0.1.34] - 2026-08-27
 - Defined professional snapshot data model (M05.01)
 
