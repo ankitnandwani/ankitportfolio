@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.47] - 2026-08-27
+- Completed M06.05: Integrate CareerTimeline component into homepage (app/page.tsx)
+
 ## [0.1.46] - 2026-08-27
 - Completed M06.08: Ensure accessibility and keyboard navigation for CareerTimeline and CompanyCard components
 

@@ -6,21 +6,16 @@
 
 ## Current Milestone
 
-- M06 – Career Timeline
+- M07 – Achievements
 
 ## Status
 
-- M06.01 completed: Define career timeline data model
-- M06.04 completed: Populate career timeline data from resume
-- M06.02 completed: Create timeline container component
-- M06.03 completed: Create company card component
-- M06.07 completed: Add animations for expand/collapse using Framer Motion
-- M06.06 completed: Implement mobile layout adaptation
-- M06.08 completed: Ensure accessibility and keyboard navigation
+- Milestone 06 (Career Timeline) completed.
+- All M06 tasks (M06.01 through M06.08) completed.
 
 ## Next Task
 
-- Begin implementation of M06.05 (Integrate timeline into homepage)
+- Create task specifications for Milestone 7 (Achievements)
 
 ## Completed (Milestone 01)
 
@@ -78,6 +73,7 @@
 - M06.02 – Create timeline container component (completed)
 - M06.03 – Create company card component (completed)
 - M06.04 – Populate career timeline data from resume (completed)
-- M06.07 – Add animations for expand/collapse using Framer Motion (completed)
+- M06.05 – Integrate timeline into homepage (completed)
 - M06.06 – Implement mobile layout adaptation (completed)
+- M06.07 – Add animations for expand/collapse using Framer Motion (completed)
 - M06.08 – Ensure accessibility and keyboard navigation (completed)

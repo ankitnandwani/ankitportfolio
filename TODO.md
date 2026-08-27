@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-Begin implementation of M06.05 (Integrate timeline into homepage)
+Create task specifications for Milestone 7 (Achievements)
