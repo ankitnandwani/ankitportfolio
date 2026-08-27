@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Card } from '@/src/components/ui/Card';
 import { useTheme } from '@/design/themeContext';
 import { Achievement } from '@/src/data/achievements';
@@ -23,6 +24,24 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
   const { getThemeTokens } = useTheme();
   const tokens = getThemeTokens();
 
+  // Hook to detect if user prefers reduced motion
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      setPrefersReducedMotion(event.matches);
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
   const textColor = tokens.colors.text;
   const bgColor = tokens.colors.background;
   const surfaceColor = tokens.colors.surface;
@@ -31,148 +50,170 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
 
   const borderColor = achievement.featured ? accentColor : primaryColor;
 
+  // Animation variants
+  const entranceVariant = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    exit: { opacity: 0, y: -20, transition: { duration: 0.3 } },
+  };
+
+  const hoverVariant = {
+    whileHover: { 
+      scale: 1.02, 
+      transition: { duration: 0.2 } 
+    },
+    whileTap: { scale: 0.98 },
+  };
+
   return (
-    <Card
-      elevation="md"
+    <motion.div
+      initial={prefersReducedMotion ? undefined : entranceVariant.initial}
+      animate={prefersReducedMotion ? undefined : entranceVariant.animate}
+      whileHover={prefersReducedMotion ? undefined : hoverVariant.whileHover}
+      whileTap={prefersReducedMotion ? undefined : hoverVariant.whileTap}
       className={`w-full flex flex-col justify-between p-4 sm:p-5 md:p-6 transition-all ${className}`}
-      style={{
-        backgroundColor: bgColor,
-        borderLeft: `4px solid ${borderColor}`,
-      }}
     >
-      <div>
-        {/* Top Header: Domain & Company Badges */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              style={{
-                backgroundColor: surfaceColor,
-                color: primaryColor,
-                borderColor: primaryColor,
-              }}
-              className="inline-block px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider rounded border"
-            >
-              {achievement.domain}
-            </span>
-            <span
-              style={{
-                backgroundColor: surfaceColor,
-                color: textColor,
-              }}
-              className="inline-block px-2.5 py-0.5 text-xs font-semibold rounded border border-zinc-200 dark:border-zinc-700"
-            >
-              {achievement.company}
-            </span>
-          </div>
-
-          {achievement.featured && (
-            <span
-              style={{
-                backgroundColor: accentColor,
-                color: '#FFFFFF',
-              }}
-              className="inline-block px-2 py-0.5 text-xs font-bold uppercase tracking-wider rounded shadow-sm"
-            >
-              Featured Impact
-            </span>
-          )}
-        </div>
-
-        {/* Accomplishment Title */}
-        <h3
-          style={{ color: textColor }}
-          className="text-lg sm:text-xl md:text-2xl font-bold mb-2 leading-snug break-words"
-        >
-          {achievement.title}
-        </h3>
-
-        {/* Ownership / Responsibility */}
-        <p
-          style={{ color: textColor }}
-          className="text-xs sm:text-sm md:text-base font-medium mb-4 leading-relaxed opacity-90 break-words"
-        >
-          {achievement.responsibility}
-        </p>
-
-        {/* Problem & Approach & Outcome Details */}
-        <div className="space-y-3 mb-4">
-          {/* Problem */}
-          <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-zinc-800">
-            <h4
-              style={{ color: accentColor }}
-              className="text-xs font-bold uppercase tracking-wider mb-1"
-            >
-              Challenge / Problem
-            </h4>
-            <p
-              style={{ color: textColor }}
-              className="text-xs sm:text-sm leading-relaxed break-words"
-            >
-              {achievement.problem}
-            </p>
-          </div>
-
-          {/* Approach */}
-          <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-zinc-800">
-            <h4
-              style={{ color: primaryColor }}
-              className="text-xs font-bold uppercase tracking-wider mb-1"
-            >
-              Engineering Approach
-            </h4>
-            <p
-              style={{ color: textColor }}
-              className="text-xs sm:text-sm leading-relaxed break-words"
-            >
-              {achievement.approach}
-            </p>
-          </div>
-
-          {/* Outcome */}
-          <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-zinc-800">
-            <h4
-              style={{ color: accentColor }}
-              className="text-xs font-bold uppercase tracking-wider mb-1"
-            >
-              Outcome & Impact
-            </h4>
-            <p
-              style={{ color: textColor }}
-              className="text-xs sm:text-sm font-semibold leading-relaxed break-words"
-            >
-              {achievement.outcome}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Technologies Footer */}
-      <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800">
-        <h4
-          style={{ color: textColor }}
-          className="text-xs font-bold uppercase tracking-wider mb-2 opacity-80"
-        >
-          Technologies
-        </h4>
-        <ul
-          className="flex flex-wrap gap-1.5 sm:gap-2 list-none p-0 m-0"
-          aria-label={`Technologies used for ${achievement.title}`}
-        >
-          {achievement.technologies.map((tech) => (
-            <li key={tech}>
+      <Card
+        elevation="md"
+        style={{
+          backgroundColor: bgColor,
+          borderLeft: `4px solid ${borderColor}`,
+        }}
+      >
+        <div>
+          {/* Top Header: Domain & Company Badges */}
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                style={{
+                  backgroundColor: surfaceColor,
+                  color: primaryColor,
+                  borderColor: primaryColor,
+                }}
+                className="inline-block px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider rounded border"
+              >
+                {achievement.domain}
+              </span>
               <span
                 style={{
                   backgroundColor: surfaceColor,
                   color: textColor,
                 }}
-                className="inline-block px-2.5 py-1 rounded font-medium text-xs border border-zinc-200 dark:border-zinc-700 break-words"
+                className="inline-block px-2.5 py-0.5 text-xs font-semibold rounded border border-zinc-200 dark:border-zinc-700"
               >
-                {tech}
+                {achievement.company}
               </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </Card>
+            </div>
+
+            {achievement.featured && (
+              <span
+                style={{
+                  backgroundColor: accentColor,
+                  color: '#FFFFFF',
+                }}
+                className="inline-block px-2 py-0.5 text-xs font-bold uppercase tracking-wider rounded shadow-sm"
+              >
+                Featured Impact
+              </span>
+            )}
+          </div>
+
+          {/* Accomplishment Title */}
+          <h3
+            style={{ color: textColor }}
+            className="text-lg sm:text-xl md:text-2xl font-bold mb-2 leading-snug break-words"
+          >
+            {achievement.title}
+          </h3>
+
+          {/* Ownership / Responsibility */}
+          <p
+            style={{ color: textColor }}
+            className="text-xs sm:text-sm md:text-base font-medium mb-4 leading-relaxed opacity-90 break-words"
+          >
+            {achievement.responsibility}
+          </p>
+
+          {/* Problem & Approach & Outcome Details */}
+          <div className="space-y-3 mb-4">
+            {/* Problem */}
+            <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-zinc-800">
+              <h4
+                style={{ color: accentColor }}
+                className="text-xs font-bold uppercase tracking-wider mb-1"
+              >
+                Challenge / Problem
+              </h4>
+              <p
+                style={{ color: textColor }}
+                className="text-xs sm:text-sm leading-relaxed break-words"
+              >
+                {achievement.problem}
+              </p>
+            </div>
+
+            {/* Approach */}
+            <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-zinc-800">
+              <h4
+                style={{ color: primaryColor }}
+                className="text-xs font-bold uppercase tracking-wider mb-1"
+              >
+                Engineering Approach
+              </h4>
+              <p
+                style={{ color: textColor }}
+                className="text-xs sm:text-sm leading-relaxed break-words"
+              >
+                {achievement.approach}
+              </p>
+            </div>
+
+            {/* Outcome */}
+            <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-zinc-800">
+              <h4
+                style={{ color: accentColor }}
+                className="text-xs font-bold uppercase tracking-wider mb-1"
+              >
+                Outcome & Impact
+              </h4>
+              <p
+                style={{ color: textColor }}
+                className="text-xs sm:text-sm font-semibold leading-relaxed break-words"
+              >
+                {achievement.outcome}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Technologies Footer */}
+        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800">
+          <h4
+            style={{ color: textColor }}
+            className="text-xs font-bold uppercase tracking-wider mb-2 opacity-80"
+          >
+            Technologies
+          </h4>
+          <ul
+            className="flex flex-wrap gap-1.5 sm:gap-2 list-none p-0 m-0"
+            aria-label={`Technologies used for ${achievement.title}`}
+          >
+            {achievement.technologies.map((tech) => (
+              <li key={tech}>
+                <span
+                  style={{
+                    backgroundColor: surfaceColor,
+                    color: textColor,
+                  }}
+                  className="inline-block px-2.5 py-1 rounded font-medium text-xs border border-zinc-200 dark:border-zinc-700 break-words"
+                >
+                  {tech}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Card>
+    </motion.div>
   );
 };

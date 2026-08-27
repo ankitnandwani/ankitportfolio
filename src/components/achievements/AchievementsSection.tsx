@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { achievementsData, AchievementsData } from '@/src/data/achievements';
 import { AchievementCard } from './AchievementCard';
 import { useTheme } from '@/design/themeContext';
@@ -28,11 +29,46 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({
   const { getThemeTokens } = useTheme();
   const tokens = getThemeTokens();
 
+  // Hook to detect if user prefers reduced motion
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      setPrefersReducedMotion(event.matches);
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
   // Filter and limit data if needed
   let displayData = data;
   if (limit !== undefined) {
     displayData = data.slice(0, limit);
   }
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
 
   return (
     <section className={className}>
@@ -54,14 +90,21 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({
         </div>
 
         {/* Achievements Grid */}
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <motion.div
+          className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          initial={prefersReducedMotion ? undefined : containerVariants.hidden}
+          animate={prefersReducedMotion ? undefined : containerVariants.show}
+        >
           {displayData.map((achievement) => (
-            <AchievementCard
+            <motion.div
               key={achievement.id}
-              achievement={achievement}
-            />
+              initial={prefersReducedMotion ? undefined : itemVariants.hidden}
+              animate={prefersReducedMotion ? undefined : itemVariants.show}
+            >
+              <AchievementCard achievement={achievement} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
