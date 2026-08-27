@@ -1,7 +1,9 @@
-# Changelog
+# Changelog",
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.41] - 2026-08-27
+- Completed M06.04: Populate career timeline data from resume
 ## [0.1.40] - 2026-08-27
 - Completed M06.01: Define career timeline data model
 

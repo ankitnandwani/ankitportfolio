@@ -11,10 +11,11 @@
 ## Status
 
 - M06.01 completed: Define career timeline data model
+- M06.04 completed: Populate career timeline data from resume
 
 ## Next Task
 
-- Begin implementation of M06.04
+- Begin implementation of M06.02
 
 ## Completed (Milestone 01)
 
@@ -69,3 +70,4 @@
 
 ## Completed (Milestone 06)
 - M06.01 – Define career timeline data model (completed)
+- M06.04 – Populate career timeline data from resume (completed)

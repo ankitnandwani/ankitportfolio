@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-Begin implementation of M06.04
+Begin implementation of M06.02
