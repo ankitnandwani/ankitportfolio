@@ -1,15 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { ProjectList } from '@/src/components/projects/ProjectList';
+import { ProjectList, FilterBar } from '@/src/components/projects';
 import { projectsData, Project } from '@/src/data/projects';
-import { Button } from '@/src/components/ui/Button';
 
 export default function ProjectsClient() {
   const [activeCategory, setActiveCategory] = useState<Project['category'] | 'All'>('All');
 
   // Get unique categories from projects data
   const categories: Array<Project['category'] | 'All'> = ['All', ...Array.from(new Set(projectsData.map(p => p.category)))];
+  const filterOptions = categories.map((category) => ({
+    label: category,
+    value: category,
+  }));
 
   // Filter projects based on active category
   const filteredProjects =
@@ -27,18 +30,13 @@ export default function ProjectsClient() {
       </header>
 
       {/* Filtering Controls */}
-      <div className="mb-10 flex flex-wrap gap-4">
-        {categories.map((category) => (
-          <Button
-            key={category}
-            variant={activeCategory === category ? 'primary' : 'secondary'}
-            size="md"
-            onClick={() => setActiveCategory(category)}
-            className="px-4 py-2"
-          >
-            {category}
-          </Button>
-        ))}
+      <div className="mb-10">
+        <FilterBar
+          activeFilter={activeCategory}
+          onFilterChange={(value) => setActiveCategory(value as Project['category'] | 'All')}
+          options={filterOptions}
+          className="flex flex-wrap gap-4"
+        />
       </div>
 
       {/* Projects List */}

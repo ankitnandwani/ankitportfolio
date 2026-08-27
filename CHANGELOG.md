@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.62] - 2026-08-29
+- Completed M08.07: Implement filtering and categories (`src/components/projects/FilterBar.tsx` and updated `app/projects/projects-client.tsx` to use FilterBar)
+
 ## [0.1.61] - 2026-08-28
 - Completed M08.06: Create project detail page (`app/projects/[slug]/page.tsx` and `app/projects/[slug]/project-detail-content.tsx`)
 

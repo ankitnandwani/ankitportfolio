@@ -24,10 +24,11 @@
 - M08.04 (Create project list component) completed
 - M08.05 (Create project index page) completed
 - M08.06 (Create project detail page) completed
+- M08.07 (Implement filtering and categories) completed
 
 ## Next Task
 
-- Begin implementation of M08.07 (Implement filtering and categories)
+- Begin implementation of M08.08 (Mobile layout adaptation)
 
 ## Completed (Milestone 01)
 
