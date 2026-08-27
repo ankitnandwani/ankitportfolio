@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.36] - 2026-08-27
+- Added summary copy section (M05.03)
+
 ## [0.1.35] - 2026-08-27
 - Created ProfessionalSnapshot component with metric cards (M05.02)
 

@@ -1,0 +1,1 @@
+export { SummaryCopy } from './index.tsx';
