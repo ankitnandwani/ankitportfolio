@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-- Begin implementation of M08.10 (Ensure accessibility and keyboard navigation)
+- Begin implementation of M08.11 (Integrate featured projects section into homepage)

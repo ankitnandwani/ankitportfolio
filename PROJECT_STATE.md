@@ -27,10 +27,11 @@
 - M08.07 (Implement filtering and categories) completed
 - M08.08 (Implement mobile layout adaptation) completed
 - M08.09 (Add animations using Framer Motion) completed
+- M08.10 (Ensure accessibility and keyboard navigation) completed
 
 ## Next Task
 
-- Begin implementation of M08.10 (Ensure accessibility and keyboard navigation)
+- Begin implementation of M08.11 (Integrate featured projects section into homepage)
 
 ## Completed (Milestone 01)
 

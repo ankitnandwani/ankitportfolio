@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
+import type { ComponentProps } from 'react';
 
 export interface FilterBarOptions {
   label: string;
@@ -57,26 +58,31 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   };
 
   return (
-    <div className={`flex flex-wrap gap-2 ${className}`}>
+    <div
+      role="radiogroup"
+      aria-label="Filter projects by category"
+      className={`flex flex-wrap gap-2 ${className}`}
+    >
       {options.map((option) => {
         const isActive = activeFilter === option.value;
+        const buttonProps = {
+          variant: isActive ? 'primary' : 'secondary',
+          size: 'md',
+          onClick: () => onFilterChange(option.value),
+          role: 'radio',
+          'aria-checked': isActive,
+          className: 'px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary',
+          children: option.label
+        };
         return (
           <motion.div
             key={option.value}
             whileTap={prefersReducedMotion ? undefined : tapVariant.whileTap}
           >
-            <Button
-              variant={isActive ? 'primary' : 'secondary'}
-              size="md"
-              onClick={() => onFilterChange(option.value)}
-              aria-pressed={isActive}
-              className="px-4 py-2"
-            >
-              {option.label}
-            </Button>
+            <Button {...(buttonProps as ComponentProps<typeof Button>)} />
           </motion.div>
         );
       })}
     </div>
   );
-};
+}

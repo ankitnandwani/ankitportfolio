@@ -1,3 +1,6 @@
+## [0.1.65] - 2026-08-30
+- Completed M08.10: Ensure accessibility and keyboard navigation (updated ProjectCard, ProjectList, FilterBar, project detail page, and added sr-only utility class)
+
 ## [0.1.64] - 2026-08-30
 - Completed M08.09: Add animations using Framer Motion (updated ProjectCard, ProjectList, FilterBar)
 
