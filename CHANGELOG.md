@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.39] - 2026-08-27
+- Created task specifications for Milestone 6 – Career Timeline (M06.01 through M06.08)
+
 ## [0.1.38] - 2026-08-27
 - Integrated professional snapshot section into homepage (M05.05)
 

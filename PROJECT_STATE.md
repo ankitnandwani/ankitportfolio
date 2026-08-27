@@ -6,11 +6,11 @@
 
 ## Current Milestone
 
-- M05 – Professional Snapshot
+- M06 – Career Timeline
 
 ## Status
 
-- Task M05.05 completed
+- Task specification created / awaiting implementation
 
 ## Next Task
 
