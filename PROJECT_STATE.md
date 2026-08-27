@@ -72,4 +72,5 @@
 ## Completed (Milestone 06)
 - M06.01 – Define career timeline data model (completed)
 - M06.02 – Create timeline container component (completed)
+- M06.03 – Create company card component (completed)
 - M06.04 – Populate career timeline data from resume (completed)
