@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-Create task specifications for Milestone 7 (Achievements)
+Begin implementation of M07.01 (Define achievements data model)

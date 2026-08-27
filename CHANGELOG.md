@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.48] - 2026-08-27
+- Created task specifications for Milestone 7 – Achievements (M07.01 through M07.08)
+
 ## [0.1.47] - 2026-08-27
 - Completed M06.05: Integrate CareerTimeline component into homepage (app/page.tsx)
 

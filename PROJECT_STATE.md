@@ -10,12 +10,12 @@
 
 ## Status
 
-- Milestone 06 (Career Timeline) completed.
-- All M06 tasks (M06.01 through M06.08) completed.
+- Task specifications created for Milestone 7 (M07.01 through M07.08)
+- Awaiting implementation
 
 ## Next Task
 
-- Create task specifications for Milestone 7 (Achievements)
+- Begin implementation of M07.01 (Define achievements data model)
 
 ## Completed (Milestone 01)
 
