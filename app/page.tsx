@@ -3,6 +3,7 @@ import { generateBaseMetadata } from '@/src/seo/metadata';
 import { Hero } from '@/src/components/hero';
 import { ProfessionalSection } from '@/src/components/professionalSection';
 import { CareerTimeline } from '@/src/components/careerTimeline';
+import { AchievementsSection } from '@/src/components/achievements';
 
 export const metadata = {
   ...generateBaseMetadata('Home', 'Senior SDET / Automation Engineer Portfolio & AI Recruiter Assistant'),
@@ -23,6 +24,7 @@ export default function Home() {
         <main className="flex flex-1 w-full flex-col items-center justify-between">
           <Hero className="flex-1" />
           <ProfessionalSection className="mt-12" />
+          <AchievementsSection className="mt-16" />
           <CareerTimeline className="mt-16" />
         </main>
       </ResponsiveContainer>
