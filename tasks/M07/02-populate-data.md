@@ -53,15 +53,15 @@ PRD §12 emphasizes that achievements must be grounded in reality: "Where exact 
 4. Mark featured items appropriately
 
 ## Acceptance Criteria
-- [ ] `src/data/achievements.ts` exports an array of populated, factual achievement entries
-- [ ] Each entry has non-empty values for required fields (`id`, `title`, `domain`, `company`, `problem`, `responsibility`, `approach`, `technologies`, `outcome`)
-- [ ] No fabricated metrics or private information are included
-- [ ] TypeScript compiles cleanly without errors
-- [ ] Lint passes without new errors
+- [x] `src/data/achievements.ts` exports an array of populated, factual achievement entries
+- [x] Each entry has non-empty values for required fields (`id`, `title`, `domain`, `company`, `problem`, `responsibility`, `approach`, `technologies`, `outcome`)
+- [x] No fabricated metrics or private information are included
+- [x] TypeScript compiles cleanly without errors
+- [x] Lint passes without new errors
 
 ## Testing Requirements
-- [ ] TypeScript typecheck passes (`npm run typecheck`)
-- [ ] Lint passes (`npm run lint`)
+- [x] TypeScript typecheck passes (`npm run typecheck`)
+- [x] Lint passes (`npm run lint`)
 
 ## Security / Privacy Considerations
 - Ensure no confidential client information, proprietary secrets, or personal contact info are exposed.

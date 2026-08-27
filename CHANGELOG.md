@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.50] - 2026-08-27
+- Completed M07.02: Populate achievements data from resume (`src/data/achievements.ts`)
+
 ## [0.1.49] - 2026-08-27
 - Completed M07.01: Define achievements data model (`src/data/achievements.ts`)
 

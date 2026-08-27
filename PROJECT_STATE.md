@@ -11,11 +11,12 @@
 ## Status
 
 - M07.01 (Define achievements data model) completed
-- Next task: M07.02 (Populate achievements data from resume)
+- M07.02 (Populate achievements data from resume) completed
+- Next task: M07.03 (Create achievement card component)
 
 ## Next Task
 
-- Begin implementation of M07.02 (Populate achievements data from resume)
+- Begin implementation of M07.03 (Create achievement card component)
 
 ## Completed (Milestone 01)
 
@@ -80,4 +81,5 @@
 
 ## Completed (Milestone 07)
 - M07.01 – Define achievements data model (completed)
+- M07.02 – Populate achievements data from resume (completed)
 
