@@ -1,6 +1,7 @@
 import { ResponsiveContainer } from '@/src/components/layout';
 import { generateBaseMetadata } from '@/src/seo/metadata';
 import { Hero } from '@/src/components/hero';
+import { ProfessionalSection } from '@/src/components/professionalSection';
 
 export const metadata = {
   ...generateBaseMetadata('Home', 'Senior SDET / Automation Engineer Portfolio & AI Recruiter Assistant'),
@@ -20,6 +21,7 @@ export default function Home() {
       <ResponsiveContainer>
         <main className="flex flex-1 w-full flex-col items-center justify-between">
           <Hero className="flex-1" />
+          <ProfessionalSection className="mt-12" />
         </main>
       </ResponsiveContainer>
     </div>

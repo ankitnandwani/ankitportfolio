@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task M05.04 completed; implementing M05.05
+- Task M05.05 completed
 
 ## Next Task
 
-- Begin implementation of M05.05
+- Begin implementation of M06.01
 
 ## Completed (Milestone 01)
 
@@ -65,3 +65,4 @@
 - M05.02 – Create ProfessionalSnapshot component with metric cards (completed)
 - M05.03 – Add summary copy section (completed)
 - M05.04 – Add capability areas section (completed)
+- M05.05 – Integrate into homepage and ensure responsiveness (completed)

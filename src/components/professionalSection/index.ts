@@ -1,0 +1,1 @@
+export { ProfessionalSection } from './index.tsx';

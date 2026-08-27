@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.38] - 2026-08-27
+- Integrated professional snapshot section into homepage (M05.05)
+
 ## [0.1.37] - 2026-08-27
 - Added capability areas section (M05.04)
 
