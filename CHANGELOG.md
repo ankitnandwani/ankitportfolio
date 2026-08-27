@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.42] - 2026-08-27
+- Completed M06.02: Create timeline container component
+
 ## [0.1.41] - 2026-08-27
 - Completed M06.04: Populate career timeline data from resume
 ## [0.1.40] - 2026-08-27

@@ -12,10 +12,11 @@
 
 - M06.01 completed: Define career timeline data model
 - M06.04 completed: Populate career timeline data from resume
+- M06.02 completed: Create timeline container component
 
 ## Next Task
 
-- Begin implementation of M06.02
+- Begin implementation of M06.03
 
 ## Completed (Milestone 01)
 
@@ -70,4 +71,5 @@
 
 ## Completed (Milestone 06)
 - M06.01 – Define career timeline data model (completed)
+- M06.02 – Create timeline container component (completed)
 - M06.04 – Populate career timeline data from resume (completed)
