@@ -14,11 +14,12 @@
 - M07.02 (Populate achievements data from resume) completed
 - M07.03 (Create achievement card component) completed
 - M07.04 (Create achievements section container) completed
-- Next task: M07.05 (Implement mobile layout adaptation)
+- M07.05 (Implement mobile layout adaptation) completed
+- Next task: M07.06 (Add animations using Framer Motion)
 
 ## Next Task
 
-- Begin implementation of M07.05 (Implement mobile layout adaptation)
+- Begin implementation of M07.06 (Add animations using Framer Motion)
 
 ## Completed (Milestone 01)
 

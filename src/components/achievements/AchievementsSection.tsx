@@ -54,7 +54,7 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({
         </div>
 
         {/* Achievements Grid */}
-        <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {displayData.map((achievement) => (
             <AchievementCard
               key={achievement.id}

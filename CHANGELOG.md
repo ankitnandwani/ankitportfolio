@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.52] - 2026-08-27
+- Completed M07.05: Implement mobile layout adaptation (`src/components/achievements/AchievementsSection.tsx`)
+
 ## [0.1.51] - 2026-08-27
 - Completed M07.04: Create achievements section container (`src/components/achievements/AchievementsSection.tsx`)
 

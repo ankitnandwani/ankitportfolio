@@ -1,3 +1,3 @@
 # Immediate Next Actions
  
-- Begin implementation of M07.05 (Implement mobile layout adaptation)
+- Begin implementation of M07.06 (Add animations using Framer Motion)
