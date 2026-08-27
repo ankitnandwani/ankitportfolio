@@ -16,7 +16,7 @@
 
 ## Next Task
 
-- Begin implementation of M06.03
+- Begin implementation of M06.06
 
 ## Completed (Milestone 01)
 
@@ -74,3 +74,4 @@
 - M06.02 – Create timeline container component (completed)
 - M06.03 – Create company card component (completed)
 - M06.04 – Populate career timeline data from resume (completed)
+- M06.07 – Add animations for expand/collapse using Framer Motion (completed)

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Card } from '@/src/components/ui/Card';
 import { useTheme } from '@/design/themeContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CompanyCardProps {
   entry: {
@@ -41,6 +42,7 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
       })
     : 'Present';
 
+  const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const toggleExpanded = () => {
     setExpanded(!expanded);
   };
@@ -105,84 +107,86 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
         </span>
       </div>
 
-      {/* Collapsible Content */}
-      <div 
-        id={`company-card-details-${index}`}
-        className="overflow-hidden transition-max-height duration-300"
-        style={{ 
-          maxHeight: expanded ? 9999 : 0, 
-          // Add padding when expanded, remove when collapsed
-          paddingTop: expanded ? '0' : '0',
-          paddingBottom: expanded ? '0' : '0',
-        }}
-      >
-        {/* We want to show the details with some padding when expanded */}
-        <div className={`p-4 ${expanded ? 'border-t' : 'border-t-0'} border-primary/20`}>
-          {/* Responsibilities */}
-          {entry.responsibilities.length > 0 && (
-            <div className="mb-4">
-              <h4 
-                style={{ color: textColor }}
-                className="text-lg font-medium mb-2"
-              >
-                Responsibilities
-              </h4>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                {entry.responsibilities.map((resp, i) => (
-                  <li key={i} style={{ color: textColor }}>
-                    {resp}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          {/* Technologies */}
-          {entry.technologies.length > 0 && (
-            <div className="mb-4">
-              <h4 
-                style={{ color: textColor }}
-                className="text-lg font-medium mb-2"
-              >
-                Technologies
-              </h4>
-              <div className="flex flex-wrap gap-2 text-sm">
-                {entry.technologies.map((tech, i) => (
-                  <span 
-                    key={i} 
-                    style={{ 
-                      backgroundColor: surfaceColor,
-                      color: textColor,
-                    }}
-                    className="px-3 py-1 rounded font-medium"
+      {/* Collapsible Content with animation */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            key="details"
+            id={`company-card-details-${index}`}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={reducedMotion ? { duration: 0 } : { duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 border-t border-primary/20">
+              {/* Responsibilities */}
+              {entry.responsibilities.length > 0 && (
+                <div className="mb-4">
+                  <h4
+                    style={{ color: textColor }}
+                    className="text-lg font-medium mb-2"
                   >
-                    {tech}
-                  </span>
-                ))}
-              </div>
+                    Responsibilities
+                  </h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    {entry.responsibilities.map((resp, i) => (
+                      <li key={i} style={{ color: textColor }}>
+                        {resp}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Technologies */}
+              {entry.technologies.length > 0 && (
+                <div className="mb-4">
+                  <h4
+                    style={{ color: textColor }}
+                    className="text-lg font-medium mb-2"
+                  >
+                    Technologies
+                  </h4>
+                  <div className="flex flex-wrap gap-2 text-sm">
+                    {entry.technologies.map((tech, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          backgroundColor: surfaceColor,
+                          color: textColor,
+                        }}
+                        className="px-3 py-1 rounded font-medium"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Notable Projects */}
+              {entry.notableProjects.length > 0 && (
+                <div className="mb-4">
+                  <h4
+                    style={{ color: textColor }}
+                    className="text-lg font-medium mb-2"
+                  >
+                    Notable Projects
+                  </h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    {entry.notableProjects.map((proj, i) => (
+                      <li key={i} style={{ color: textColor }}>
+                        {proj}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-          )}
-          
-          {/* Notable Projects */}
-          {entry.notableProjects.length > 0 && (
-            <div className="mb-4">
-              <h4 
-                style={{ color: textColor }}
-                className="text-lg font-medium mb-2"
-              >
-                Notable Projects
-              </h4>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                {entry.notableProjects.map((proj, i) => (
-                  <li key={i} style={{ color: textColor }}>
-                    {proj}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Card>
   );
 };
