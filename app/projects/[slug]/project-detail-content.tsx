@@ -41,7 +41,7 @@ export default function ProjectDetailContent({
         {/* Value proposition (one-line description) */}
         <p
           style={{ color: 'hsl(var(--foreground))' }}
-          className="text-lg font-medium mb-6 leading-relaxed opacity-90 break-words"
+          className="text-base sm:text-lg font-medium mb-6 leading-relaxed opacity-90 break-words"
         >
           {project.valueProposition}
         </p>
@@ -53,13 +53,13 @@ export default function ProjectDetailContent({
         <section>
           <h2
             style={{ color: 'hsl(var(--foreground))' }}
-            className="text-xl font-bold mb-3"
+            className="text-lg sm:text-xl font-bold mb-3 break-words"
           >
             Why I built it
           </h2>
           <p
             style={{ color: 'hsl(var(--foreground))' }}
-            className="text-base leading-relaxed break-words"
+            className="text-sm sm:text-base leading-relaxed break-words"
           >
             {project.whyBuilt}
           </p>
@@ -69,13 +69,13 @@ export default function ProjectDetailContent({
         <section>
           <h2
             style={{ color: 'hsl(var(--foreground))' }}
-            className="text-xl font-bold mb-3"
+            className="text-lg sm:text-xl font-bold mb-3 break-words"
           >
             What I learned
           </h2>
           <p
             style={{ color: 'hsl(var(--foreground))' }}
-            className="text-base leading-relaxed break-words"
+            className="text-sm sm:text-base leading-relaxed break-words"
           >
             {project.whatLearned}
           </p>
@@ -85,13 +85,13 @@ export default function ProjectDetailContent({
         <section>
           <h2
             style={{ color: 'hsl(var(--foreground))' }}
-            className="text-xl font-bold mb-3"
+            className="text-lg sm:text-xl font-bold mb-3 break-words"
           >
             Architecture
           </h2>
           <p
             style={{ color: 'hsl(var(--foreground))' }}
-            className="text-base leading-relaxed break-words"
+            className="text-sm sm:text-base leading-relaxed break-words"
           >
             {project.architecture}
           </p>
@@ -101,11 +101,11 @@ export default function ProjectDetailContent({
         <section>
           <h2
             style={{ color: 'hsl(var(--foreground))' }}
-            className="text-xl font-bold mb-3"
+            className="text-lg sm:text-xl font-bold mb-3 break-words"
           >
             Technologies
           </h2>
-          <div className="flex flex-wrap gap-3 mb-6">
+          <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
             {project.technologies.map((tech, index) => (
               <span
                 key={index}
@@ -113,7 +113,7 @@ export default function ProjectDetailContent({
                   backgroundColor: 'hsl(var(--secondary))',
                   color: 'hsl(var(--secondary-foreground))',
                 }}
-                className="inline-block px-4 py-2 rounded font-medium text-sm border"
+                className="inline-block px-4 py-2 rounded font-medium text-sm border break-words"
               >
                 {tech}
               </span>
@@ -125,7 +125,7 @@ export default function ProjectDetailContent({
         <section>
           <h2
             style={{ color: 'hsl(var(--foreground))' }}
-            className="text-xl font-bold mb-3"
+            className="text-lg sm:text-xl font-bold mb-3 break-words"
           >
             External Links
           </h2>
@@ -139,7 +139,7 @@ export default function ProjectDetailContent({
                   backgroundColor: 'hsl(var(--secondary))',
                   color: 'hsl(var(--secondary-foreground))',
                 }}
-                className="inline-flex items-center px-5 py-3 rounded font-medium text-sm border hover:bg-opacity-90 transition-colors"
+                className="inline-flex items-center px-5 py-3 rounded font-medium text-sm border hover:bg-opacity-90 transition-colors break-words"
               >
                 <span className="mr-3">GitHub</span>
                 {/* Simple GitHub icon */}
@@ -157,7 +157,7 @@ export default function ProjectDetailContent({
                   backgroundColor: 'hsl(var(--secondary))',
                   color: 'hsl(var(--secondary-foreground))',
                 }}
-                className="inline-flex items-center px-5 py-3 rounded font-medium text-sm border hover:bg-opacity-90 transition-colors"
+                className="inline-flex items-center px-5 py-3 rounded font-medium text-sm border hover:bg-opacity-90 transition-colors break-words"
               >
                 <span className="mr-3">Live Demo</span>
                 {/* Simple external link icon */}
@@ -174,7 +174,7 @@ export default function ProjectDetailContent({
           <section>
             <h2
               style={{ color: 'hsl(var(--foreground))' }}
-              className="text-xl font-bold mb-3"
+              className="text-lg sm:text-xl font-bold mb-3 break-words"
             >
               Related Projects
             </h2>

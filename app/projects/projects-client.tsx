@@ -23,8 +23,8 @@ export default function ProjectsClient() {
   return (
     <>
       <header className="mb-12">
-        <h1 className="text-4xl font-bold mb-4">Projects</h1>
-        <p className="text-lg text-muted-foreground">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4">Projects</h1>
+        <p className="text-base sm:text-lg text-muted-foreground">
           Explore professional, personal, and engineering-lab projects with filtering by category.
         </p>
       </header>

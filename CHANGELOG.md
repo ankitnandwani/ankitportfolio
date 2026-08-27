@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.63] - 2026-08-30
+- Completed M08.08: Implement mobile layout adaptation (updated ProjectCard, ProjectList, FilterBar, project detail page, and project index page for mobile responsiveness)
+
 ## [0.1.62] - 2026-08-29
 - Completed M08.07: Implement filtering and categories (`src/components/projects/FilterBar.tsx` and updated `app/projects/projects-client.tsx` to use FilterBar)
 
