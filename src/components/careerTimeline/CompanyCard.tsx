@@ -4,18 +4,10 @@ import React, { useState } from 'react';
 import { Card } from '@/src/components/ui/Card';
 import { useTheme } from '@/design/themeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CareerTimelineEntry } from '@/src/data/careerTimeline';
 
 interface CompanyCardProps {
-  entry: {
-    company: string;
-    role: string;
-    startDate: string;
-    endDate: string | null;
-    domain: string;
-    responsibilities: string[];
-    technologies: string[];
-    notableProjects: string[];
-  };
+  entry: CareerTimelineEntry;
   index: number;
 }
 
@@ -26,7 +18,7 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
   const [expanded, setExpanded] = useState(false);
 
   const textColor = tokens.colors.text;
-  const mutedTextColor = tokens.colors.text; // Could adjust opacity
+  const mutedTextColor = tokens.colors.text;
   const bgColor = tokens.colors.background;
   const surfaceColor = tokens.colors.surface;
 
@@ -58,13 +50,13 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
   return (
     <Card
       elevation="md"
-      className="w-full max-w-xl p-6"
+      className="w-full max-w-full md:max-w-3xl"
       style={{ 
         backgroundColor: bgColor,
         borderLeft: `4px solid ${tokens.colors.primary}`,
       }}
     >
-      {/* Header - always visible, clickable to toggle */}
+      {/* Header - always visible, clickable to toggle with minimum 48px touch target */}
       <div 
         onClick={toggleExpanded}
         onKeyDown={handleKeyDown}
@@ -72,43 +64,48 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
         role="button"
         aria-expanded={expanded}
         aria-controls={`company-card-details-${index}`}
-        className="flex items-center justify-between p-4 mb-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+        className="flex items-center justify-between p-3 sm:p-4 min-h-[48px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md select-none transition-colors"
       >
-        <div>
+        <div className="flex-1 pr-2 min-w-0">
           <h3 
             style={{ color: textColor }}
-            className="text-xl font-bold mb-1"
+            className="text-lg sm:text-xl font-bold mb-1 leading-snug break-words"
           >
             {entry.role}
           </h3>
           <p 
             style={{ color: mutedTextColor }}
-            className="text-sm"
+            className="text-xs sm:text-sm font-medium leading-normal break-words opacity-90"
           >
             {entry.company} · {entry.domain}
           </p>
           <p 
             style={{ color: mutedTextColor }}
-            className="text-xs mt-1"
+            className="text-xs mt-1 leading-normal opacity-75"
           >
             {startDate} – {endDate}
           </p>
         </div>
-        {/* Expand/Collapse Icon */}
-        <span 
-          style={{ 
-            color: textColor,
-            transform: expanded ? 'rotate(180deg)' : 'rotate(0)',
-          }}
-          className="ml-4 transition-transform duration-300"
+        {/* Expand/Collapse Icon with 48x48 touch target container */}
+        <div 
+          className="flex-shrink-0 min-w-[48px] min-h-[48px] flex items-center justify-center -mr-1 sm:-mr-2"
+          aria-hidden="true"
         >
-          {/* Using a simple chevron icon (can be replaced with a proper icon later) */}
-          {expanded ? '▲' : '▼'}
-        </span>
+          <span 
+            style={{ 
+              color: tokens.colors.primary,
+              display: 'inline-block',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+            className="text-sm font-bold transition-transform duration-300"
+          >
+            ▼
+          </span>
+        </div>
       </div>
 
       {/* Collapsible Content with animation */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {expanded && (
           <motion.div
             key="details"
@@ -119,19 +116,19 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
             transition={reducedMotion ? { duration: 0 } : { duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="p-4 border-t border-primary/20">
+            <div className="p-3 sm:p-4 md:p-5 border-t border-zinc-200 dark:border-zinc-800 space-y-4">
               {/* Responsibilities */}
               {entry.responsibilities.length > 0 && (
-                <div className="mb-4">
+                <div>
                   <h4
                     style={{ color: textColor }}
-                    className="text-lg font-medium mb-2"
+                    className="text-sm sm:text-base font-semibold mb-2"
                   >
                     Responsibilities
                   </h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm">
+                  <ul className="list-disc list-inside space-y-1.5 text-xs sm:text-sm leading-relaxed">
                     {entry.responsibilities.map((resp, i) => (
-                      <li key={i} style={{ color: textColor }}>
+                      <li key={i} style={{ color: textColor }} className="break-words">
                         {resp}
                       </li>
                     ))}
@@ -141,14 +138,14 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
 
               {/* Technologies */}
               {entry.technologies.length > 0 && (
-                <div className="mb-4">
+                <div>
                   <h4
                     style={{ color: textColor }}
-                    className="text-lg font-medium mb-2"
+                    className="text-sm sm:text-base font-semibold mb-2"
                   >
                     Technologies
                   </h4>
-                  <div className="flex flex-wrap gap-2 text-sm">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 text-xs sm:text-sm">
                     {entry.technologies.map((tech, i) => (
                       <span
                         key={i}
@@ -156,7 +153,7 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
                           backgroundColor: surfaceColor,
                           color: textColor,
                         }}
-                        className="px-3 py-1 rounded font-medium"
+                        className="px-2.5 py-1 sm:px-3 sm:py-1 rounded font-medium text-xs sm:text-sm break-words border border-zinc-200 dark:border-zinc-700"
                       >
                         {tech}
                       </span>
@@ -167,16 +164,16 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
 
               {/* Notable Projects */}
               {entry.notableProjects.length > 0 && (
-                <div className="mb-4">
+                <div>
                   <h4
                     style={{ color: textColor }}
-                    className="text-lg font-medium mb-2"
+                    className="text-sm sm:text-base font-semibold mb-2"
                   >
                     Notable Projects
                   </h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm">
+                  <ul className="list-disc list-inside space-y-1.5 text-xs sm:text-sm leading-relaxed">
                     {entry.notableProjects.map((proj, i) => (
-                      <li key={i} style={{ color: textColor }}>
+                      <li key={i} style={{ color: textColor }} className="break-words">
                         {proj}
                       </li>
                     ))}

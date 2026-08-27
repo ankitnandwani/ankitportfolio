@@ -1,6 +1,9 @@
-# Changelog",
+# Changelog
 
 All notable changes to this project will be documented in this file.
+
+## [0.1.45] - 2026-08-27
+- Completed M06.06: Implement mobile layout adaptation for career timeline and company cards
 
 ## [0.1.44] - 2026-08-27
 - Completed M06.07: Add animations for expand/collapse using Framer Motion
