@@ -2,8 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.43] - 2026-08-27
-- Completed M06.03: Create company card component with expandable details
+## [0.1.44] - 2026-08-27
+- Completed M06.07: Add animations for expand/collapse using Framer Motion
 
 ## [0.1.42] - 2026-08-27
 - Completed M06.02: Create timeline container component
