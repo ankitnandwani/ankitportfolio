@@ -51,14 +51,14 @@ According to PRD §12 and §116, the Achievements section showcases impactful en
 5. Ensure strict typing and JSDoc documentation for each property
 
 ## Acceptance Criteria
-- [ ] `src/data/achievements.ts` defines and exports `Achievement` interface and `AchievementsData` type
-- [ ] Interface includes `id`, `title`, `domain`, `company`, `problem`, `responsibility`, `approach`, `technologies`, `outcome`, and optional `featured`
-- [ ] TypeScript compiles cleanly without errors
-- [ ] Lint passes without new errors
+- [x] `src/data/achievements.ts` defines and exports `Achievement` interface and `AchievementsData` type
+- [x] Interface includes `id`, `title`, `domain`, `company`, `problem`, `responsibility`, `approach`, `technologies`, `outcome`, and optional `featured`
+- [x] TypeScript compiles cleanly without errors
+- [x] Lint passes without new errors
 
 ## Testing Requirements
-- [ ] TypeScript typecheck passes (`npm run typecheck`)
-- [ ] Lint passes (`npm run lint`)
+- [x] TypeScript typecheck passes (`npm run typecheck`)
+- [x] Lint passes (`npm run lint`)
 
 ## Security / Privacy Considerations
 - No private or confidential information included in type definitions or comments.

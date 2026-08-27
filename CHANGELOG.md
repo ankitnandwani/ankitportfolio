@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.49] - 2026-08-27
+- Completed M07.01: Define achievements data model (`src/data/achievements.ts`)
+
 ## [0.1.48] - 2026-08-27
 - Created task specifications for Milestone 7 – Achievements (M07.01 through M07.08)
 

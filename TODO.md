@@ -1,3 +1,3 @@
 # Immediate Next Actions
-
-Begin implementation of M07.01 (Define achievements data model)
+ 
+- Begin implementation of M07.02 (Populate achievements data from resume)
