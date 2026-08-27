@@ -57,15 +57,15 @@ According to PRD §12 and §116, achievements should be presented as cards rathe
 6. Create `src/components/achievements/index.ts` exporting `AchievementCard`
 
 ## Acceptance Criteria
-- [ ] `AchievementCard` component renders title, domain, company, responsibility, problem, approach, outcome, and tech tags
-- [ ] Uses design tokens and NeoPOP-inspired card styling
-- [ ] Theme switching (light/dark mode) works seamlessly
-- [ ] TypeScript compiles cleanly without errors
-- [ ] Lint passes without new errors
+- [x] `AchievementCard` component renders title, domain, company, responsibility, problem, approach, outcome, and tech tags
+- [x] Uses design tokens and NeoPOP-inspired card styling
+- [x] Theme switching (light/dark mode) works seamlessly
+- [x] TypeScript compiles cleanly without errors
+- [x] Lint passes without new errors
 
 ## Testing Requirements
-- [ ] TypeScript typecheck passes (`npm run typecheck`)
-- [ ] Lint passes (`npm run lint`)
+- [x] TypeScript typecheck passes (`npm run typecheck`)
+- [x] Lint passes (`npm run lint`)
 
 ## Security / Privacy Considerations
 - Component only renders structured data; no dangerous HTML or unescaped strings.

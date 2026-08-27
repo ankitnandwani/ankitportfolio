@@ -1,3 +1,3 @@
 # Immediate Next Actions
  
-- Begin implementation of M07.03 (Create achievement card component)
+- Begin implementation of M07.05 (Implement mobile layout adaptation)
