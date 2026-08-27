@@ -1,3 +1,3 @@
 # Immediate Next Actions
  
-- Begin implementation of M08.01 (Define project data model)
+- Begin implementation of M08.02 (Populate project data)

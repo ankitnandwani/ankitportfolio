@@ -18,10 +18,11 @@
 - M07.06 (Add animations using Framer Motion) completed
 - M07.07 (Ensure accessibility and keyboard navigation) completed
 - M07.08 (Integrate achievements section into homepage) completed
+- M08.01 (Define project data model) completed
 
 ## Next Task
 
-- Begin implementation of M08.01 (Define project data model)
+- Begin implementation of M08.02 (Populate project data)
 
 ## Completed (Milestone 01)
 
@@ -91,4 +92,9 @@
 - M07.04 – Create achievements section container (completed)
 - M07.05 – Implement mobile layout adaptation (completed)
 - M07.06 – Add animations using Framer Motion (completed)
+- M07.07 – Ensure accessibility and keyboard navigation (completed)
+- M07.08 – Integrate achievements section into homepage (completed)
+
+## Completed (Milestone 08)
+- M08.01 – Define project data model (completed)
 
