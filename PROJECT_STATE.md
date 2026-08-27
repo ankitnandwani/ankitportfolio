@@ -20,10 +20,11 @@
 - M07.08 (Integrate achievements section into homepage) completed
 - M08.01 (Define project data model) completed
 - M08.02 (Populate project data) completed
+- M08.03 (Create project card component) completed
 
 ## Next Task
 
-- Begin implementation of M08.03 (Create project card component)
+- Begin implementation of M08.04 (Create project list component)
 
 ## Completed (Milestone 01)
 
