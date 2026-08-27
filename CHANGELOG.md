@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.46] - 2026-08-27
+- Completed M06.08: Ensure accessibility and keyboard navigation for CareerTimeline and CompanyCard components
+
 ## [0.1.45] - 2026-08-27
 - Completed M06.06: Implement mobile layout adaptation for career timeline and company cards
 

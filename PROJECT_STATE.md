@@ -16,10 +16,11 @@
 - M06.03 completed: Create company card component
 - M06.07 completed: Add animations for expand/collapse using Framer Motion
 - M06.06 completed: Implement mobile layout adaptation
+- M06.08 completed: Ensure accessibility and keyboard navigation
 
 ## Next Task
 
-- Begin implementation of M06.08 (Ensure accessibility and keyboard navigation)
+- Begin implementation of M06.05 (Integrate timeline into homepage)
 
 ## Completed (Milestone 01)
 
@@ -79,3 +80,4 @@
 - M06.04 – Populate career timeline data from resume (completed)
 - M06.07 – Add animations for expand/collapse using Framer Motion (completed)
 - M06.06 – Implement mobile layout adaptation (completed)
+- M06.08 – Ensure accessibility and keyboard navigation (completed)

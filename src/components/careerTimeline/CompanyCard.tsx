@@ -36,16 +36,18 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
 
   const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const toggleExpanded = () => {
-    setExpanded(!expanded);
+    setExpanded((prev) => !prev);
   };
 
-  // Handle keyboard events (Enter or Space)
+  // Handle keyboard events (Escape to close when expanded)
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === 'Escape' && expanded) {
       e.preventDefault();
-      toggleExpanded();
+      setExpanded(false);
     }
   };
+
+  const detailsId = `company-card-details-${index}`;
 
   return (
     <Card
@@ -56,15 +58,15 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
         borderLeft: `4px solid ${tokens.colors.primary}`,
       }}
     >
-      {/* Header - always visible, clickable to toggle with minimum 48px touch target */}
-      <div 
+      {/* Header - semantic button with accessible name, state, and minimum 48px touch target */}
+      <button
+        type="button"
         onClick={toggleExpanded}
         onKeyDown={handleKeyDown}
-        tabIndex={0}
-        role="button"
         aria-expanded={expanded}
-        aria-controls={`company-card-details-${index}`}
-        className="flex items-center justify-between p-3 sm:p-4 min-h-[48px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md select-none transition-colors"
+        aria-controls={detailsId}
+        aria-label={`${expanded ? 'Collapse' : 'Expand'} details for ${entry.role} at ${entry.company}`}
+        className="w-full text-left flex items-center justify-between p-3 sm:p-4 min-h-[48px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary rounded-md select-none transition-colors"
       >
         <div className="flex-1 pr-2 min-w-0">
           <h3 
@@ -102,14 +104,16 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
             ▼
           </span>
         </div>
-      </div>
+      </button>
 
       {/* Collapsible Content with animation */}
       <AnimatePresence initial={false}>
         {expanded && (
           <motion.div
             key="details"
-            id={`company-card-details-${index}`}
+            id={detailsId}
+            role="region"
+            aria-label={`Details for ${entry.role} at ${entry.company}`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -126,7 +130,10 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
                   >
                     Responsibilities
                   </h4>
-                  <ul className="list-disc list-inside space-y-1.5 text-xs sm:text-sm leading-relaxed">
+                  <ul 
+                    className="list-disc list-inside space-y-1.5 text-xs sm:text-sm leading-relaxed"
+                    aria-label={`Responsibilities at ${entry.company}`}
+                  >
                     {entry.responsibilities.map((resp, i) => (
                       <li key={i} style={{ color: textColor }} className="break-words">
                         {resp}
@@ -145,20 +152,24 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
                   >
                     Technologies
                   </h4>
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                  <ul 
+                    className="flex flex-wrap gap-1.5 sm:gap-2 text-xs sm:text-sm list-none p-0 m-0"
+                    aria-label={`Technologies used at ${entry.company}`}
+                  >
                     {entry.technologies.map((tech, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          backgroundColor: surfaceColor,
-                          color: textColor,
-                        }}
-                        className="px-2.5 py-1 sm:px-3 sm:py-1 rounded font-medium text-xs sm:text-sm break-words border border-zinc-200 dark:border-zinc-700"
-                      >
-                        {tech}
-                      </span>
+                      <li key={i}>
+                        <span
+                          style={{
+                            backgroundColor: surfaceColor,
+                            color: textColor,
+                          }}
+                          className="inline-block px-2.5 py-1 sm:px-3 sm:py-1 rounded font-medium text-xs sm:text-sm break-words border border-zinc-200 dark:border-zinc-700"
+                        >
+                          {tech}
+                        </span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
 
@@ -171,7 +182,10 @@ export const CompanyCard = ({ entry, index }: CompanyCardProps) => {
                   >
                     Notable Projects
                   </h4>
-                  <ul className="list-disc list-inside space-y-1.5 text-xs sm:text-sm leading-relaxed">
+                  <ul 
+                    className="list-disc list-inside space-y-1.5 text-xs sm:text-sm leading-relaxed"
+                    aria-label={`Notable projects at ${entry.company}`}
+                  >
                     {entry.notableProjects.map((proj, i) => (
                       <li key={i} style={{ color: textColor }} className="break-words">
                         {proj}
