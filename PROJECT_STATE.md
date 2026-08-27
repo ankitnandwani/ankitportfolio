@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task M05.03 completed; implementing M05.04
+- Task M05.04 completed; implementing M05.05
 
 ## Next Task
 
-- Begin implementation of M05.04
+- Begin implementation of M05.05
 
 ## Completed (Milestone 01)
 
@@ -64,3 +64,4 @@
 - M05.01 – Define professional snapshot data model (completed)
 - M05.02 – Create ProfessionalSnapshot component with metric cards (completed)
 - M05.03 – Add summary copy section (completed)
+- M05.04 – Add capability areas section (completed)

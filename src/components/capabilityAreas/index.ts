@@ -1,0 +1,1 @@
+export { CapabilityAreas } from './index.tsx';
