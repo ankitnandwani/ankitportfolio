@@ -19,10 +19,11 @@
 - M07.07 (Ensure accessibility and keyboard navigation) completed
 - M07.08 (Integrate achievements section into homepage) completed
 - M08.01 (Define project data model) completed
+- M08.02 (Populate project data) completed
 
 ## Next Task
 
-- Begin implementation of M08.02 (Populate project data)
+- Begin implementation of M08.03 (Create project card component)
 
 ## Completed (Milestone 01)
 
@@ -97,4 +98,5 @@
 
 ## Completed (Milestone 08)
 - M08.01 – Define project data model (completed)
+- M08.02 – Populate project data (completed)
 

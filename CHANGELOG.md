@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 - Created task specifications for Milestone 8 – Projects (M08.01 through M08.11)
 - Completed M08.01: Define project data model (`src/data/projects.ts`)
 
+## [0.1.57] - 2026-08-27
+- Completed M08.02: Populate project data (`src/data/projects.ts`)
+
 ## [0.1.55] - 2026-08-27
 - Completed M07.08: Integrate achievements section into homepage (`app/page.tsx`)
 
