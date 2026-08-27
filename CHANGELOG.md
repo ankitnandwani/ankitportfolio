@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.33] - 2026-08-27
+- Created task specifications for Milestone 5 – Professional Snapshot
+
 ## [0.1.32] - 2026-08-27
 - Integrated Hero component into app/page.tsx and performed final polishing (M04.07)
 
