@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-- Implementation
+- Planning
 
 ## Current Milestone
 
-- M07 – Achievements
+- M08 – Projects
 
 ## Status
 
@@ -17,10 +17,11 @@
 - M07.05 (Implement mobile layout adaptation) completed
 - M07.06 (Add animations using Framer Motion) completed
 - M07.07 (Ensure accessibility and keyboard navigation) completed
+- M07.08 (Integrate achievements section into homepage) completed
 
 ## Next Task
 
-- Begin implementation of M07.08 (Integrate achievements section into homepage)
+- Begin implementation of M08.01 (Define project data model)
 
 ## Completed (Milestone 01)
 

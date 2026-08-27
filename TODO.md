@@ -1,3 +1,3 @@
 # Immediate Next Actions
  
-- Begin implementation of M07.08 (Integrate achievements section into homepage)
+- Begin implementation of M08.01 (Define project data model)
