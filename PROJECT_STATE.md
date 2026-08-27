@@ -10,11 +10,11 @@
 
 ## Status
 
-- Task specification created / awaiting implementation
+- M06.01 completed: Define career timeline data model
 
 ## Next Task
 
-- Begin implementation of M06.01
+- Begin implementation of M06.04
 
 ## Completed (Milestone 01)
 
@@ -66,3 +66,6 @@
 - M05.03 – Add summary copy section (completed)
 - M05.04 – Add capability areas section (completed)
 - M05.05 – Integrate into homepage and ensure responsiveness (completed)
+
+## Completed (Milestone 06)
+- M06.01 – Define career timeline data model (completed)

@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.40] - 2026-08-27
+- Completed M06.01: Define career timeline data model
+
 ## [0.1.39] - 2026-08-27
 - Created task specifications for Milestone 6 – Career Timeline (M06.01 through M06.08)
 
