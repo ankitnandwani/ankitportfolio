@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
-import { useTheme } from '@/design/themeContext';
 
 export interface FilterBarOptions {
   label: string;
@@ -34,26 +34,47 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   options,
   className = '',
 }) => {
-  const { getThemeTokens } = useTheme();
-  const tokens = getThemeTokens();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _ = tokens.colors.primary;
+  // Hook to detect if user prefers reduced motion
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      setPrefersReducedMotion(event.matches);
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  const tapVariant = {
+    whileTap: { scale: 0.95, transition: { duration: 0.2 } },
+  };
 
   return (
     <div className={`flex flex-wrap gap-2 ${className}`}>
       {options.map((option) => {
         const isActive = activeFilter === option.value;
         return (
-          <Button
+          <motion.div
             key={option.value}
-            variant={isActive ? 'primary' : 'secondary'}
-            size="md"
-            onClick={() => onFilterChange(option.value)}
-            aria-pressed={isActive}
-            className="px-4 py-2"
+            whileTap={prefersReducedMotion ? undefined : tapVariant.whileTap}
           >
-            {option.label}
-          </Button>
+            <Button
+              variant={isActive ? 'primary' : 'secondary'}
+              size="md"
+              onClick={() => onFilterChange(option.value)}
+              aria-pressed={isActive}
+              className="px-4 py-2"
+            >
+              {option.label}
+            </Button>
+          </motion.div>
         );
       })}
     </div>

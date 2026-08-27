@@ -1,3 +1,3 @@
 # Immediate Next Actions
- 
-- Begin implementation of M08.09 (Add animations)
+
+- Begin implementation of M08.10 (Ensure accessibility and keyboard navigation)

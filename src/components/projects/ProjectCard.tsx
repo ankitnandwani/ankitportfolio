@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Card } from '@/src/components/ui/Card';
 import { useTheme } from '@/design/themeContext';
 import { Project } from '@/src/data/projects';
@@ -23,6 +24,24 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const { getThemeTokens } = useTheme();
   const tokens = getThemeTokens();
 
+  // Hook to detect if user prefers reduced motion
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      setPrefersReducedMotion(event.matches);
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
   const textColor = tokens.colors.text;
   const bgColor = tokens.colors.background;
   const surfaceColor = tokens.colors.surface;
@@ -31,8 +50,27 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   const borderColor = project.featured ? accentColor : primaryColor;
 
+  // Animation variants
+  const hoverVariant = {
+    whileHover: { 
+      scale: 1.02, 
+      transition: { duration: 0.2 } 
+    },
+    whileTap: { scale: 0.98 },
+  };
+
+  const focusVariant = {
+    whileFocus: { 
+      scale: 1.02, 
+      transition: { duration: 0.2 } 
+    },
+  };
+
   return (
-    <article
+    <motion.article
+      whileHover={prefersReducedMotion ? undefined : hoverVariant.whileHover}
+      whileTap={prefersReducedMotion ? undefined : hoverVariant.whileTap}
+      whileFocus={prefersReducedMotion ? undefined : focusVariant.whileFocus}
       className={`w-full flex flex-col justify-between p-4 sm:p-5 md:p-6 transition-all ${className}`}
     >
       <Card
@@ -201,6 +239,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         </div>
       </Card>
-    </article>
+    </motion.article>
   );
 };

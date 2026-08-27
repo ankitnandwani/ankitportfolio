@@ -1,3 +1,6 @@
+## [0.1.64] - 2026-08-30
+- Completed M08.09: Add animations using Framer Motion (updated ProjectCard, ProjectList, FilterBar)
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -119,7 +122,6 @@ All notable changes to this project will be documented in this file.
 ## [0.1.24] - 2026-08-26
 - Implemented SEO foundation (M03.06)
 - Added dynamic metadata generation for all routes
-- Implemented Open Graph and Twitter Card meta tags
 - Added JSON-LD structured data for Organization schema
 - Created sitemap.xml route handler
 - Created robots.txt route handler
