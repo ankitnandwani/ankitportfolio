@@ -31,7 +31,11 @@
 
 ## Next Task
 
-- Plan and define tasks for Milestone M09 – GitHub Integration
+- Implement M09.01: Define GitHub repository data model
+
+## Completed (Milestone 09)
+
+- M09.01 (Define GitHub repository data model) completed
 
 ## Completed (Milestone 01)
 

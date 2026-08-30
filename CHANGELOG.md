@@ -1,3 +1,6 @@
+## [0.1.67] - 2026-08-31
+- Completed M09.01: Define GitHub repository data model (created src/data/github.ts)
+
 ## [0.1.66] - 2026-08-30
 - Completed M08.11: Integrate featured projects section into homepage (created FeaturedProjects component, updated projects index.ts and app/page.tsx)
 

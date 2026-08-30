@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-- Plan and define tasks for Milestone M09 – GitHub Integration
+- Implement M09.02: Create GitHub service with caching
