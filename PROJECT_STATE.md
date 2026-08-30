@@ -31,11 +31,12 @@
 
 ## Next Task
 
-- Implement M09.01: Define GitHub repository data model
+- Implement M09.03: Extend ProjectCard to show GitHub metadata
 
 ## Completed (Milestone 09)
 
 - M09.01 (Define GitHub repository data model) completed
+- M09.02 (Create GitHub service with caching) completed
 
 ## Completed (Milestone 01)
 

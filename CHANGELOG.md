@@ -1,3 +1,6 @@
+## [0.1.68] - 2026-09-01
+- Completed M09.02: Create GitHub service with caching (created src/lib/githubService.ts, src/lib/types.ts)
+
 ## [0.1.67] - 2026-08-31
 - Completed M09.01: Define GitHub repository data model (created src/data/github.ts)
 
