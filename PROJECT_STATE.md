@@ -6,7 +6,7 @@
 
 ## Current Milestone
 
-- M08 – Projects
+- M09 – GitHub Integration
 
 ## Status
 
