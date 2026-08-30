@@ -31,12 +31,13 @@
 
 ## Next Task
 
-- Implement M09.03: Extend ProjectCard to show GitHub metadata
+- Implement M09.04: Implement loading states
 
 ## Completed (Milestone 09)
 
 - M09.01 (Define GitHub repository data model) completed
 - M09.02 (Create GitHub service with caching) completed
+- M09.03 (Extend ProjectCard to show GitHub metadata) completed
 
 ## Completed (Milestone 01)
 
@@ -121,4 +122,3 @@
 - M08.09 – Add animations using Framer Motion (completed)
 - M08.10 – Ensure accessibility and keyboard navigation (completed)
 - M08.11 – Integrate featured projects section into homepage (completed)
-

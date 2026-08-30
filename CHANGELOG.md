@@ -1,3 +1,6 @@
+## [0.1.69] - 2026-09-01
+- Completed M09.03: Extend ProjectCard to show GitHub metadata (updated src/components/projects/ProjectCard.tsx to fetch and display GitHub repo stats with loading and error states)
+
 ## [0.1.68] - 2026-09-01
 - Completed M09.02: Create GitHub service with caching (created src/lib/githubService.ts, src/lib/types.ts)
 
@@ -46,7 +49,7 @@ All notable changes to this project will be documented in this file.
 - Completed M07.08: Integrate achievements section into homepage (`app/page.tsx`)
 
 ## [0.1.54] - 2026-08-27
-- Completed M07.07: Ensure accessibility and keyboard navigation (`src/components/achievements/AchievementCard.tsx`)
+- Completed M07.07: Ensure accessibility and keyboard navigation (src/components/achievements/AchievementCard.tsx)
 
 ## [0.1.53] - 2026-08-27
 - Completed M07.06: Add animations using Framer Motion (`src/components/achievements/AchievementCard.tsx`, `src/components/achievements/AchievementsSection.tsx`)

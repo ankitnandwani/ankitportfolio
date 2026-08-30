@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { Card } from '@/src/components/ui/Card';
 import { useTheme } from '@/design/themeContext';
 import { Project } from '@/src/data/projects';
+import { fetchGitHubRepoData } from '@/src/lib/githubService';
+import type { GitHubRepoData } from '@/src/lib/types';
 
 export interface ProjectCardProps {
   /**
@@ -32,6 +34,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     return false;
   });
 
+  const [githubData, setGitHubData] = useState<GitHubRepoData | null>(null);
+  const [githubLoading, setGitHubLoading] = useState<boolean>(false);
+  const [githubError, setGitHubError] = useState<boolean>(false);
+
+  // Hook to detect if user prefers reduced motion
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -41,6 +48,30 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!project.githubUrl) {
+        setGitHubData(null);
+        setGitHubLoading(false);
+        setGitHubError(false);
+        return;
+      }
+      setGitHubLoading(true);
+      setGitHubError(false);
+      try {
+        const data = await fetchGitHubRepoData(project.githubUrl);
+        setGitHubData(data);
+      } catch (error) {
+        setGitHubError(true);
+        console.error('Error fetching GitHub repo data:', error);
+      } finally {
+        setGitHubLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [project.githubUrl]);
 
   const textColor = tokens.colors.text;
   const bgColor = tokens.colors.background;
@@ -197,6 +228,39 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               ))}
             </div>
           </div>
+
+          {/* GitHub Metadata */}
+          {githubLoading ? (
+            <p>Loading GitHub stats...</p>
+          ) : githubError ? (
+            <p>Error loading GitHub stats.</p>
+          ) : githubData ? (
+            <div className="mb-4">
+              <h4
+                style={{ color: textColor }}
+                className="text-xs font-bold uppercase tracking-wider mb-1"
+              >
+                GitHub Stats
+              </h4>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                <span
+                  style={{ backgroundColor: surfaceColor, color: textColor }}
+                  className="inline-block px-3 py-1.5 rounded font-medium text-xs border border-zinc-200 dark:border-zinc-700 break-words"
+                >
+                  ⭐ {githubData.stars} Stars
+                </span>
+                {githubData.language && (
+                  <span
+                    key="language"
+                    style={{ backgroundColor: surfaceColor, color: textColor }}
+                    className="inline-block px-3 py-1.5 rounded font-medium text-xs border border-zinc-200 dark:border-zinc-700 break-words"
+                  >
+                    {githubData.language}
+                  </span>
+                )}
+              </div>
+            </div>
+          ) : null}
 
           {/* GitHub and Live Demo links */}
           <div className="flex flex-wrap gap-3 mt-4">
