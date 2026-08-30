@@ -1,3 +1,6 @@
+## [0.1.66] - 2026-08-30
+- Completed M08.11: Integrate featured projects section into homepage (created FeaturedProjects component, updated projects index.ts and app/page.tsx)
+
 ## [0.1.65] - 2026-08-30
 - Completed M08.10: Ensure accessibility and keyboard navigation (updated ProjectCard, ProjectList, FilterBar, project detail page, and added sr-only utility class)
 

@@ -31,7 +31,7 @@
 
 ## Next Task
 
-- Begin implementation of M08.11 (Integrate featured projects section into homepage)
+- Plan and define tasks for Milestone M09 – GitHub Integration
 
 ## Completed (Milestone 01)
 
@@ -109,4 +109,11 @@
 - M08.02 – Populate project data (completed)
 - M08.03 – Create project card component (completed)
 - M08.04 – Create project list component (completed)
+- M08.05 – Create project index page (completed)
+- M08.06 – Create project detail page (completed)
+- M08.07 – Implement filtering and categories (completed)
+- M08.08 – Implement mobile layout adaptation (completed)
+- M08.09 – Add animations using Framer Motion (completed)
+- M08.10 – Ensure accessibility and keyboard navigation (completed)
+- M08.11 – Integrate featured projects section into homepage (completed)
 

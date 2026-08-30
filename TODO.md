@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-- Begin implementation of M08.11 (Integrate featured projects section into homepage)
+- Plan and define tasks for Milestone M09 – GitHub Integration

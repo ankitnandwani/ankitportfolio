@@ -4,6 +4,9 @@ import { Hero } from '@/src/components/hero';
 import { ProfessionalSection } from '@/src/components/professionalSection';
 import { CareerTimeline } from '@/src/components/careerTimeline';
 import { AchievementsSection } from '@/src/components/achievements';
+import { CapabilityAreas } from '@/src/components/capabilityAreas';
+import { FeaturedProjects } from '@/src/components/projects';
+import { capabilityAreasData } from '@/src/data/capabilityAreasData';
 
 export const metadata = {
   ...generateBaseMetadata('Home', 'Senior SDET / Automation Engineer Portfolio & AI Recruiter Assistant'),
@@ -26,6 +29,11 @@ export default function Home() {
           <ProfessionalSection className="mt-12" />
           <AchievementsSection className="mt-16" />
           <CareerTimeline className="mt-16" />
+          <CapabilityAreas
+            capabilities={capabilityAreasData.capabilities}
+            className="mt-16"
+          />
+          <FeaturedProjects className="mt-16" limit={3} />
         </main>
       </ResponsiveContainer>
     </div>
