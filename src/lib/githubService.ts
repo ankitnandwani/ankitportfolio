@@ -11,6 +11,7 @@ type CacheEntry = {
 
 const cache = new Map<string, CacheEntry>();
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const MAX_CACHE_SIZE = 100;
 
 /**
  * Parses a GitHub URL to extract owner and repo.
@@ -77,6 +78,26 @@ function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
 }
 
 /**
+ * Ensures the cache does not exceed MAX_CACHE_SIZE by removing the oldest entries.
+ */
+function enforceCacheSize() {
+  if (cache.size <= MAX_CACHE_SIZE) {
+    return;
+  }
+  // Convert to array of objects for sorting
+  const entries: { key: string; timestamp: number }[] = Array.from(cache.entries()).map(
+    ([key, value]) => ({ key, timestamp: value.timestamp })
+  );
+  // Sort by timestamp ascending (oldest first)
+  entries.sort((a, b) => a.timestamp - b.timestamp);
+  // Remove excess entries (oldest ones)
+  const excess = cache.size - MAX_CACHE_SIZE;
+  for (let i = 0; i < excess; i++) {
+    cache.delete(entries[i].key);
+  }
+}
+
+/**
  * Fetches repository data from the GitHub API with caching.
  * @param identifier Either a GitHub URL string or an object with `owner` and `repo`.
  * @returns A promise that resolves to the repository data or null on failure.
@@ -110,6 +131,9 @@ export async function fetchGitHubRepoData(
   // Check cache
   const cached = cache.get(cacheKey);
   if (cached && now - cached.timestamp < CACHE_TTL_MS) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[GitHub Cache] HIT for ${cacheKey}`);
+    }
     return cached.data;
   }
 
@@ -150,6 +174,10 @@ export async function fetchGitHubRepoData(
     };
 
     // Store in cache
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[GitHub Cache] MISS for ${cacheKey}`);
+    }
+    enforceCacheSize(); // Ensure we don't exceed limit before adding
     cache.set(cacheKey, {
       data: repoData,
       timestamp: now,

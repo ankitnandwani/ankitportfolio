@@ -1,77 +1,48 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/src/components/ui/Card';
-import { useTheme } from '@/design/themeContext';
 import { Project } from '@/src/data/projects';
 import { fetchGitHubRepoData } from '@/src/lib/githubService';
 import type { GitHubRepoData } from '@/src/lib/types';
+import { tokens as tokensObj } from '@/design/tokens';
 
-export interface ProjectCardProps {
+interface ProjectCardProps {
   /**
    * The project record to display.
    */
   project: Project;
+  /**
+   * Theme tokens for styling.
+   */
+  tokens: typeof tokensObj;
+  /**
+   * Whether the user prefers reduced motion.
+   */
+  prefersReducedMotion: boolean;
   /**
    * Optional additional className for styling.
    */
   className?: string;
 }
 
-export const ProjectCard: React.FC<ProjectCardProps> = ({
+export default async function ProjectCard({
   project,
+  tokens,
+  prefersReducedMotion,
   className = '',
-}) => {
-  const { getThemeTokens } = useTheme();
-  const tokens = getThemeTokens();
-
-  // Hook to detect if user prefers reduced motion
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}: ProjectCardProps) {
+  // Fetch GitHub data
+  let githubData: GitHubRepoData | null = null;
+  let githubError = false;
+  if (project.githubUrl) {
+    try {
+      const data = await fetchGitHubRepoData(project.githubUrl);
+      githubData = data;
+    } catch (error) {
+      githubError = true;
+      console.error('Error fetching GitHub repo data:', error);
     }
-    return false;
-  });
-
-  const [githubData, setGitHubData] = useState<GitHubRepoData | null>(null);
-  const [githubLoading, setGitHubLoading] = useState<boolean>(false);
-  const [githubError, setGitHubError] = useState<boolean>(false);
-
-  // Hook to detect if user prefers reduced motion
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleChange = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!project.githubUrl) {
-        setGitHubData(null);
-        setGitHubLoading(false);
-        setGitHubError(false);
-        return;
-      }
-      setGitHubLoading(true);
-      setGitHubError(false);
-      try {
-        const data = await fetchGitHubRepoData(project.githubUrl);
-        setGitHubData(data);
-      } catch (error) {
-        setGitHubError(true);
-        console.error('Error fetching GitHub repo data:', error);
-      } finally {
-        setGitHubLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [project.githubUrl]);
+  }
 
   const textColor = tokens.colors.text;
   const bgColor = tokens.colors.background;
@@ -230,9 +201,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
 
           {/* GitHub Metadata */}
-          {githubLoading ? (
-            <p>Loading GitHub stats...</p>
-          ) : githubError ? (
+          {githubError ? (
             <p>Error loading GitHub stats.</p>
           ) : githubData ? (
             <div className="mb-4">
@@ -309,4 +278,4 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       </Card>
     </motion.article>
   );
-};
+}

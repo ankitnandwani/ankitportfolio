@@ -1,3 +1,9 @@
+## [0.1.71] - 2026-09-01
+- Completed M09.05: Ensure caching reduces API calls (updated src/lib/githubService.ts to add cache size limit, cache hit/miss logging in development, and enforce cache size before storing)
+
+## [0.1.70] - 2026-09-01
+- Completed M09.04: Implement loading states (updated src/components/projects/ProjectList.tsx to wrap ProjectCard in Suspense with loading fallback, converted ProjectCard to async server component, removed client-side loading state, passed tokens and prefersReducedMotion props, added loading fallback UI)
+
 ## [0.1.69] - 2026-09-01
 - Completed M09.03: Extend ProjectCard to show GitHub metadata (updated src/components/projects/ProjectCard.tsx to fetch and display GitHub repo stats with loading and error states)
 
@@ -43,16 +49,16 @@ All notable changes to this project will be documented in this file.
 - Completed M08.03: Create project card component (`src/components/projects/ProjectCard.tsx`)
 
 ## [0.1.59] - 2026-08-27
-- Completed M08.04: Create project list component (`src/components/projects/ProjectList.tsx`)
+- Completed M09.04: Create project list component (`src/components/projects/ProjectList.tsx`)
 
 ## [0.1.55] - 2026-08-27
-- Completed M07.08: Integrate achievements section into homepage (`app/page.tsx`)
+- Completed M07.08: Integrate achievements section into homepage (app/page.tsx)
 
 ## [0.1.54] - 2026-08-27
 - Completed M07.07: Ensure accessibility and keyboard navigation (src/components/achievements/AchievementCard.tsx)
 
 ## [0.1.53] - 2026-08-27
-- Completed M07.06: Add animations using Framer Motion (`src/components/achievements/AchievementCard.tsx`, `src/components/achievements/AchievementsSection.tsx`)
+- Completed M07.06: Add animations for expand/collapse using Framer Motion (`src/components/achievements/AchievementCard.tsx`, `src/components/achievements/AchievementsSection.tsx`)
 
 ## [0.1.52] - 2026-08-27
 - Completed M07.05: Implement mobile layout adaptation (`src/components/achievements/AchievementsSection.tsx`)
@@ -131,7 +137,7 @@ All notable changes to this project will be documented in this file.
 ## [0.1.26] - 2026-08-26
 - Implemented Hero typography and basic layout (M04.01)
 
-## [0.1.25] - 2026-08-26
+## [0.1.25] - 2026-08-27
 - Created task specifications for Milestone 4 – Hero Section
 
 ## [0.1.24] - 2026-08-26

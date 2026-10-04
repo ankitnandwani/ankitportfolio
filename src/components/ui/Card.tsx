@@ -1,3 +1,5 @@
+'use client';
+
 import React, { forwardRef, ReactNode } from 'react';
 // @ts-expect-error TS7016
 import { Components } from '@cred/neopop-web';
