@@ -31,12 +31,13 @@
 
 ## Next Task
 
-- Implement M09.06: Add fallback data
+- Implement M09.07: Update project data population
 
 ## Completed (Milestone 09)
 
 - M09.04 (Implement loading states) completed
 - M09.05 (Ensure caching reduces API calls) completed
+- M09.06 (Add fallback data) completed
 - M09.01 (Define GitHub repository data model) completed
 - M09.02 (Create GitHub service with caching) completed
 - M09.03 (Extend ProjectCard to show GitHub metadata) completed

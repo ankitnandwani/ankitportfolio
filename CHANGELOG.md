@@ -1,3 +1,6 @@
+## [0.1.72] - 2026-09-01
+- Completed M09.06: Add fallback data (updated src/components/projects/ProjectCard.tsx to show placeholder UI for failed GitHub requests, and updated design/tokens.ts to add mutedForeground color)
+
 ## [0.1.71] - 2026-09-01
 - Completed M09.05: Ensure caching reduces API calls (updated src/lib/githubService.ts to add cache size limit, cache hit/miss logging in development, and enforce cache size before storing)
 

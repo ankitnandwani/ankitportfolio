@@ -218,18 +218,40 @@ export default async function ProjectCard({
                 >
                   ⭐ {githubData.stars} Stars
                 </span>
-                {githubData.language && (
-                  <span
-                    key="language"
-                    style={{ backgroundColor: surfaceColor, color: textColor }}
-                    className="inline-block px-3 py-1.5 rounded font-medium text-xs border border-zinc-200 dark:border-zinc-700 break-words"
-                  >
-                    {githubData.language}
-                  </span>
-                )}
+                <span
+                  key="language"
+                  style={{ backgroundColor: surfaceColor, color: textColor }}
+                  className="inline-block px-3 py-1.5 rounded font-medium text-xs border border-zinc-200 dark:border-zinc-700 break-words"
+                >
+                  {githubData.language ?? '--'}
+                </span>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="mb-4">
+              <h4
+                style={{ color: textColor }}
+                className="text-xs font-bold uppercase tracking-wider mb-1"
+              >
+                GitHub Stats
+              </h4>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                <span
+                  style={{ backgroundColor: surfaceColor, color: tokens.colors.mutedForeground }}
+                  className="inline-block px-3 py-1.5 rounded font-medium text-xs border border-zinc-200 dark:border-zinc-700 break-words"
+                >
+                  ⭐ -- Stars
+                </span>
+                <span
+                  key="language"
+                  style={{ backgroundColor: surfaceColor, color: tokens.colors.mutedForeground }}
+                  className="inline-block px-3 py-1.5 rounded font-medium text-xs border border-zinc-200 dark:border-zinc-700 break-words"
+                >
+                  -- Language
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* GitHub and Live Demo links */}
           <div className="flex flex-wrap gap-3 mt-4">

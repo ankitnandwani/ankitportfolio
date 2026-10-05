@@ -4,6 +4,7 @@ export const tokens = {
     background: "#FFFFFF",
     surface: "#F5F5F5",
     text: "#212121",
+    mutedForeground: "#757575", // muted text for placeholders and disabled states
     accent: "#FF6F00", // vibrant orange for accent
   },
   spacing: {
