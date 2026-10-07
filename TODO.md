@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-- Implement M09.07: Update project data population
+- Implement M09.08: Integrate with project list and detail

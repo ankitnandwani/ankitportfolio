@@ -1,3 +1,6 @@
+## [0.1.73] - 2026-10-08
+- Completed M09.07: Update project data population (updated src/data/projects.ts to add githubUrl fields for projects with verified GitHub repositories)
+
 ## [0.1.72] - 2026-09-01
 - Completed M09.06: Add fallback data (updated src/components/projects/ProjectCard.tsx to show placeholder UI for failed GitHub requests, and updated design/tokens.ts to add mutedForeground color)
 

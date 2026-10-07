@@ -99,6 +99,7 @@ export const projectsData: ProjectData = [
     whyBuilt: 'To prevent pricing discrepancies and latency regressions in mission-critical logistics operations by providing continuous automated validation of freight rate APIs.',
     whatLearned: 'Expertise in designing scalable test automation frameworks, integrating with CI/CD pipelines, and ensuring high-throughput API reliability.',
     architecture: 'Modular REST API test automation suites with containerized execution, integrated into GitLab CI pipelines, utilizing Docker for isolation and Kafka for asynchronous verification.',
+    githubUrl: 'https://github.com/ankitnandwani/testapiautomation',
     featured: true,
   },
   {
@@ -110,6 +111,7 @@ export const projectsData: ProjectData = [
     whyBuilt: 'To address disconnected automation tools and manual test execution that slowed release cycles and caused inconsistent test reporting across distributed enterprise services.',
     whatLearned: 'Experience in building BDD-based test frameworks, implementing parallel execution pipelines, and standardizing test reporting for multi-tier systems.',
     architecture: 'Scalable test automation solution utilizing BDD principles, API test suites, and parallel execution pipelines for distributed cloud services.',
+    githubUrl: 'https://github.com/ankitnandwani/ReqTestAPIAutomation',
     featured: true,
   },
   {
@@ -143,6 +145,7 @@ export const projectsData: ProjectData = [
     whyBuilt: 'To evaluate and optimize trading strategies before live deployment.',
     whatLearned: 'Knowledge of financial markets, statistical analysis, and efficient data processing techniques.',
     architecture: 'Event-driven backtesting engine with strategy interface, data handler, portfolio manager, and execution simulator.',
+    githubUrl: 'https://github.com/ankitnandwani/AlgoTrading',
     featured: false,
   },
   {
@@ -165,6 +168,7 @@ export const projectsData: ProjectData = [
     whyBuilt: 'To automate options trading processes and reduce manual intervention in financial markets.',
     whatLearned: 'Knowledge of options pricing, risk management, and integration with brokerage APIs.',
     architecture: 'Rule-based engine with market data feed, strategy executor, risk management module, and order management system.',
+    githubUrl: 'https://github.com/ankitnandwani/AmanOption',
     featured: false,
   },
   {
@@ -176,6 +180,7 @@ export const projectsData: ProjectData = [
     whyBuilt: 'To enhance the effectiveness of LLMs through systematic prompt engineering techniques.',
     whatLearned: 'Expertise in LLM behavior, prompt design principles, and iterative optimization methodologies.',
     architecture: 'Prompt testing interface, variation generator, result analyzer, and optimization algorithms.',
+    githubUrl: 'https://github.com/ankitnandwani/Stanford-Machine-Learning',
     featured: false,
   },
 ];
