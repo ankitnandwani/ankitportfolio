@@ -31,7 +31,7 @@
 
 ## Next Task
 
-- Implement M09.09: Add typing and tests for GitHub service
+- Implement M09.10: Verify no GitHub call on every request
 
 ## Completed (Milestone 09)
 
@@ -43,6 +43,7 @@
 - M09.02 (Create GitHub service with caching) completed
 - M09.03 (Extend ProjectCard to show GitHub metadata) completed
 - M09.08 (Integrate with project list and detail) completed
+- M09.09 (Add typing and tests for GitHub service) completed
 
 ## Completed (Milestone 01)
 

@@ -1,3 +1,6 @@
+## [0.1.75] - 2026-10-08
+- Completed M09.09: Add typing and tests for GitHub service (updated src/lib/githubService.ts with input type and JSDoc, created src/lib/githubService.test.ts placeholder)
+
 ## [0.1.74] - 2026-10-08
 - Completed M09.08: Integrate with project list and detail (updated app/projects/[slug]/project-detail-content.tsx to wrap ProjectCard in Suspense with loading fallback)
 

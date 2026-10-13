@@ -38,3 +38,8 @@ export interface GitHubRepoData {
    */
   subscribers_count?: number;
 }
+
+/**
+ * Identifier for a GitHub repository, either as a URL string or as an object with owner and repo.
+ */
+export type GitHubRepoIdentifier = string | { owner: string; repo: string };

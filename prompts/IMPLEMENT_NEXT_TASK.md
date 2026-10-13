@@ -91,5 +91,3 @@ When finished, STOP and report:
 - Current milestone progress
 - Next unfinished task
 - Any issues, decisions, or blockers
-
-Do not implement the next task automatically.

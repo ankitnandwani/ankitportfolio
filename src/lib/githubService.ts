@@ -1,5 +1,5 @@
 import { env } from './env';
-import type { GitHubRepoData } from './types';
+import type { GitHubRepoData, GitHubRepoIdentifier } from './types';
 
 /**
  * Simple in-memory cache with TTL.
@@ -99,11 +99,13 @@ function enforceCacheSize() {
 
 /**
  * Fetches repository data from the GitHub API with caching.
- * @param identifier Either a GitHub URL string or an object with `owner` and `repo`.
- * @returns A promise that resolves to the repository data or null on failure.
+ * @param identifier - Either a GitHub URL string or an object with `owner` and `repo`.
+ * @returns A promise that resolves to the repository data (stars, forks, language, etc.) or null on failure.
+ * @note The function uses the `GITHUB_TOKEN` environment variable for authentication.
+ * @note Results are cached for 1 hour to prevent redundant requests.
  */
 export async function fetchGitHubRepoData(
-  identifier: string | { owner: string; repo: string }
+  identifier: GitHubRepoIdentifier
 ): Promise<GitHubRepoData | null> {
   let owner: string;
   let repo: string;
