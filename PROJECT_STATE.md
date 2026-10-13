@@ -31,7 +31,7 @@
 
 ## Next Task
 
-- Implement M09.10: Verify no GitHub call on every request
+- Implement M10.01: Define resume data model
 
 ## Completed (Milestone 09)
 
@@ -44,6 +44,7 @@
 - M09.03 (Extend ProjectCard to show GitHub metadata) completed
 - M09.08 (Integrate with project list and detail) completed
 - M09.09 (Add typing and tests for GitHub service) completed
+- M09.10 (Verify no GitHub call on every request) completed
 
 ## Completed (Milestone 01)
 

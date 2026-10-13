@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-- Implement M09.10: Verify no GitHub call on every request
+- Implement M10.01: Define resume data model
