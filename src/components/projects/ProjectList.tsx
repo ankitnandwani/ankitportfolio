@@ -6,6 +6,21 @@ import { useTheme } from '@/design/themeContext';
 import { Project } from '@/src/data/projects';
 import ProjectCard from './ProjectCard';
 
+// Loading fallback for ProjectCard while waiting for GitHub data
+const ProjectCardLoading = () => (
+  <div className="h-96 w-full bg-muted rounded-lg p-6 flex flex-col space-x-4">
+    <div className="h-6 w-20 bg-muted-foreground/20 rounded"></div>
+    <div className="h-4 w-36 bg-muted-foreground/20 rounded mt-2"></div>
+    <div className="h-4 w-24 bg-muted-foreground/20 rounded mt-1"></div>
+    <div className="h-4 w-12 bg-muted-foreground/20 rounded mt-1"></div>
+    {/* Add more placeholder lines to mimic the card's content */}
+    <div className="h-4 w-32 bg-muted-foreground/20 rounded mt-2"></div>
+    <div className="h-4 w-20 bg-muted-foreground/20 rounded mt-1"></div>
+    <div className="h-4 w-16 bg-muted-foreground/20 rounded mt-1"></div>
+  </div>
+);
+
+
 export interface ProjectListProps {
   /**
    * Array of projects to display.
@@ -75,20 +90,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
-
-  // Loading fallback for ProjectCard while waiting for GitHub data
-  const ProjectCardLoading = () => (
-    <div className="h-96 w-full bg-muted rounded-lg p-6 flex flex-col space-x-4">
-      <div className="h-6 w-20 bg-muted-foreground/20 rounded"></div>
-      <div className="h-4 w-36 bg-muted-foreground/20 rounded mt-2"></div>
-      <div className="h-4 w-24 bg-muted-foreground/20 rounded mt-1"></div>
-      <div className="h-4 w-12 bg-muted-foreground/20 rounded mt-1"></div>
-      {/* Add more placeholder lines to mimic the card's content */}
-      <div className="h-4 w-32 bg-muted-foreground/20 rounded mt-2"></div>
-      <div className="h-4 w-20 bg-muted-foreground/20 rounded mt-1"></div>
-      <div className="h-4 w-16 bg-muted-foreground/20 rounded mt-1"></div>
-    </div>
-  );
 
   // Apply filters
   let filteredProjects = projects;

@@ -31,7 +31,7 @@
 
 ## Next Task
 
-- Implement M09.08: Integrate with project list and detail
+- Implement M09.09: Add typing and tests for GitHub service
 
 ## Completed (Milestone 09)
 
@@ -42,6 +42,7 @@
 - M09.01 (Define GitHub repository data model) completed
 - M09.02 (Create GitHub service with caching) completed
 - M09.03 (Extend ProjectCard to show GitHub metadata) completed
+- M09.08 (Integrate with project list and detail) completed
 
 ## Completed (Milestone 01)
 
