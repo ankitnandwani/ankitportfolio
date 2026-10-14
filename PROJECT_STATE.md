@@ -10,13 +10,14 @@
 
 ## Status
 
-- Task specifications created for M10.03 through M10.11 (see tasks/M10/).
+- Task specifications created for M10.04 through M10.11 (see tasks/M10/).
 - M10.01 (Define resume data model) completed.
 - M10.02 (Create resume page route and layout) completed.
+- M10.03 (Create resume summary component and integrate summary data) completed.
 
 ## Next Task
 
-- Implement M10.03: Create resume summary component and integrate summary data
+- Implement M10.04: Create resume experience component and integrate experience data (from career timeline)
 
 ## Completed (Milestone 01)
 

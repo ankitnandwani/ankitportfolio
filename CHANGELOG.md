@@ -1,3 +1,6 @@
+## [0.1.80] - 2026-10-15
+- Completed M10.03: Create resume summary component and integrate summary data (created src/components/resume/ResumeSummary.tsx; updated app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
+
 ## [0.1.79] - 2026-10-15
 - Completed M10.02: Create resume page route and layout (created app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
 
