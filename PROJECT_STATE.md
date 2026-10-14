@@ -6,7 +6,7 @@
 
 ## Current Milestone
 
-- M09 – GitHub Integration
+- M10 – Resume
 
 ## Status
 
@@ -31,7 +31,7 @@
 
 ## Next Task
 
-- Implement M10.01: Define resume data model
+- Implement M10.02: Create interactive resume component
 
 ## Completed (Milestone 09)
 
@@ -45,6 +45,10 @@
 - M09.08 (Integrate with project list and detail) completed
 - M09.09 (Add typing and tests for GitHub service) completed
 - M09.10 (Verify no GitHub call on every request) completed
+
+## Completed (Milestone 10)
+
+- M10.01 (Define resume data model) completed
 
 ## Completed (Milestone 01)
 

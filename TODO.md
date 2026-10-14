@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-- Implement M10.01: Define resume data model
+- Implement M10.02: Create interactive resume component
