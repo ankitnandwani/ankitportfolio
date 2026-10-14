@@ -1,3 +1,6 @@
+## [0.1.79] - 2026-10-15
+- Completed M10.02: Create resume page route and layout (created app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
+
 ## [0.1.78] - 2026-10-14
 - Created task specifications for Milestone 10 (Resume): M10.02 through M10.11.
 - Updated PROJECT_STATE.md and TODO.md to reflect planning status.
