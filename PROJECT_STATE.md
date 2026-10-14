@@ -10,45 +10,12 @@
 
 ## Status
 
-- M07.01 (Define achievements data model) completed
-- M07.02 (Populate achievements data from resume) completed
-- M07.03 (Create achievement card component) completed
-- M07.04 (Create achievements section container) completed
-- M07.05 (Implement mobile layout adaptation) completed
-- M07.06 (Add animations using Framer Motion) completed
-- M07.07 (Ensure accessibility and keyboard navigation) completed
-- M07.08 (Integrate achievements section into homepage) completed
-- M08.01 (Define project data model) completed
-- M08.02 (Populate project data) completed
-- M08.03 (Create project card component) completed
-- M08.04 (Create project list component) completed
-- M08.05 (Create project index page) completed
-- M08.06 (Create project detail page) completed
-- M08.07 (Implement filtering and categories) completed
-- M08.08 (Implement mobile layout adaptation) completed
-- M08.09 (Add animations using Framer Motion) completed
-- M08.10 (Ensure accessibility and keyboard navigation) completed
+- Task specifications created for M10.02 through M10.11 (see tasks/M10/).
+- M10.01 (Define resume data model) completed.
 
 ## Next Task
 
-- Implement M10.02: Create interactive resume component
-
-## Completed (Milestone 09)
-
-- M09.04 (Implement loading states) completed
-- M09.05 (Ensure caching reduces API calls) completed
-- M09.06 (Add fallback data) completed
-- M09.07 (Update project data population) completed
-- M09.01 (Define GitHub repository data model) completed
-- M09.02 (Create GitHub service with caching) completed
-- M09.03 (Extend ProjectCard to show GitHub metadata) completed
-- M09.08 (Integrate with project list and detail) completed
-- M09.09 (Add typing and tests for GitHub service) completed
-- M09.10 (Verify no GitHub call on every request) completed
-
-## Completed (Milestone 10)
-
-- M10.01 (Define resume data model) completed
+- Implement M10.02: Create resume page route and layout
 
 ## Completed (Milestone 01)
 

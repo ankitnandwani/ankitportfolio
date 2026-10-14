@@ -1,3 +1,7 @@
+## [0.1.78] - 2026-10-14
+- Created task specifications for Milestone 10 (Resume): M10.02 through M10.11.
+- Updated PROJECT_STATE.md and TODO.md to reflect planning status.
+
 ## [0.1.77] - 2026-10-08
 - Completed M10.01: Define resume data model (created src/data/education.ts, src/data/certifications.ts, src/data/skills.ts; updated PROJECT_STATE.md and TODO.md)
 
