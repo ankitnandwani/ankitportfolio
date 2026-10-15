@@ -1,8 +1,13 @@
 import { z } from "zod";
 
-// Define the schema for required environment variables
-const envSchema = z.object({
+// Variables that must be present in every environment (server and browser).
+const publicEnvSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().nonempty(),
+});
+
+// Server-only secrets. These are never exposed to the browser, so they are
+// only validated when running on the server.
+const serverEnvSchema = publicEnvSchema.extend({
   GEMINI_API_KEY: z.string().nonempty(),
   GEMINI_MODEL: z.string().nonempty(),
   SUPABASE_URL: z.string().nonempty(),
@@ -16,13 +21,25 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string().nonempty(),
 });
 
-// Parse and validate process.env against the schema
-const parsed = envSchema.safeParse(process.env);
+export type Env = z.infer<typeof serverEnvSchema>;
+
+const isServer = typeof window === "undefined";
+
+// On the client only public variables exist, so validate just those.
+const parsed = isServer
+  ? serverEnvSchema.safeParse(process.env)
+  : publicEnvSchema.safeParse({
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+    });
 
 if (!parsed.success) {
-  const missing = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
+  const missing = parsed.error.issues
+    .map((issue) => issue.path.join("."))
+    .join(", ");
   throw new Error(`Missing or invalid environment variable(s): ${missing}`);
 }
 
-// Export a typed env object for use throughout the codebase
-export const env = parsed.data;
+// Server-side secrets are typed as available because client code paths that
+// read them are only ever executed on the server. On the client they are
+// undefined, so never rely on them from a client component.
+export const env = parsed.data as Env;
