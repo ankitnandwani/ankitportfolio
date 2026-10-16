@@ -3,6 +3,7 @@ import { generateBaseMetadata } from '@/src/seo/metadata';
 import { ResumeSummary } from '@/src/components/resume/ResumeSummary';
 import { ResumeExperience } from '@/src/components/resume/ResumeExperience';
 import { ResumeEducation } from '@/src/components/resume/ResumeEducation';
+import { ResumeCertifications } from '@/src/components/resume/ResumeCertifications';
 import { ResumeSkills } from '@/src/components/resume/ResumeSkills';
 
 export const metadata = {
@@ -17,6 +18,7 @@ export default function ResumePage() {
           <ResumeSummary />
           <ResumeExperience />
           <ResumeEducation />
+          <ResumeCertifications />
           <ResumeSkills />
         </main>
       </ResponsiveContainer>
