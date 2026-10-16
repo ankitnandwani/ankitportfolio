@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/src/components/ui/Card';
 import { Project } from '@/src/data/projects';
@@ -25,24 +27,36 @@ interface ProjectCardProps {
   className?: string;
 }
 
-export default async function ProjectCard({
+export default function ProjectCard({
   project,
   tokens,
   prefersReducedMotion,
   className = '',
 }: ProjectCardProps) {
-  // Fetch GitHub data
-  let githubData: GitHubRepoData | null = null;
-  let githubError = false;
-  if (project.githubUrl) {
-    try {
-      const data = await fetchGitHubRepoData(project.githubUrl);
-      githubData = data;
-    } catch (error) {
-      githubError = true;
-      console.error('Error fetching GitHub repo data:', error);
+  // State for GitHub data
+  const [githubData, setGithubData] = useState<GitHubRepoData | null>(null);
+  const [githubError, setGithubError] = useState<boolean>(false);
+
+  // Fetch GitHub data on mount
+  useEffect(() => {
+    if (!project.githubUrl) {
+      // No GitHub URL, so we don't need to fetch anything.
+      return;
     }
-  }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setGithubError(false);
+    fetchGitHubRepoData(project.githubUrl)
+      .then((data) => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setGithubData(data);
+      })
+      .catch((error) => {
+        console.error('Error fetching GitHub repo data:', error);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setGithubError(true);
+      });
+  }, [project.githubUrl]);
 
   const textColor = tokens.colors.text;
   const bgColor = tokens.colors.background;
@@ -201,7 +215,31 @@ export default async function ProjectCard({
           </div>
 
           {/* GitHub Metadata */}
-          {githubError ? (
+          {!!project.githubUrl && !githubData && !githubError ? (
+            <div className="mb-4">
+              <h4
+                style={{ color: textColor }}
+                className="text-xs font-bold uppercase tracking-wider mb-1"
+              >
+                GitHub Stats
+              </h4>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                <span
+                  style={{ backgroundColor: surfaceColor, color: tokens.colors.mutedForeground }}
+                  className="inline-block px-3 py-1.5 rounded font-medium text-xs border border-zinc-200 dark:border-zinc-700 break-words"
+                >
+                  ⭐ -- Stars
+                </span>
+                <span
+                  key="language"
+                  style={{ backgroundColor: surfaceColor, color: tokens.colors.mutedForeground }}
+                  className="inline-block px-3 py-1.5 rounded font-medium text-xs border border-zinc-200 dark:border-zinc-700 break-words"
+                >
+                  -- Language
+                </span>
+              </div>
+            </div>
+          ) : githubError ? (
             <p>Error loading GitHub stats.</p>
           ) : githubData ? (
             <div className="mb-4">

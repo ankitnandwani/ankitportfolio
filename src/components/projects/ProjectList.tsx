@@ -1,24 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/design/themeContext';
 import { Project } from '@/src/data/projects';
 import ProjectCard from './ProjectCard';
-
-// Loading fallback for ProjectCard while waiting for GitHub data
-const ProjectCardLoading = () => (
-  <div className="h-96 w-full bg-muted rounded-lg p-6 flex flex-col space-x-4">
-    <div className="h-6 w-20 bg-muted-foreground/20 rounded"></div>
-    <div className="h-4 w-36 bg-muted-foreground/20 rounded mt-2"></div>
-    <div className="h-4 w-24 bg-muted-foreground/20 rounded mt-1"></div>
-    <div className="h-4 w-12 bg-muted-foreground/20 rounded mt-1"></div>
-    {/* Add more placeholder lines to mimic the card's content */}
-    <div className="h-4 w-32 bg-muted-foreground/20 rounded mt-2"></div>
-    <div className="h-4 w-20 bg-muted-foreground/20 rounded mt-1"></div>
-    <div className="h-4 w-16 bg-muted-foreground/20 rounded mt-1"></div>
-  </div>
-);
 
 
 export interface ProjectListProps {
@@ -137,14 +123,12 @@ export const ProjectList: React.FC<ProjectListProps> = ({
               initial={prefersReducedMotion ? undefined : itemVariants.hidden}
               animate={prefersReducedMotion ? undefined : itemVariants.show}
             >
-              <Suspense fallback={<ProjectCardLoading />}>
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  tokens={tokens}
-                  prefersReducedMotion={prefersReducedMotion}
-                />
-              </Suspense>
+              <ProjectCard
+                key={project.id}
+                project={project}
+                tokens={tokens}
+                prefersReducedMotion={prefersReducedMotion}
+              />
             </motion.div>
           ))}
         </motion.div>
