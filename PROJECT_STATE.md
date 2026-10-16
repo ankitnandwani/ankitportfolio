@@ -10,7 +10,7 @@
 
 ## Status
 
-- Task specifications created for M10.08 through M10.11 (see tasks/M10/).
+- Task specifications created for M10.09 through M10.11 (see tasks/M10/).
 - M10.01 (Define resume data model) completed.
 - M10.02 (Create resume page route and layout) completed.
 - M10.03 (Create resume summary component and integrate summary data) completed.
@@ -18,10 +18,11 @@
 - M10.05 (Create resume skills component and integrate skills data) completed.
 - M10.06 (Create resume education component and integrate education data) completed.
 - M10.07 (Create resume certifications component and integrate certifications data) completed.
+- M10.08 (Create resume achievements component and integrate achievements data) completed.
 
 ## Next Task
 
-- Implement M10.08: Create resume achievements component and integrate achievements data
+- Implement M10.09: Add PDF download button and link
 
 ## Completed (Milestone 01)
 
