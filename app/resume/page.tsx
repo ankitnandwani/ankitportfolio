@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ResponsiveContainer } from '@/src/components/layout';
 import { generateBaseMetadata } from '@/src/seo/metadata';
 import { ResumeSummary } from '@/src/components/resume/ResumeSummary';
@@ -6,6 +7,7 @@ import { ResumeEducation } from '@/src/components/resume/ResumeEducation';
 import { ResumeCertifications } from '@/src/components/resume/ResumeCertifications';
 import { ResumeSkills } from '@/src/components/resume/ResumeSkills';
 import { ResumeAchievements } from '@/src/components/resume/ResumeAchievements';
+import { Button } from '@/src/components/ui/Button';
 
 export const metadata = {
   ...generateBaseMetadata('Resume', 'Ankit Nandwani — Interactive Resume'),
@@ -22,6 +24,11 @@ export default function ResumePage() {
           <ResumeCertifications />
           <ResumeSkills />
           <ResumeAchievements />
+          <Link href="/resume.pdf" prefetch>
+            <Button variant="secondary" size="lg" className="mt-8">
+              Download PDF Resume
+            </Button>
+          </Link>
         </main>
       </ResponsiveContainer>
     </div>
