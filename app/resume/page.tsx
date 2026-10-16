@@ -2,6 +2,7 @@ import { ResponsiveContainer } from '@/src/components/layout';
 import { generateBaseMetadata } from '@/src/seo/metadata';
 import { ResumeSummary } from '@/src/components/resume/ResumeSummary';
 import { ResumeExperience } from '@/src/components/resume/ResumeExperience';
+import { ResumeEducation } from '@/src/components/resume/ResumeEducation';
 import { ResumeSkills } from '@/src/components/resume/ResumeSkills';
 
 export const metadata = {
@@ -15,6 +16,7 @@ export default function ResumePage() {
         <main className="flex flex-1 w-full flex-col items-center justify-between">
           <ResumeSummary />
           <ResumeExperience />
+          <ResumeEducation />
           <ResumeSkills />
         </main>
       </ResponsiveContainer>
