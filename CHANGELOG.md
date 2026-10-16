@@ -1,3 +1,6 @@
+## [0.1.82] - 2026-10-15
+- Completed M10.05: Create resume skills component and integrate skills data (created src/components/resume/ResumeSkills.tsx; updated app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
+
 ## [0.1.81] - 2026-10-15
 - Completed M10.04: Create resume experience component and integrate experience data (created src/components/resume/ResumeExperience.tsx; updated app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
 
