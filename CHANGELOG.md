@@ -1,3 +1,6 @@
+## [0.1.87] - 2026-10-16
+- Completed M10.10: Ensure responsiveness, accessibility, and phone number redaction (verified no phone number in data or components, confirmed responsive design and accessibility patterns)
+
 ## [0.1.86] - 2026-10-16
 - Completed M10.09: Add PDF download button and link (updated app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
 

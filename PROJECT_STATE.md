@@ -10,7 +10,7 @@
 
 ## Status
 
-- Task specifications created for M10.10 through M10.11 (see tasks/M10/).
+- Task specifications created for M10.11 (see tasks/M10/).
 - M10.01 (Define resume data model) completed.
 - M10.02 (Create resume page route and layout) completed.
 - M10.03 (Create resume summary component and integrate summary data) completed.
@@ -20,10 +20,11 @@
 - M10.07 (Create resume certifications component and integrate certifications data) completed.
 - M10.08 (Create resume achievements component and integrate achievements data) completed.
 - M10.09 (Add PDF download button and link) completed.
+- M10.10 (Ensure responsiveness, accessibility, and phone number redaction) completed.
 
 ## Next Task
 
-- Implement M10.10: Ensure responsiveness, accessibility, and phone number redaction
+- Implement M10.11: Add animations and final polishing
 
 ## Completed (Milestone 01)
 
