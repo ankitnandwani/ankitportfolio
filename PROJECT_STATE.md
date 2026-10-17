@@ -6,7 +6,7 @@
 
 ## Current Milestone
 
-- M10 – Resume
+- M11 – Social Hub
 
 ## Status
 
@@ -21,10 +21,11 @@
 - M10.08 (Create resume achievements component and integrate achievements data) completed.
 - M10.09 (Add PDF download button and link) completed.
 - M10.10 (Ensure responsiveness, accessibility, and phone number redaction) completed.
+- M10.11 (Add animations and final polishing) completed.
 
 ## Next Task
 
-- Implement M10.11: Add animations and final polishing
+- Begin task specifications for M11 – Social Hub
 
 ## Completed (Milestone 01)
 

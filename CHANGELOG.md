@@ -1,3 +1,6 @@
+## [0.1.88] - 2026-10-17
+- Completed M10.11: Add animations and final polishing (split page into server and client components due to metadata and hooks constraints, added use client directive, added motion animations with hover/tap effects to PDF download button, ensured reduced motion preference respected)
+
 ## [0.1.87] - 2026-10-16
 - Completed M10.10: Ensure responsiveness, accessibility, and phone number redaction (verified no phone number in data or components, confirmed responsive design and accessibility patterns)
 
@@ -41,7 +44,7 @@
 ## [0.1.74] - 2026-10-08
 - Completed M09.08: Integrate with project list and detail (updated app/projects/[slug]/project-detail-content.tsx to wrap ProjectCard in Suspense with loading fallback)
 
-## [0.1.73] - 2026-10-08
+## [0.1.73] - 2026-09-01
 - Completed M09.07: Update project data population (updated src/data/projects.ts to add githubUrl fields for projects with verified GitHub repositories)
 
 ## [0.1.72] - 2026-09-01

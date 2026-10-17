@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-- Begin implementation of M10.11: Add animations and final polishing
+- Begin task specifications for M11 – Social Hub
