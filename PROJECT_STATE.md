@@ -22,10 +22,11 @@
 - M10.09 (Add PDF download button and link) completed.
 - M10.10 (Ensure responsiveness, accessibility, and phone number redaction) completed.
 - M10.11 (Add animations and final polishing) completed.
+- M11.01 (Update social links configuration) completed.
 
 ## Next Task
 
-- Begin implementation of M11.01
+- Begin implementation of M11.02
 
 ## Completed (Milestone 01)
 

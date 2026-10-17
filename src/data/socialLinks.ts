@@ -1,32 +1,82 @@
+// WARNING: This file contains placeholder URLs that MUST be verified against actual accounts before launch.
+// Replace all placeholder URLs with real social media links.
 export const socialLinks = [
   {
     platform: 'linkedin',
-    url: 'https://linkedin.com/in/ankitnandwani',
+    url: 'https://www.linkedin.com/in/TO_BE_VERIFIED',
     label: 'LinkedIn',
     icon: 'linkedin',
   },
   {
     platform: 'github',
-    url: 'https://github.com/ankitnaadwani',
+    url: 'https://github.com/TO_BE_VERIFIED',
     label: 'GitHub',
     icon: 'github',
   },
   {
     platform: 'twitter',
-    url: 'https://x.com/ankitnandwani',
+    url: 'https://x.com/TO_BE_VERIFIED',
     label: 'X (Twitter)',
     icon: 'twitter',
   },
   {
+    platform: 'medium',
+    url: 'https://medium.com/@TO_BE_VERIFIED',
+    label: 'Medium',
+    icon: 'medium',
+  },
+  {
     platform: 'instagram',
-    url: 'https://instagram.com/ankitnandwani',
+    url: 'https://instagram.com/TO_BE_VERIFIED',
     label: 'Instagram',
     icon: 'instagram',
   },
   {
-    platform: 'medium',
-    url: 'https://medium.com/@ankitnandwani',
-    label: 'Medium',
-    icon: 'medium',
+    platform: 'stackoverflow',
+    url: 'https://stackoverflow.com/users/TO_BE_VERIFIED',
+    label: 'Stack Overflow',
+    icon: 'stack-overflow',
+  },
+  {
+    platform: 'telegram',
+    url: 'https://t.me/TO_BE_VERIFIED',
+    label: 'Telegram',
+    icon: 'telegram',
+  },
+  {
+    platform: 'discord',
+    url: 'https://discordapp.com/users/TO_BE_VERIFIED',
+    label: 'Discord',
+    icon: 'discord',
+  },
+  {
+    platform: 'quora',
+    url: 'https://www.quora.com/profile/TO_BE_VERIFIED',
+    label: 'Quora',
+    icon: 'quora',
+  },
+  {
+    platform: 'facebook',
+    url: 'https://www.facebook.com/TO_BE_VERIFIED',
+    label: 'Facebook',
+    icon: 'facebook',
+  },
+  {
+    platform: 'leetcode',
+    url: 'https://leetcode.com/TO_BE_VERIFIED',
+    label: 'LeetCode',
+    icon: 'leetcode',
+  },
+  {
+    platform: 'codewars',
+    url: 'https://www.codewars.com/users/TO_BE_VERIFIED',
+    label: 'Codewars',
+    icon: 'codewars',
+  },
+  {
+    platform: 'resume',
+    url: 'https://placeholder.com/resume/TO_BE_VERIFIED.pdf',
+    label: 'Resume',
+    icon: 'document-text',
   },
 ];
