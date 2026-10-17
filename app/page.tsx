@@ -6,6 +6,7 @@ import { CareerTimeline } from '@/src/components/careerTimeline';
 import { AchievementsSection } from '@/src/components/achievements';
 import { CapabilityAreas } from '@/src/components/capabilityAreas';
 import { FeaturedProjects } from '@/src/components/projects';
+import { SocialHub } from '@/src/components/socialHub/SocialHub';
 import { capabilityAreasData } from '@/src/data/capabilityAreasData';
 
 export const metadata = {
@@ -34,6 +35,16 @@ export default function Home() {
             className="mt-16"
           />
           <FeaturedProjects className="mt-16" limit={3} />
+          <section className="mt-16">
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+              <h2
+                className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 tracking-tight"
+              >
+                Social Hub
+              </h2>
+              <SocialHub />
+            </div>
+          </section>
         </main>
       </ResponsiveContainer>
     </div>
