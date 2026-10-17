@@ -26,10 +26,11 @@
 - M11.02 (Create SocialHub component) completed.
 - M11.03 (Integrate SocialHub component into homepage layout) completed.
 - M11.04 (Update footer to be minimal) completed.
+- M11.05 (Ensure SocialHub accessibility and responsiveness) completed.
 
 ## Next Task
 
-- Begin implementation of M11.05
+- Begin implementation of M11.06
 
 ## Completed (Milestone 01)
 
