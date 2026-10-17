@@ -1,3 +1,6 @@
+## [0.1.89] - 2026-10-17
+- Created task specifications for Milestone M11 – Social Hub
+
 ## [0.1.88] - 2026-10-17
 - Completed M10.11: Add animations and final polishing (split page into server and client components due to metadata and hooks constraints, added use client directive, added motion animations with hover/tap effects to PDF download button, ensured reduced motion preference respected)
 
