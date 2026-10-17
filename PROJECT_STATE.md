@@ -6,7 +6,7 @@
 
 ## Current Milestone
 
-- M11 – Social Hub
+- M12 – Testimonials
 
 ## Status
 
@@ -27,10 +27,11 @@
 - M11.03 (Integrate SocialHub component into homepage layout) completed.
 - M11.04 (Update footer to be minimal) completed.
 - M11.05 (Ensure SocialHub accessibility and responsiveness) completed.
+- M11.06 (Add animations and final polishing) completed.
 
 ## Next Task
 
-- Begin implementation of M11.06
+- Begin implementation of M12.01
 
 ## Completed (Milestone 01)
 

@@ -74,6 +74,12 @@ export const SocialHub = ({ className = '' }: SocialHubProps) => {
     whileFocus: { scale: 1.03 },
   };
 
+  // Entrance animation variants
+  const entranceVariant = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
+
   return (
     <section className={`${className} grid gap-6`}>
       {/* Responsive grid: 1 column on mobile, 2 on tablet, 3 on desktop, 4 on large desktop */}
@@ -100,10 +106,13 @@ export const SocialHub = ({ className = '' }: SocialHubProps) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Visit Ankit's ${link.label} profile`}
+                  initial={prefersReducedMotion ? undefined : entranceVariant.hidden}
+                  animate={prefersReducedMotion ? undefined : entranceVariant.show}
                   {...motionProps}
                   className="
                     flex flex-col items-center justify-center p-4 bg-background
                     rounded-md
+                    border border-border/20
                     transition-transform duration-200
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary
                     hover:shadow-md
