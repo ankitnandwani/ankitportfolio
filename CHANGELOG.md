@@ -1,6 +1,8 @@
+## [0.1.104] - 2026-10-18
+- Created task specifications for Milestone M13 – AI Knowledge Base
+
 ## [0.1.103] - 2026-10-18
 - Completed M12.07: Add final polishing and verify design consistency (updated src/components/testimonials/TestimonialCard.tsx, src/components/testimonials/TestimonialsSection.tsx; updated PROJECT_STATE.md and TODO.md)
-
 
 ## [0.1.102] - 2026-10-18
 - Completed M12.06: Ensure responsiveness, accessibility, and conditional rendering (updated src/components/testimonials/TestimonialCard.tsx, src/components/testimonials/TestimonialsSection.tsx; updated PROJECT_STATE.md and TODO.md)
@@ -66,7 +68,7 @@
 - Completed M10.05: Create resume skills component and integrate skills data (created src/components/resume/ResumeSkills.tsx; updated app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
 
 ## [0.1.81] - 2026-10-15
-- Completed M10.04: Create resume experience component and integrate experience data (created src/components/resume/ResumeExperience.tsx; updated app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
+- Completed M10.04: Create resume experience component and integrate experience data (from career timeline) (created src/components/resume/ResumeExperience.tsx; updated app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
 
 ## [0.1.80] - 2026-10-15
 - Completed M10.03: Create resume summary component and integrate summary data (created src/components/resume/ResumeSummary.tsx; updated app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
