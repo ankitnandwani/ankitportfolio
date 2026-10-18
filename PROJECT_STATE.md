@@ -33,7 +33,7 @@
 
 ## Next Task
 
-- Begin implementation of M12.04
+- Begin implementation of M12.05
 
 ## Completed (Milestone 01)
 
@@ -155,3 +155,4 @@
 - M12.01 – Define testimonial data model and create testimonial data (completed)
 - M12.02 – Create testimonial card component (completed)
 - M12.03 – Create testimonials section component (completed)
+- M12.04 – Integrate testimonials section into homepage layout (completed)

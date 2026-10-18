@@ -7,6 +7,7 @@ import { AchievementsSection } from '@/src/components/achievements';
 import { CapabilityAreas } from '@/src/components/capabilityAreas';
 import { FeaturedProjects } from '@/src/components/projects';
 import { SocialHub } from '@/src/components/socialHub/SocialHub';
+import { TestimonialsSection } from '@/src/components/testimonials/TestimonialsSection';
 import { capabilityAreasData } from '@/src/data/capabilityAreasData';
 
 export const metadata = {
@@ -45,6 +46,7 @@ export default function Home() {
               <SocialHub />
             </div>
           </section>
+          <TestimonialsSection className="mt-16" />
         </main>
       </ResponsiveContainer>
     </div>
