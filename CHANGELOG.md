@@ -1,3 +1,6 @@
+## [0.1.98] - 2026-10-18
+- Completed M12.02: Create testimonial card component (created src/components/testimonials/TestimonialCard.tsx; updated PROJECT_STATE.md and TODO.md)
+
 ## [0.1.97] - 2026-10-18
 - Completed M12.01: Define testimonial data model and create testimonial data (created src/data/testimonials.ts; updated PROJECT_STATE.md and TODO.md)
 

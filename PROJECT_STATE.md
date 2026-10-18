@@ -29,10 +29,11 @@
 - M11.05 (Ensure SocialHub accessibility and responsiveness) completed.
 - M11.06 (Add animations and final polishing) completed.
 - M12.01 – Define testimonial data model and create testimonial data (completed)
+- M12.02 – Create testimonial card component (completed)
 
 ## Next Task
 
-- Begin implementation of M12.02
+- Begin implementation of M12.03
 
 ## Completed (Milestone 01)
 
@@ -152,3 +153,4 @@
 
 ## Completed (Milestone 12)
 - M12.01 – Define testimonial data model and create testimonial data (completed)
+- M12.02 – Create testimonial card component (completed)
