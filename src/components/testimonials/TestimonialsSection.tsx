@@ -65,7 +65,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
   };
 
   return (
-    <section className={`mb-12 ${className}`}>
+    <section className={className}>
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-8">
@@ -79,7 +79,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
             style={{ color: tokens.colors.text }}
             className="max-w-xl text-base sm:text-lg leading-relaxed opacity-90"
           >
-            Professional endorsements from colleagues, managers, and clients.
+            Professional endorsements from colleagues and clients.
           </p>
         </div>
 

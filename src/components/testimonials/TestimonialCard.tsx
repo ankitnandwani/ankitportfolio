@@ -46,6 +46,7 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
   const bgColor = tokens.colors.background;
   const primaryColor = tokens.colors.primary;
   const accentColor = tokens.colors.accent;
+  const mutedForeground = tokens.colors.mutedForeground;
 
   // Animation variants
   const entranceVariant = {
@@ -90,7 +91,7 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
           {/* Testimonial Quote */}
           <blockquote
             style={{ color: textColor }}
-            className="text-sm sm:text-base md:text-lg leading-relaxed mb-4 italic"
+            className="text-base sm:text-lg md:text-xl leading-relaxed mb-4 italic"
           >
             &ldquo;{testimonial.quote}&rdquo;
           </blockquote>
@@ -116,7 +117,7 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
             </div>
             <div>
               <span
-                style={{ color: textColor }}
+                style={{ color: mutedForeground }}
                 className="text-xs sm:text-sm"
               >
                 {testimonial.role}
@@ -128,7 +129,7 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
                 •
               </span>
               <span
-                style={{ color: textColor }}
+                style={{ color: mutedForeground }}
                 className="text-xs sm:text-sm"
               >
                 {testimonial.company}

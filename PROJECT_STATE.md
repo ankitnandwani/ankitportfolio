@@ -6,7 +6,7 @@
 
 ## Current Milestone
 
-- M12 – Testimonials
+- M13 – AI Knowledge Base
 
 ## Status
 
@@ -34,10 +34,11 @@
 - M12.04 – Integrate testimonials section into homepage layout (completed)
 - M12.05 – Add animations and interactive states (completed)
 - M12.06 – Ensure responsiveness, accessibility, and conditional rendering (completed)
+- M12.07 – Add final polishing and verify design consistency (completed)
 
 ## Next Task
 
-- Begin implementation of M12.07
+- Begin implementation of M13.01
 
 ## Completed (Milestone 01)
 
