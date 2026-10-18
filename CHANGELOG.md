@@ -1,3 +1,6 @@
+## [0.1.99] - 2026-10-18
+- Completed M12.03: Create testimonials section component (created src/components/testimonials/TestimonialsSection.tsx; updated PROJECT_STATE.md and TODO.md)
+
 ## [0.1.98] - 2026-10-18
 - Completed M12.02: Create testimonial card component (created src/components/testimonials/TestimonialCard.tsx; updated PROJECT_STATE.md and TODO.md)
 
