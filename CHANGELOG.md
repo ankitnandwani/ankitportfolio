@@ -1,3 +1,6 @@
+## [0.1.105] - 2026-10-18
+- Completed M13.01: Define AI Knowledge Base Document Format and Schema (created supabase/migrations/20261018000001_create_knowledge_tables.sql, src/lib/supabase.ts, src/types/knowledge.ts, src/lib/knowledge/schema.ts; installed @supabase/supabase-js)
+
 ## [0.1.104] - 2026-10-18
 - Created task specifications for Milestone M13 – AI Knowledge Base
 
