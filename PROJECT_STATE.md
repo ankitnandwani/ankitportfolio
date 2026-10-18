@@ -33,10 +33,11 @@
 - M12.03 – Create testimonials section component (completed)
 - M12.04 – Integrate testimonials section into homepage layout (completed)
 - M12.05 – Add animations and interactive states (completed)
+- M12.06 – Ensure responsiveness, accessibility, and conditional rendering (completed)
 
 ## Next Task
 
-- Begin implementation of M12.06
+- Begin implementation of M12.07
 
 ## Completed (Milestone 01)
 

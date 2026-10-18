@@ -77,7 +77,7 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
       whileTap={prefersReducedMotion ? undefined : hoverVariant.whileTap}
       whileFocus={prefersReducedMotion ? undefined : focusVariant.whileFocus}
       tabIndex={0}
-      className={`w-full flex flex-col justify-between p-4 sm:p-5 md:p-6 transition-all ${className}`}
+      className={`w-full flex flex-col justify-between p-4 sm:p-5 md:p-6 transition-all ${className} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`}
     >
       <Card
         elevation="md"
@@ -88,15 +88,15 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
       >
         <div>
           {/* Testimonial Quote */}
-          <p
+          <blockquote
             style={{ color: textColor }}
             className="text-sm sm:text-base md:text-lg leading-relaxed mb-4 italic"
           >
-            “{testimonial.quote}”
-          </p>
+            &ldquo;{testimonial.quote}&rdquo;
+          </blockquote>
 
           {/* Attribution */}
-          <div className="flex flex-col space-y-1">
+          <footer className="flex flex-col space-y-1">
             <div className="flex items-center">
               {testimonial.profileUrl ? (
                 <a
@@ -134,7 +134,7 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
                 {testimonial.company}
               </span>
             </div>
-          </div>
+          </footer>
         </div>
       </Card>
     </motion.article>
