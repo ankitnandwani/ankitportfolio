@@ -28,10 +28,11 @@
 - M11.04 (Update footer to be minimal) completed.
 - M11.05 (Ensure SocialHub accessibility and responsiveness) completed.
 - M11.06 (Add animations and final polishing) completed.
+- M12.01 – Define testimonial data model and create testimonial data (completed)
 
 ## Next Task
 
-- Begin implementation of M12.01
+- Begin implementation of M12.02
 
 ## Completed (Milestone 01)
 
@@ -115,4 +116,39 @@
 - M08.08 – Implement mobile layout adaptation (completed)
 - M08.09 – Add animations using Framer Motion (completed)
 - M08.10 – Ensure accessibility and keyboard navigation (completed)
-- M08.11 – Integrate featured projects section into homepage (completed)
+
+## Completed (Milestone 09)
+- M09.01 – Define GitHub repository data model (completed)
+- M09.02 – Create GitHub service with caching (completed)
+- M09.03 – Extend ProjectCard to show GitHub metadata (completed)
+- M09.04 – Implement loading states (completed)
+- M09.05 – Ensure caching reduces API calls (completed)
+- M09.06 – Add fallback data (completed)
+- M09.07 – Update project data population (completed)
+- M09.08 – Integrate with project list and detail (completed)
+- M09.09 – Add typing and tests for GitHub service (completed)
+- M09.10 – Verify no GitHub call on every request (completed)
+
+## Completed (Milestone 10)
+- M10.01 – Define resume data model (completed)
+- M10.02 – Create resume page route and layout (completed)
+- M10.03 – Create resume summary component and integrate summary data (completed)
+- M10.04 – Create resume experience component and integrate experience data (from career timeline) (completed)
+- M10.05 – Create resume skills component and integrate skills data (completed)
+- M10.06 – Create resume education component and integrate education data (completed)
+- M10.07 – Create resume certifications component and integrate certifications data (completed)
+- M10.08 – Create resume achievements component and integrate achievements data (completed)
+- M10.09 – Add PDF download button and link (completed)
+- M10.10 – Ensure responsiveness, accessibility, and phone number redaction (completed)
+- M10.11 – Add animations and final polishing (completed)
+
+## Completed (Milestone 11)
+- M11.01 – Update social links configuration (completed)
+- M11.02 – Create SocialHub component (completed)
+- M11.03 – Integrate SocialHub component into homepage layout (completed)
+- M11.04 – Update footer to be minimal (completed)
+- M11.05 – Ensure SocialHub accessibility and responsiveness (completed)
+- M11.06 – Add animations and final polishing (completed)
+
+## Completed (Milestone 12)
+- M12.01 – Define testimonial data model and create testimonial data (completed)

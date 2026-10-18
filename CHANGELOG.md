@@ -1,3 +1,6 @@
+## [0.1.97] - 2026-10-18
+- Completed M12.01: Define testimonial data model and create testimonial data (created src/data/testimonials.ts; updated PROJECT_STATE.md and TODO.md)
+
 ## [0.1.96] - 2026-10-18
 - Created task specifications for Milestone M12 – Testimonials
 
