@@ -1,3 +1,6 @@
+## [0.1.96] - 2026-10-18
+- Created task specifications for Milestone M12 – Testimonials
+
 ## [0.1.95] - 2026-10-17
 - Completed M11.06: Add animations and final polishing (updated src/components/socialHub/SocialHub.tsx with entrance animations, refined hover/tap animations, subtle border styling, and ensured visual consistency; updated PROJECT_STATE.md and TODO.md)
 

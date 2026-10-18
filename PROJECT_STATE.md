@@ -10,7 +10,7 @@
 
 ## Status
 
-- Task specifications created for M11 – Social Hub (see tasks/M11/).
+- Task specifications created for M12 – Testimonials (see tasks/M12/).
 - M10.01 (Define resume data model) completed.
 - M10.02 (Create resume page route and layout) completed.
 - M10.03 (Create resume summary component and integrate summary data) completed.
