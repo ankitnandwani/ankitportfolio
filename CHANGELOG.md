@@ -1,5 +1,8 @@
+## [0.1.106] - 2026-10-18
+- Completed M13.02: Set Up Supabase Client Wrapper and Environment Validation (updated src/lib/supabase.ts with environment validation and separate anon/service role clients)
+
 ## [0.1.105] - 2026-10-18
-- Completed M13.01: Define AI Knowledge Base Document Format and Schema (created supabase/migrations/20261018000001_create_knowledge_tables.sql, src/lib/supabase.ts, src/types/knowledge.ts, src/lib/knowledge/schema.ts; installed @supabase/supabase-js)
+- Completed M13.01: Define AI Knowledge Base Document Format and Schema (created supabase/migrations/20261018000001_create_knowledge_tables.sql, src/lib/supabase.ts, src/types/knowledge.ts, src/lib/knowledge.schema.ts; installed @supabase/supabase-js)
 
 ## [0.1.104] - 2026-10-18
 - Created task specifications for Milestone M13 – AI Knowledge Base
@@ -74,7 +77,7 @@
 - Completed M10.04: Create resume experience component and integrate experience data (from career timeline) (created src/components/resume/ResumeExperience.tsx; updated app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
 
 ## [0.1.80] - 2026-10-15
-- Completed M10.03: Create resume summary component and integrate summary data (created src/components/resume/ResumeSummary.tsx; updated app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
+- Completed M10.03: Create resume page route and layout (created app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
 
 ## [0.1.79] - 2026-10-15
 - Completed M10.02: Create resume page route and layout (created app/resume/page.tsx; updated PROJECT_STATE.md and TODO.md)
