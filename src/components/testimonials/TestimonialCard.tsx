@@ -76,6 +76,7 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
       whileHover={prefersReducedMotion ? undefined : hoverVariant.whileHover}
       whileTap={prefersReducedMotion ? undefined : hoverVariant.whileTap}
       whileFocus={prefersReducedMotion ? undefined : focusVariant.whileFocus}
+      tabIndex={0}
       className={`w-full flex flex-col justify-between p-4 sm:p-5 md:p-6 transition-all ${className}`}
     >
       <Card

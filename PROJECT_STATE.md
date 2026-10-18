@@ -30,10 +30,13 @@
 - M11.06 (Add animations and final polishing) completed.
 - M12.01 – Define testimonial data model and create testimonial data (completed)
 - M12.02 – Create testimonial card component (completed)
+- M12.03 – Create testimonials section component (completed)
+- M12.04 – Integrate testimonials section into homepage layout (completed)
+- M12.05 – Add animations and interactive states (completed)
 
 ## Next Task
 
-- Begin implementation of M12.05
+- Begin implementation of M12.06
 
 ## Completed (Milestone 01)
 

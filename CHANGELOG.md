@@ -1,3 +1,6 @@
+## [0.1.101] - 2026-10-18
+- Completed M12.05: Add animations and interactive states (updated src/components/testimonials/TestimonialCard.tsx; updated PROJECT_STATE.md and TODO.md)
+
 ## [0.1.100] - 2026-10-18
 - Completed M12.04: Integrate testimonials section into homepage layout (modified app/page.tsx; updated PROJECT_STATE.md and TODO.md)
 

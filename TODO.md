@@ -1,3 +1,3 @@
 # Immediate Next Actions
 
-- Begin implementation of M12.05
+- Begin implementation of M12.06
