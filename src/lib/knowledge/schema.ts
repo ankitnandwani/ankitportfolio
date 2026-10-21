@@ -1,1 +1,6 @@
-export type { KnowledgeDocument, KnowledgeChunk } from '@/src/types/knowledge';
+export type {
+  KnowledgeDocument,
+  KnowledgeChunk,
+  KnowledgeDocumentInsert,
+  KnowledgeChunkInsert,
+} from '@/src/types/knowledge';

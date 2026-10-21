@@ -48,12 +48,10 @@ export default function ProjectCard({
     setGithubError(false);
     fetchGitHubRepoData(project.githubUrl)
       .then((data) => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setGithubData(data);
       })
       .catch((error) => {
         console.error('Error fetching GitHub repo data:', error);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setGithubError(true);
       });
   }, [project.githubUrl]);

@@ -19,9 +19,7 @@ export function redactPhoneNumbers(text: string): string {
   // US formats: (123) 456-7890, 123-456-7890, 123.456.7890, 1234567890
   // International: +1 123 456 7890, +44 20 7946 0958, etc.
   // Also matches numbers with extensions: 123-456-7890 x123
-  
-  const phoneRegex = /(?:\+?\d{1,3}[\s.-]?)?\(?\d{1,4}[\s.-]?\)?[\d\s.-]{6,}\d/g;
-  
+
   // More precise regex for common phone patterns
   const precisePhoneRegex = /(?:\+?(\d{1,3})[-.\s]?)?\(?(\d{1,4})[-.\s]?\)?[\d\s.-]{6,}(\d{1,4})/g;
   
@@ -50,7 +48,7 @@ export function containsPhoneNumbers(text: string): boolean {
  * @returns Text with PII redacted
  */
 export function redactPII(text: string): string {
-  let redacted = redactPhoneNumbers(text);
+  const redacted = redactPhoneNumbers(text);
   // Future: add email redaction, SSN, etc.
   return redacted;
 }

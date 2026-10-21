@@ -22,6 +22,13 @@
 - **Accessibility target:** WCAG 2.2 AA (PRD §71).
 - **Performance targets:** LCP < 2.5 s, CLS < 0.1, INP < 200 ms (PRD §74).
 
+## Decisions (M13 – AI Knowledge Base)
+
+- **Typed Supabase insert payloads:** Writes use `KnowledgeDocumentInsert` / `KnowledgeChunkInsert` (the row types minus the database-generated `id`, `created_at` and `updated_at` columns) instead of casting partial objects to the full row type. The pipeline previously inserted a fixed all-zeros UUID as the chunk `id`; because `id` is the primary key, the second chunk of the first document would have collided. Letting the database generate `id` and `created_at` is both correct and type-safe.
+- **Ingestion functions are typed against the source data models:** Every `process*` function accepts the exported interface from its `src/data/*` module (e.g. `Project`, `CertificationEntry`) rather than `any`. Field-name drift between the pipeline and a data model now fails at compile time instead of silently producing empty content in the knowledge base.
+- **GitHub profile ingestion deferred:** `src/data/github.ts` contains repository types only — there is no GitHub *profile* data source to ingest. The unreachable placeholder processor was removed rather than inventing a profile data model. Live repository metadata is already surfaced by the M09 GitHub service on the project cards.
+- **ESLint flat config owns ignore patterns:** `.eslintignore` was removed and its entries moved into `globalIgnores()` in `eslint.config.mjs`. ESLint 9 no longer supports `.eslintignore` and warns on every lint run.
+
 ## Open Decisions (awaiting clarification)
 
 1. **Authentication provider** – Clerk vs Supabase Auth for admin‑only functionality.

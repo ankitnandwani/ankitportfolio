@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
+    // Migrated from the deprecated .eslintignore file:
+    'node_modules/',
   ]),
 ]);
 

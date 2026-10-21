@@ -13,6 +13,7 @@
 - Task specifications created for M13 – AI Knowledge Base (see tasks/M13/).
 - M13.01 – Define AI Knowledge Base Document Format and Schema (completed)
 - M13.02 – Set Up Supabase Client Wrapper and Environment Validation (completed)
+- M13.03 – Implement Document Ingestion Pipeline (in progress – pipeline implemented for 12 knowledge source types and CI-clean; unit tests and end-to-end database verification still outstanding)
 - M10.01 (Define resume data model) completed.
 - M10.02 (Create resume page route and layout) completed.
 - M10.03 (Create resume summary component and integrate summary data) completed.
@@ -40,7 +41,7 @@
 
 ## Next Task
 
-- Begin implementation of M13.03
+- Finish M13.03: add unit tests for chunking, PII redaction and metadata extraction, then run an end-to-end ingestion against Supabase and verify the stored documents and chunks.
 
 ## Completed (Milestone 01)
 

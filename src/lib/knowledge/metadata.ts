@@ -99,7 +99,7 @@ export function getClassificationForSourceType(sourceType: string): 'PUBLIC' | '
  * @param sourceData The source data object (optional)
  * @returns Version number (starting at 1)
  */
-export function getDocumentVersion(sourceData?: any): number {
+export function getDocumentVersion(sourceData?: unknown): number {
   // If source data has a version field, use it
   if (sourceData && typeof sourceData === 'object' && 'version' in sourceData) {
     const version = sourceData.version;
@@ -121,7 +121,7 @@ export function getDocumentVersion(sourceData?: any): number {
  */
 export function extractMetadata(
   filePath: string,
-  sourceData?: any
+  sourceData?: unknown
 ): {
   source_type: string;
   classification: 'PUBLIC' | 'PROFESSIONAL' | 'CONFIDENTIAL' | 'PRIVATE';

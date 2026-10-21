@@ -1,3 +1,6 @@
+## [0.1.107] - 2026-10-21
+- Fixed CI lint and typecheck failures introduced with the M13.03 ingestion pipeline: replaced `any` with the real source data model types across `src/lib/knowledge/ingestion.ts` and `src/lib/knowledge/metadata.ts`, added `KnowledgeDocumentInsert`/`KnowledgeChunkInsert` payload types so database-generated `id`/`created_at` columns are no longer written with placeholder values, corrected field names that did not exist in the source data models (certifications, career timeline, social links), removed the unreachable GitHub profile processor, and migrated `.eslintignore` into the ESLint flat config
+
 ## [0.1.106] - 2026-10-18
 - Completed M13.02: Set Up Supabase Client Wrapper and Environment Validation (updated src/lib/supabase.ts with environment validation and separate anon/service role clients)
 

@@ -9,7 +9,7 @@
  * Splits text into sentences using a simple regex.
  * Handles basic English punctuation.
  */
-function splitIntoSentences(text: string): string[] {
+export function splitIntoSentences(text: string): string[] {
   // Split by sentence-ending punctuation followed by whitespace or end of string
   const sentenceRegex = /[.!?]+[\s\n]+|[.!?]+$/g;
   const sentences = text.trim().split(sentenceRegex);

@@ -1,6 +1,37 @@
 // WARNING: This file contains placeholder URLs that MUST be verified against actual accounts before launch.
 // Replace all placeholder URLs with real social media links.
-export const socialLinks = [
+
+/**
+ * A single social media profile link.
+ */
+export interface SocialLink {
+  /**
+   * Platform identifier (e.g., 'linkedin', 'github'). Used to pick the icon.
+   */
+  platform: string;
+
+  /**
+   * Absolute URL to the profile.
+   */
+  url: string;
+
+  /**
+   * Human-readable label displayed to the user (e.g., 'LinkedIn').
+   */
+  label: string;
+
+  /**
+   * Icon identifier for the platform.
+   */
+  icon: string;
+}
+
+/**
+ * Type alias for the social links collection.
+ */
+export type SocialLinksData = SocialLink[];
+
+export const socialLinks: SocialLinksData = [
   {
     platform: 'linkedin',
     url: 'https://www.linkedin.com/in/TO_BE_VERIFIED',
