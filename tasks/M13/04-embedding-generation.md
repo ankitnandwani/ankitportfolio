@@ -14,7 +14,7 @@ To enable retrieval-augmented generation (RAG), document chunks must be converte
 - Handle API errors, rate limits, and retries appropriately.
 - Generate embeddings for document chunks during ingestion or as a batch process.
 - Store embeddings in the Supabase knowledge_chunks table in a vector column with appropriate dimensions.
-- Ensure the embedding dimension matches what pgvector expects (typically 768 for Gemini embeddings).
+- Ensure the embedding dimension matches what pgvector expects. The column is `VECTOR(768)`: the Gemini model must be asked for 768 dimensions explicitly, and 768 also has to stay at or below the 2000 dimension ceiling for indexing a pgvector `vector` column.
 - Update existing chunks with embeddings (backfill) and handle new chunks.
 - Consider batching embedding API calls for efficiency.
 
@@ -63,7 +63,7 @@ To enable retrieval-augmented generation (RAG), document chunks must be converte
    - Function to store a chunk with embedding in one operation
    - Consider using Supabase's upsert or update methods
 5. Update the ingestion pipeline (M13.03) to generate embeddings for each chunk before storage, or create a separate batch job to process existing chunks without embeddings.
-6. Verify embedding dimension: Gemini embedding-001 produces 768-dimensional vectors. Confirm this matches pgvector column definition.
+6. Verify the embedding dimension. `gemini-embedding-001` returns **3072** dimensions by default, so the request must set `output_dimensionality: 768` — otherwise every insert fails with `expected 768 dimensions, not 3072`. Note that `gemini-embedding-001` does not normalize truncated dimensions automatically (only `gemini-embedding-2` does), so a 768 dimension vector has to be normalized manually before it is stored.
 7. Add validation to ensure embeddings are not null and have correct dimension before storage.
 
 ## Acceptance Criteria

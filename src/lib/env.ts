@@ -10,6 +10,7 @@ const publicEnvSchema = z.object({
 const serverEnvSchema = publicEnvSchema.extend({
   GEMINI_API_KEY: z.string().nonempty(),
   GEMINI_MODEL: z.string().nonempty(),
+  GEMINI_EMBEDDING_MODEL: z.string().nonempty(),
   SUPABASE_URL: z.string().nonempty(),
   SUPABASE_ANON_KEY: z.string().nonempty(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().nonempty(),

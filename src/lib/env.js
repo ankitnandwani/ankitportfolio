@@ -10,6 +10,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().nonempty(),
   GEMINI_API_KEY: z.string().nonempty(),
   GEMINI_MODEL: z.string().nonempty(),
+  GEMINI_EMBEDDING_MODEL: z.string().nonempty(),
   SUPABASE_URL: z.string().nonempty(),
   SUPABASE_ANON_KEY: z.string().nonempty(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().nonempty(),

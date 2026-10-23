@@ -6,11 +6,15 @@ import assert from 'node:assert/strict';
  * evaluated and throws when one is missing. The CI runner has no .env file,
  * so placeholder values are set before the service module is imported.
  * A value already present in the environment always wins.
+ *
+ * This list has to match the server side schema in src/lib/env.ts. A new
+ * environment variable makes this file fail loudly until it is added here.
  */
 const REQUIRED_ENV_VARS = [
   'NEXT_PUBLIC_SITE_URL',
   'GEMINI_API_KEY',
   'GEMINI_MODEL',
+  'GEMINI_EMBEDDING_MODEL',
   'SUPABASE_URL',
   'SUPABASE_ANON_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
