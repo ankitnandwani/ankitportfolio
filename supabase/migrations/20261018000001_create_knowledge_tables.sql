@@ -1,5 +1,11 @@
--- Enable pgvector extension
-CREATE EXTENSION IF NOT EXISTS vector;
+-- Enable the pgvector extension.
+--
+-- The extension is named "vector"; "pgvector" is the library it comes from.
+-- Supabase installs extensions into the `extensions` schema, which is on the
+-- default search path, so the unqualified `vector` type below resolves
+-- whether the extension was enabled from the dashboard or from here.
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
 
 -- Create knowledge_documents table
 CREATE TABLE IF NOT EXISTS knowledge_documents (
