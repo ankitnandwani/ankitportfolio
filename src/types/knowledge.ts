@@ -14,7 +14,14 @@ export interface KnowledgeChunk {
   document_id: string;
   chunk_index: number;
   content: string;
-  embedding: number[]; // Vector of numbers, length 768 for Gemini
+  /**
+   * The embedding vector, 768 dimensions to match Gemini's output size.
+   *
+   * It is null until the embedding has been generated. It cannot be an empty
+   * array, because a pgvector column only accepts a vector with exactly the
+   * declared number of dimensions.
+   */
+  embedding: number[] | null;
   classification: 'PUBLIC' | 'PROFESSIONAL' | 'CONFIDENTIAL' | 'PRIVATE';
   metadata: Record<string, unknown>;
   created_at: string;

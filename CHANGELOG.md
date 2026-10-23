@@ -1,3 +1,6 @@
+## [0.1.111] - 2026-10-24
+- Store a null embedding instead of an empty array until the embedding has been generated. A pgvector column only accepts a vector with exactly the declared number of dimensions, so the empty array placeholder would have been rejected by the live database on every chunk insert
+
 ## [0.1.110] - 2026-10-24
 - Corrected the knowledge base migration before its first deployment: switched the vector index from IVFFlat to HNSW (IVFFlat is built from the rows that already exist and would have been created on an empty table), enabled row level security on both knowledge tables so they cannot be read through the public API with the anon key, and documented why the embedding column stays at 768 dimensions
 - Corrected the M13.04 task specification, which stated that `gemini-embedding-001` returns 768 dimensions. It returns 3072 by default, so the embedding request has to set the output dimension explicitly

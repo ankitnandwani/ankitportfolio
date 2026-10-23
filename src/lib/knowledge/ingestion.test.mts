@@ -113,6 +113,20 @@ test('records the chunk index and the source file on every chunk', async () => {
   }
 });
 
+test('leaves the embedding null until it has been generated', async () => {
+  const fake = new FakeSupabase();
+
+  await ingestKnowledgeSources(asClient(fake));
+
+  for (const chunk of fake.chunks) {
+    assert.equal(
+      chunk.embedding,
+      null,
+      'the embedding must be null, because a pgvector column rejects a vector with the wrong number of dimensions'
+    );
+  }
+});
+
 test('does not leak a phone number into the stored content', async () => {
   const fake = new FakeSupabase();
 

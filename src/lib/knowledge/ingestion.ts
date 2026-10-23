@@ -222,7 +222,10 @@ async function storeDocument(
       document_id: documentId,
       chunk_index: index,
       content: redactPII(chunks[index]),
-      embedding: [], // Will be filled in M13.04
+      // Left null until the embedding has been generated. An empty array is
+      // not an option: a pgvector column only accepts a vector with exactly
+      // the declared number of dimensions.
+      embedding: null,
       classification: spec.classification,
       metadata: {
         source_file: spec.source_file,
