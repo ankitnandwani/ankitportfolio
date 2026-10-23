@@ -26,6 +26,26 @@ test('leaves text without phone numbers unchanged', () => {
   assert.equal(redactPhoneNumbers('version 2.0.1 released'), 'version 2.0.1 released');
 });
 
+test('preserves ISO dates instead of redacting them', () => {
+  assert.equal(redactPhoneNumbers('2021-01-01'), '2021-01-01');
+  assert.equal(
+    redactPhoneNumbers('Dates: 2021-01-01 - 2024-03-31'),
+    'Dates: 2021-01-01 - 2024-03-31'
+  );
+});
+
+test('redacts a phone number that sits next to a date', () => {
+  assert.equal(
+    redactPhoneNumbers('Started 2021-01-01, reachable on +1 123 456 7890'),
+    'Started 2021-01-01, reachable on [REDACTED]'
+  );
+});
+
+test('does not count a date as a phone number', () => {
+  assert.equal(containsPhoneNumbers('2021-01-01'), false);
+  assert.equal(containsPhoneNumbers('Dates: 2021-01-01 - 2024-03-31'), false);
+});
+
 test('detects whether text contains a phone number', () => {
   assert.equal(containsPhoneNumbers('+1 123 456 7890'), true);
   assert.equal(containsPhoneNumbers('(123) 456-7890'), true);
@@ -35,7 +55,3 @@ test('detects whether text contains a phone number', () => {
 test('redactPII redacts phone numbers', () => {
   assert.equal(redactPII('call +1 123 456 7890 now'), 'call [REDACTED] now');
 });
-
-test.todo(
-  'does not redact ISO dates: PRD 37 scopes redaction to phone numbers, but the current regex also matches dates such as 2021-01-01, which corrupts the career timeline, education and certification dates in the knowledge base'
-);

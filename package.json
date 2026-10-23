@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test",
+    "ingest": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/ingest-knowledge.mts",
     "env:check": "node -e \"require('./src/lib/env')\""
   },
   "dependencies": {

@@ -19,6 +19,7 @@ test('maps each knowledge source file to its source type', () => {
     'src/data/professionalSnapshot.ts': 'professional_snapshot',
     'src/data/testimonials.ts': 'testimonial',
     'src/data/capabilityAreasData.ts': 'capability_area',
+    'src/data/socialLinks.ts': 'social_link',
   };
 
   for (const [filePath, sourceType] of Object.entries(expected)) {
@@ -67,6 +68,10 @@ test('extracts source type, classification and version together', () => {
   });
 });
 
-test.todo(
-  'classifies social links as PUBLIC: getSourceTypeFromFilePath returns "unknown" for src/data/socialLinks.ts, so social link documents are currently stored as PROFESSIONAL instead of PUBLIC'
-);
+test('classifies social links as PUBLIC', () => {
+  assert.deepEqual(extractMetadata('src/data/socialLinks.ts'), {
+    source_type: 'social_link',
+    classification: 'PUBLIC',
+    version: 1,
+  });
+});

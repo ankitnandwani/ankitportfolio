@@ -1,9 +1,9 @@
 # Immediate Next Actions
 
-- Finish M13.03 – Implement Document Ingestion Pipeline:
-  - Run an end-to-end ingestion against Supabase and verify the stored documents and chunks, including that no phone numbers leak into chunk content
-  - Make the ingestion pipeline runnable as a manual Node.js script
-  - Fix the two findings recorded as TODO tests:
-    - `src/lib/knowledge/pii.ts` – the phone-number regex also matches ISO dates such as `2021-01-01`, so career timeline, education and certification dates are redacted out of the knowledge base. PRD §37 scopes redaction to phone numbers only
-    - `src/lib/knowledge/metadata.ts` – `getSourceTypeFromFilePath` returns `unknown` for `src/data/socialLinks.ts`, so social link documents are stored with classification `PROFESSIONAL` instead of `PUBLIC`
-- Consider adding Playwright for the end-to-end tests named in PRD §104 (M13.12)
+- Deployment prerequisites for M13.03 (the code is complete and verified against an in-memory Supabase double):
+  - Provision the Supabase project and replace the placeholder values in `.env.local` (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
+  - Apply the migrations in `supabase/migrations/` to the live project so the `knowledge_documents` and `knowledge_chunks` tables and the pgvector extension exist
+  - Run `npm run ingest` once against the live project and confirm the documents and chunks are stored
+- Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. The skills and testimonial sources are still empty, so they currently produce no knowledge documents
+- Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch
+- Begin implementation of M13.04 (embedding generation)

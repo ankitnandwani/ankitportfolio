@@ -43,7 +43,10 @@ export function getSourceTypeFromFilePath(filePath: string): string {
   if (fileName.includes('capabilityAreas')) {
     return 'capability_area';
   }
-  
+  if (fileName.includes('socialLinks')) {
+    return 'social_link';
+  }
+
   // Default fallback
   return 'unknown';
 }

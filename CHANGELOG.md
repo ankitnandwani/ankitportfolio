@@ -1,3 +1,12 @@
+## [0.1.109] - 2026-10-23
+- Completed M13.03: implemented the document ingestion pipeline (created src/lib/knowledge/ingestion.ts, src/lib/knowledge/markdown.ts, scripts/ingest-knowledge.mts, src/lib/knowledge/testing/fakeSupabase.ts, knowledge/README.md; rewrote src/lib/knowledge/ingestion.ts; updated src/lib/knowledge/pii.ts, src/lib/knowledge/metadata.ts, src/lib/supabase.ts, package.json)
+- The pipeline now processes 11 structured knowledge source types plus markdown documents, redacts PII, extracts metadata, stores documents and chunks with referential integrity, and reports ingestion statistics
+- Made the pipeline idempotent: a document is identified by its source type and title, so re-running updates only the documents whose content changed, bumps their version and replaces their chunks instead of duplicating the knowledge base
+- Added `npm run ingest` to trigger an ingestion run manually
+- Fixed the phone number redaction matching ISO dates, which was corrupting the career timeline, education and certification dates in the knowledge base (PRD §37 scopes redaction to phone numbers)
+- Fixed social links being classified as PROFESSIONAL instead of PUBLIC (PRD §34)
+- Added 20 tests covering the ingestion pipeline end to end, markdown documents and the two fixes, bringing the suite to 64 tests
+
 ## [0.1.108] - 2026-10-22
 - Wired up a real test suite: `npm test` now runs `node --test` instead of the previous "No tests yet" no-op, so the CI Tests step actually executes tests. Added 44 tests across the GitHub URL parser, the GitHub service, and the M13.03 chunking, PII redaction and metadata modules
 - Extracted `parseGitHubUrl` into `src/lib/githubUrl.ts` so the parsing rules can be unit tested in isolation from environment validation, and switched `src/lib/githubService.ts` to explicit `.ts` import specifiers so Node's ESM test runner can load it

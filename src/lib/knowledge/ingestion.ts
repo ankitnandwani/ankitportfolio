@@ -1,149 +1,342 @@
 /**
  * Document ingestion pipeline for the AI knowledge base.
- * 
+ *
  * Processes knowledge source files from src/data/ into documents and chunks
  * for storage in the Supabase knowledge base.
+ *
+ * The pipeline is idempotent: a document is identified by its source type and
+ * title, so re-running it updates only the documents whose content changed
+ * and leaves the rest untouched. Updated documents get a new version and
+ * their chunks are replaced, which is how incremental updates are tracked.
  */
 
-import { supabaseServiceRole } from '@/src/lib/supabase';
-import {
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+import { chunkByParagraphsThenOverlay } from './chunking.ts';
+import { buildMarkdownDocuments } from './markdown.ts';
+import { extractMetadata } from './metadata.ts';
+import { redactPII } from './pii.ts';
+import type {
   KnowledgeDocumentInsert,
   KnowledgeChunkInsert,
-} from '@/src/lib/knowledge/schema';
-import { chunkByParagraphsThenOverlay } from '@/src/lib/knowledge/chunking';
-import { extractMetadata } from '@/src/lib/knowledge/metadata';
-import { redactPII } from '@/src/lib/knowledge/pii';
+} from './schema.ts';
 
-// Import all knowledge source data files
-import { projectsData, type Project } from '@/src/data/projects';
-import { achievementsData, type Achievement } from '@/src/data/achievements';
-import { summaryCopyData, type SummaryCopyData } from '@/src/data/summaryCopyData';
-import { educationData, type EducationEntry } from '@/src/data/education';
-import { certificationsData, type CertificationEntry } from '@/src/data/certifications';
-import { skillsData, type SkillsData } from '@/src/data/skills';
-import { careerTimelineData, type CareerTimelineEntry } from '@/src/data/careerTimeline';
-import { professionalSnapshotData, type ProfessionalSnapshotData } from '@/src/data/professionalSnapshot';
-import { testimonials, type Testimonial } from '@/src/data/testimonials';
-import { capabilityAreasData, type CapabilityAreasData } from '@/src/data/capabilityAreasData';
-import { socialLinks, type SocialLink } from '@/src/data/socialLinks';
-// Note: github.ts only contains types, no actual data to ingest
+import { projectsData } from '../../data/projects.ts';
+import { achievementsData } from '../../data/achievements.ts';
+import { summaryCopyData } from '../../data/summaryCopyData.ts';
+import { educationData } from '../../data/education.ts';
+import { certificationsData } from '../../data/certifications.ts';
+import { skillsData } from '../../data/skills.ts';
+import { careerTimelineData } from '../../data/careerTimeline.ts';
+import { professionalSnapshotData } from '../../data/professionalSnapshot.ts';
+import { testimonials } from '../../data/testimonials.ts';
+import { capabilityAreasData } from '../../data/capabilityAreasData.ts';
+import { socialLinks } from '../../data/socialLinks.ts';
 
 /**
- * Keys of the optional categorized skill groups defined by {@link SkillsData}.
+ * Classification levels allowed by the knowledge base (PRD §34).
  */
-type SkillCategoryKey = keyof NonNullable<SkillsData['categorizedSkills']>;
+export type KnowledgeClassification =
+  | 'PUBLIC'
+  | 'PROFESSIONAL'
+  | 'CONFIDENTIAL'
+  | 'PRIVATE';
 
 /**
- * Ingests all knowledge source data into the knowledge base.
- * 
- * This function:
- * 1. Processes each knowledge source type
- * 2. Converts each item to a document
- * 3. Applies PII redaction
- * 4. Splits into chunks
- * 5. Extracts metadata
- * 6. Stores documents and chunks in Supabase
- * 
- * @returns Object with ingestion statistics
+ * Target chunk size and overlap used for every knowledge document.
  */
-export async function ingestKnowledgeSources(): Promise<{
-  documentsProcessed: number;
+const CHUNK_TARGET_TOKENS = 150;
+const CHUNK_OVERLAP_PERCENT = 20;
+
+/**
+ * A document that is ready to be stored, before it is chunked.
+ */
+export interface DocumentSpec {
+  /**
+   * Display title. Together with the source type it identifies the document
+   * within the knowledge base.
+   */
+  title: string;
+
+  /**
+   * The kind of source the document came from (e.g. 'project', 'resume_summary').
+   */
+  source_type: string;
+
+  /**
+   * How the document may be used (PRD §34).
+   */
+  classification: KnowledgeClassification;
+
+  /**
+   * The document body, already redacted of phone numbers.
+   */
+  content: string;
+
+  /**
+   * Version of the source data the document was built from.
+   */
+  version: number;
+
+  /**
+   * Path of the source file, recorded on every chunk.
+   */
+  source_file: string;
+
+  /**
+   * Additional metadata merged into every chunk of the document.
+   */
+  chunk_metadata?: Record<string, unknown>;
+}
+
+/**
+ * Statistics collected while ingesting a set of sources.
+ */
+export interface IngestionStats {
+  documentsCreated: number;
+  documentsUpdated: number;
+  documentsUnchanged: number;
   chunksCreated: number;
   errors: Array<{ source: string; error: string }>;
-}> {
-  const stats = {
-    documentsProcessed: 0,
-    chunksCreated: 0,
-    errors: [] as Array<{ source: string; error: string }>
-  };
-  
-  try {
-    // Process projects
-    const projectsResult = await processProjects(projectsData, 'src/data/projects.ts');
-    stats.documentsProcessed += projectsResult.documentsProcessed;
-    stats.chunksCreated += projectsResult.chunksCreated;
-    stats.errors.push(...projectsResult.errors);
-    
-    // Process achievements
-    const achievementsResult = await processAchievements(achievementsData, 'src/data/achievements.ts');
-    stats.documentsProcessed += achievementsResult.documentsProcessed;
-    stats.chunksCreated += achievementsResult.chunksCreated;
-    stats.errors.push(...achievementsResult.errors);
-    
-    // Process resume summary
-    const summaryResult = await processResumeSummary(summaryCopyData, 'src/data/summaryCopyData.ts');
-    stats.documentsProcessed += summaryResult.documentsProcessed;
-    stats.chunksCreated += summaryResult.chunksCreated;
-    stats.errors.push(...summaryResult.errors);
-    
-    // Process education
-    const educationResult = await processEducation(educationData, 'src/data/education.ts');
-    stats.documentsProcessed += educationResult.documentsProcessed;
-    stats.chunksCreated += educationResult.chunksCreated;
-    stats.errors.push(...educationResult.errors);
-    
-    // Process certifications
-    const certificationsResult = await processCertifications(certificationsData, 'src/data/certifications.ts');
-    stats.documentsProcessed += certificationsResult.documentsProcessed;
-    stats.chunksCreated += certificationsResult.chunksCreated;
-    stats.errors.push(...certificationsResult.errors);
-    
-    // Process skills
-    const skillsResult = await processSkills(skillsData, 'src/data/skills.ts');
-    stats.documentsProcessed += skillsResult.documentsProcessed;
-    stats.chunksCreated += skillsResult.chunksCreated;
-    stats.errors.push(...skillsResult.errors);
-    
-    // Process career timeline
-    const careerTimelineResult = await processCareerTimeline(careerTimelineData, 'src/data/careerTimeline.ts');
-    stats.documentsProcessed += careerTimelineResult.documentsProcessed;
-    stats.chunksCreated += careerTimelineResult.chunksCreated;
-    stats.errors.push(...careerTimelineResult.errors);
-    
-    // Process professional snapshot
-    const professionalSnapshotResult = await processProfessionalSnapshot(professionalSnapshotData, 'src/data/professionalSnapshot.ts');
-    stats.documentsProcessed += professionalSnapshotResult.documentsProcessed;
-    stats.chunksCreated += professionalSnapshotResult.chunksCreated;
-    stats.errors.push(...professionalSnapshotResult.errors);
-    
-    // Process testimonials
-    const testimonialsResult = await processTestimonials(testimonials, 'src/data/testimonials.ts');
-    stats.documentsProcessed += testimonialsResult.documentsProcessed;
-    stats.chunksCreated += testimonialsResult.chunksCreated;
-    stats.errors.push(...testimonialsResult.errors);
-    
-    // Process capability areas
-    const capabilityAreasResult = await processCapabilityAreas(capabilityAreasData, 'src/data/capabilityAreasData.ts');
-    stats.documentsProcessed += capabilityAreasResult.documentsProcessed;
-    stats.chunksCreated += capabilityAreasResult.chunksCreated;
-    stats.errors.push(...capabilityAreasResult.errors);
-    
-    // Process social links
-    const socialLinksResult = await processSocialLinks(socialLinks, 'src/data/socialLinks.ts');
-    stats.documentsProcessed += socialLinksResult.documentsProcessed;
-    stats.chunksCreated += socialLinksResult.chunksCreated;
-    stats.errors.push(...socialLinksResult.errors);
-    
-  } catch (error) {
-    stats.errors.push({
-      source: 'general',
-      error: error instanceof Error ? error.message : String(error)
-    });
+}
+
+/**
+ * A document as it is stored in the knowledge base.
+ */
+interface StoredDocument {
+  id: string;
+  title: string;
+  source_type: string;
+  classification: KnowledgeClassification;
+  content: string;
+  version: number;
+}
+
+/**
+ * Turns an error into a message without leaking any raw content.
+ */
+function describeError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * Finds the document previously stored for a source type and title.
+ */
+async function findExistingDocument(
+  store: SupabaseClient,
+  sourceType: string,
+  title: string
+): Promise<StoredDocument | null> {
+  const { data, error } = await store
+    .from('knowledge_documents')
+    .select('id, title, source_type, classification, content, version')
+    .eq('source_type', sourceType)
+    .eq('title', title)
+    .limit(1);
+
+  if (error) throw new Error(error.message);
+
+  const rows = (data ?? []) as StoredDocument[];
+  return rows[0] ?? null;
+}
+
+/**
+ * Stores a document and its chunks, updating an existing document in place
+ * when the source content changed.
+ *
+ * @returns whether the document was created, updated or left untouched, and
+ *          how many chunks were written.
+ */
+async function storeDocument(
+  store: SupabaseClient,
+  spec: DocumentSpec
+): Promise<{ outcome: 'created' | 'updated' | 'unchanged'; chunksCreated: number }> {
+  const existing = await findExistingDocument(store, spec.source_type, spec.title);
+
+  // Nothing changed, so there is no work to do.
+  if (existing && existing.content === spec.content && existing.version >= spec.version) {
+    return { outcome: 'unchanged', chunksCreated: 0 };
   }
-  
+
+  // A changed document moves on to the next version, unless the source data
+  // declares an explicit higher version.
+  const version = existing
+    ? Math.max(spec.version, existing.version + 1)
+    : spec.version;
+
+  let documentId: string;
+
+  if (existing) {
+    const { error } = await store
+      .from('knowledge_documents')
+      .update({
+        title: spec.title,
+        source_type: spec.source_type,
+        classification: spec.classification,
+        content: spec.content,
+        version,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existing.id);
+
+    if (error) throw new Error(error.message);
+    documentId = existing.id;
+
+    // Replace the chunks so they match the new content.
+    const { error: deleteError } = await store
+      .from('knowledge_chunks')
+      .delete()
+      .eq('document_id', documentId);
+
+    if (deleteError) throw new Error(deleteError.message);
+  } else {
+    const document: KnowledgeDocumentInsert = {
+      title: spec.title,
+      source_type: spec.source_type,
+      classification: spec.classification,
+      content: spec.content,
+      version,
+    };
+
+    const { data, error } = await store
+      .from('knowledge_documents')
+      .insert(document)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+
+    const inserted = data as { id: string };
+    documentId = inserted.id;
+  }
+
+  const chunks = chunkByParagraphsThenOverlay(spec.content, {
+    targetTokens: CHUNK_TARGET_TOKENS,
+    overlapPercent: CHUNK_OVERLAP_PERCENT,
+  });
+
+  let chunksCreated = 0;
+
+  for (let index = 0; index < chunks.length; index++) {
+    const chunk: KnowledgeChunkInsert = {
+      document_id: documentId,
+      chunk_index: index,
+      content: redactPII(chunks[index]),
+      embedding: [], // Will be filled in M13.04
+      classification: spec.classification,
+      metadata: {
+        source_file: spec.source_file,
+        ...spec.chunk_metadata,
+        original_length: spec.content.length,
+      },
+    };
+
+    const { error } = await store.from('knowledge_chunks').insert(chunk);
+    if (error) throw new Error(error.message);
+
+    chunksCreated++;
+  }
+
+  return { outcome: existing ? 'updated' : 'created', chunksCreated };
+}
+
+/**
+ * Stores a set of documents, collecting failures instead of aborting the run.
+ */
+async function storeDocuments(
+  store: SupabaseClient,
+  sourceLabel: string,
+  specs: DocumentSpec[]
+): Promise<IngestionStats> {
+  const stats: IngestionStats = {
+    documentsCreated: 0,
+    documentsUpdated: 0,
+    documentsUnchanged: 0,
+    chunksCreated: 0,
+    errors: [],
+  };
+
+  for (const spec of specs) {
+    try {
+      const result = await storeDocument(store, spec);
+
+      if (result.outcome === 'created') stats.documentsCreated++;
+      else if (result.outcome === 'updated') stats.documentsUpdated++;
+      else stats.documentsUnchanged++;
+
+      stats.chunksCreated += result.chunksCreated;
+    } catch (error) {
+      stats.errors.push({
+        source: `${sourceLabel}:${spec.title}`,
+        error: describeError(error),
+      });
+    }
+  }
+
   return stats;
 }
 
 /**
- * Processes project data into documents and chunks.
+ * Merges the result of one source into the overall statistics.
  */
-async function processProjects(projects: Project[], filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
-  for (const project of projects) {
-    try {
-      // Create document content from project fields
-      const content = `
+function mergeStats(target: IngestionStats, source: IngestionStats): void {
+  target.documentsCreated += source.documentsCreated;
+  target.documentsUpdated += source.documentsUpdated;
+  target.documentsUnchanged += source.documentsUnchanged;
+  target.chunksCreated += source.chunksCreated;
+  target.errors.push(...source.errors);
+}
+
+/**
+ * Builds the documents for a single source file.
+ *
+ * Titles are unique within a source type, which is what identifies a document
+ * across runs. Two entries that share a title are disambiguated with a
+ * numeric suffix so neither is lost.
+ */
+function buildDocuments(
+  sourceFile: string,
+  entries: Array<{
+    title: string;
+    content: string;
+    sourceData?: unknown;
+    chunkMetadata?: Record<string, unknown>;
+  }>
+): DocumentSpec[] {
+  const usedTitles = new Set<string>();
+
+  return entries.map((entry) => {
+    const metadata = extractMetadata(sourceFile, entry.sourceData);
+
+    let title = entry.title;
+    let suffix = 2;
+    while (usedTitles.has(title)) {
+      title = `${entry.title} (${suffix})`;
+      suffix++;
+    }
+    usedTitles.add(title);
+
+    return {
+      title,
+      source_type: metadata.source_type,
+      classification: metadata.classification,
+      content: redactPII(entry.content),
+      version: metadata.version,
+      source_file: sourceFile,
+      chunk_metadata: entry.chunkMetadata,
+    };
+  });
+}
+
+/**
+ * Builds the documents for the project sources.
+ */
+function buildProjectDocuments(): DocumentSpec[] {
+  return buildDocuments(
+    'src/data/projects.ts',
+    projectsData.map((project) => ({
+      title: project.name,
+      content: `
         Project: ${project.name}
         Value Proposition: ${project.valueProposition}
         Category: ${project.category}
@@ -153,86 +346,22 @@ async function processProjects(projects: Project[], filePath: string) {
         Architecture: ${project.architecture}
         GitHub URL: ${project.githubUrl || 'Not available'}
         Demo URL: ${project.demoUrl || 'Not available'}
-      `.trim();
-      
-      // Redact PII
-      const cleanContent = redactPII(content);
-      
-      // Extract metadata
-      const metadata = extractMetadata(filePath, project);
-      
-      // Create document
-      const document: KnowledgeDocumentInsert = {
-        title: project.name,
-        source_type: metadata.source_type,
-        classification: metadata.classification,
-        content: cleanContent,
-        version: metadata.version
-      };
-      
-      // Insert document
-      const { data: docData, error: docError } = await supabaseServiceRole
-        .from('knowledge_documents')
-        .insert(document)
-        .select()
-        .single();
-      
-      if (docError) throw docError;
-      
-      // Chunk the content
-      const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-        targetTokens: 150,
-        overlapPercent: 20
-      });
-      
-      // Insert chunks
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkContent = redactPII(chunks[i]); // Double-check
-        
-        const chunk: KnowledgeChunkInsert = {
-          document_id: docData.id,
-          chunk_index: i,
-          content: chunkContent,
-          embedding: [], // Will be filled in M13.04
-          classification: metadata.classification,
-          metadata: {
-            source_file: filePath,
-            project_id: project.id,
-            original_length: content.length
-          }
-        };
-        
-        const { error: chunkError } = await supabaseServiceRole
-          .from('knowledge_chunks')
-          .insert(chunk);
-          
-        if (chunkError) throw chunkError;
-        
-        stats.chunksCreated++;
-      }
-      
-      stats.documentsProcessed++;
-    } catch (error) {
-      stats.errors.push({
-        source: `project:${project.id || 'unknown'}`,
-        error: error instanceof Error ? error.message : String(error)
-      });
-    }
-  }
-  
-  return stats;
+      `.trim(),
+      sourceData: project,
+      chunkMetadata: { project_id: project.id },
+    }))
+  );
 }
 
 /**
- * Processes achievement data into documents and chunks.
+ * Builds the documents for the achievement sources.
  */
-async function processAchievements(achievements: Achievement[], filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
-  for (const achievement of achievements) {
-    try {
-      // Create document content from achievement fields
-      const content = `
+function buildAchievementDocuments(): DocumentSpec[] {
+  return buildDocuments(
+    'src/data/achievements.ts',
+    achievementsData.map((achievement) => ({
+      title: achievement.title,
+      content: `
         Achievement: ${achievement.title}
         Domain: ${achievement.domain}
         Company: ${achievement.company}
@@ -241,482 +370,132 @@ async function processAchievements(achievements: Achievement[], filePath: string
         Approach: ${achievement.approach}
         Technologies: ${achievement.technologies.join(', ')}
         Outcome: ${achievement.outcome}
-      `.trim();
-      
-      // Redact PII
-      const cleanContent = redactPII(content);
-      
-      // Extract metadata
-      const metadata = extractMetadata(filePath, achievement);
-      
-      // Create document
-      const document: KnowledgeDocumentInsert = {
-        title: achievement.title,
-        source_type: metadata.source_type,
-        classification: metadata.classification,
-        content: cleanContent,
-        version: metadata.version
-      };
-      
-      // Insert document
-      const { data: docData, error: docError } = await supabaseServiceRole
-        .from('knowledge_documents')
-        .insert(document)
-        .select()
-        .single();
-      
-      if (docError) throw docError;
-      
-      // Chunk the content (achievements are usually concise, but still chunk)
-      const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-        targetTokens: 150,
-        overlapPercent: 20
-      });
-      
-      // Insert chunks
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkContent = redactPII(chunks[i]);
-        
-        const chunk: KnowledgeChunkInsert = {
-          document_id: docData.id,
-          chunk_index: i,
-          content: chunkContent,
-          embedding: [], // Will be filled in M13.04
-          classification: metadata.classification,
-          metadata: {
-            source_file: filePath,
-            achievement_id: achievement.id,
-            original_length: content.length
-          }
-        };
-        
-        const { error: chunkError } = await supabaseServiceRole
-          .from('knowledge_chunks')
-          .insert(chunk);
-          
-        if (chunkError) throw chunkError;
-        
-        stats.chunksCreated++;
-      }
-      
-      stats.documentsProcessed++;
-    } catch (error) {
-      stats.errors.push({
-        source: `achievement:${achievement.id || 'unknown'}`,
-        error: error instanceof Error ? error.message : String(error)
-      });
-    }
-  }
-  
-  return stats;
+      `.trim(),
+      sourceData: achievement,
+      chunkMetadata: { achievement_id: achievement.id },
+    }))
+  );
 }
 
 /**
- * Processes resume summary data.
+ * Builds the document for the professional summary.
  */
-async function processResumeSummary(summaryData: SummaryCopyData, filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
-  try {
-    const content = `Professional Summary: ${summaryData.summary}`;
-    
-    // Redact PII
-    const cleanContent = redactPII(content);
-    
-    // Extract metadata
-    const metadata = extractMetadata(filePath, summaryData);
-    
-    // Create document
-    const document: KnowledgeDocumentInsert = {
+function buildResumeSummaryDocuments(): DocumentSpec[] {
+  return buildDocuments('src/data/summaryCopyData.ts', [
+    {
       title: 'Professional Summary',
-      source_type: metadata.source_type,
-      classification: metadata.classification,
-      content: cleanContent,
-      version: metadata.version
-    };
-    
-    // Insert document
-    const { data: docData, error: docError } = await supabaseServiceRole
-      .from('knowledge_documents')
-      .insert(document)
-      .select()
-      .single();
-    
-    if (docError) throw docError;
-    
-    // Chunk the content
-    const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-      targetTokens: 150,
-      overlapPercent: 20
-    });
-    
-    // Insert chunks
-    for (let i = 0; i < chunks.length; i++) {
-      const chunkContent = redactPII(chunks[i]);
-      
-      const chunk: KnowledgeChunkInsert = {
-        document_id: docData.id,
-        chunk_index: i,
-        content: chunkContent,
-        embedding: [], // Will be filled in M13.04
-        classification: metadata.classification,
-        metadata: {
-          source_file: filePath,
-          original_length: content.length
-        }
-      };
-      
-      const { error: chunkError } = await supabaseServiceRole
-        .from('knowledge_chunks')
-        .insert(chunk);
-        
-      if (chunkError) throw chunkError;
-      
-      stats.chunksCreated++;
-    }
-    
-    stats.documentsProcessed = 1;
-  } catch (error) {
-    stats.errors.push({
-      source: 'resume_summary',
-      error: error instanceof Error ? error.message : String(error)
-    });
-  }
-  
-  return stats;
+      content: `Professional Summary: ${summaryCopyData.summary}`,
+      sourceData: summaryCopyData,
+    },
+  ]);
 }
 
 /**
- * Processes education data.
+ * Builds the documents for the education sources.
  */
-async function processEducation(educationData: EducationEntry[], filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
-  for (const [index, edu] of educationData.entries()) {
-    try {
-      const content = `
-        Education: ${edu.degree || ''} in ${edu.fieldOfStudy || ''}
-        Institution: ${edu.institution || ''}
-        Location: ${edu.location || ''}
-        Dates: ${edu.startDate || ''} - ${edu.endDate || ''}
-        Description: ${edu.description || ''}
-      `.trim();
-      
-      // Redact PII
-      const cleanContent = redactPII(content);
-      
-      // Extract metadata
-      const metadata = extractMetadata(filePath, edu);
-      
-      // Create document
-      const document: KnowledgeDocumentInsert = {
-        title: `${edu.degree || ''} - ${edu.institution || ''}`,
-        source_type: metadata.source_type,
-        classification: metadata.classification,
-        content: cleanContent,
-        version: metadata.version
-      };
-      
-      // Insert document
-      const { data: docData, error: docError } = await supabaseServiceRole
-        .from('knowledge_documents')
-        .insert(document)
-        .select()
-        .single();
-      
-      if (docError) throw docError;
-      
-      // Chunk the content
-      const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-        targetTokens: 150,
-        overlapPercent: 20
-      });
-      
-      // Insert chunks
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkContent = redactPII(chunks[i]);
-        
-        const chunk: KnowledgeChunkInsert = {
-          document_id: docData.id,
-          chunk_index: i,
-          content: chunkContent,
-          embedding: [], // Will be filled in M13.04
-          classification: metadata.classification,
-          metadata: {
-            source_file: filePath,
-            education_id: index.toString(),
-            original_length: content.length
-          }
-        };
-        
-        const { error: chunkError } = await supabaseServiceRole
-          .from('knowledge_chunks')
-          .insert(chunk);
-          
-        if (chunkError) throw chunkError;
-        
-        stats.chunksCreated++;
-      }
-      
-      stats.documentsProcessed++;
-    } catch (error) {
-      stats.errors.push({
-        source: `education:${index}`,
-        error: error instanceof Error ? error.message : String(error)
-      });
-    }
-  }
-  
-  return stats;
+function buildEducationDocuments(): DocumentSpec[] {
+  return buildDocuments(
+    'src/data/education.ts',
+    educationData.map((entry) => ({
+      title: `${entry.degree || ''} - ${entry.institution || ''}`,
+      content: `
+        Education: ${entry.degree || ''} in ${entry.fieldOfStudy || ''}
+        Institution: ${entry.institution || ''}
+        Location: ${entry.location || ''}
+        Dates: ${entry.startDate || ''} - ${entry.endDate || ''}
+        Description: ${entry.description || ''}
+      `.trim(),
+      sourceData: entry,
+    }))
+  );
 }
 
 /**
- * Processes certifications data.
+ * Builds the documents for the certification sources.
  */
-async function processCertifications(certificationsData: CertificationEntry[], filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
-  for (const [index, cert] of certificationsData.entries()) {
-    try {
-      const content = `
-        Certification: ${cert.name || ''}
-        Issuing Organization: ${cert.issuer || ''}
-        Date Issued: ${cert.date || ''}
-        Verification URL: ${cert.verificationUrl || ''}
-        Description: ${cert.description || ''}
-      `.trim();
-      
-      // Redact PII
-      const cleanContent = redactPII(content);
-      
-      // Extract metadata
-      const metadata = extractMetadata(filePath, cert);
-      
-      // Create document
-      const document: KnowledgeDocumentInsert = {
-        title: cert.name || 'Certification',
-        source_type: metadata.source_type,
-        classification: metadata.classification,
-        content: cleanContent,
-        version: metadata.version
-      };
-      
-      // Insert document
-      const { data: docData, error: docError } = await supabaseServiceRole
-        .from('knowledge_documents')
-        .insert(document)
-        .select()
-        .single();
-      
-      if (docError) throw docError;
-      
-      // Chunk the content
-      const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-        targetTokens: 150,
-        overlapPercent: 20
-      });
-      
-      // Insert chunks
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkContent = redactPII(chunks[i]);
-        
-        const chunk: KnowledgeChunkInsert = {
-          document_id: docData.id,
-          chunk_index: i,
-          content: chunkContent,
-          embedding: [], // Will be filled in M13.04
-          classification: metadata.classification,
-          metadata: {
-            source_file: filePath,
-            certification_id: index.toString(),
-            original_length: content.length
-          }
-        };
-        
-        const { error: chunkError } = await supabaseServiceRole
-          .from('knowledge_chunks')
-          .insert(chunk);
-        
-        if (chunkError) throw chunkError;
-        
-        stats.chunksCreated++;
-      }
-      
-      stats.documentsProcessed++;
-    } catch (error) {
-      stats.errors.push({
-        source: `certification:${index}`,
-        error: error instanceof Error ? error.message : String(error)
-      });
-    }
-  }
-  
-  return stats;
+function buildCertificationDocuments(): DocumentSpec[] {
+  return buildDocuments(
+    'src/data/certifications.ts',
+    certificationsData.map((certification) => ({
+      title: certification.name || 'Certification',
+      content: `
+        Certification: ${certification.name || ''}
+        Issuing Organization: ${certification.issuer || ''}
+        Date Issued: ${certification.date || ''}
+        Verification URL: ${certification.verificationUrl || ''}
+        Description: ${certification.description || ''}
+      `.trim(),
+      sourceData: certification,
+    }))
+  );
 }
 
 /**
- * Processes skills data.
+ * Builds the documents for the skills sources.
  */
-async function processSkills(skillsData: SkillsData, filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
-  try {
-    // Process technical skills array
-    if (skillsData.technicalSkills && skillsData.technicalSkills.length > 0) {
-      const content = `
-        Technical Skills: ${skillsData.technicalSkills.join(', ')}
-      `.trim();
-      
-      // Redact PII
-      const cleanContent = redactPII(content);
-      
-      // Extract metadata
-      const metadata = extractMetadata(filePath, skillsData);
-      
-      // Create document
-      const document: KnowledgeDocumentInsert = {
-        title: 'Technical Skills',
-        source_type: metadata.source_type,
-        classification: metadata.classification,
-        content: cleanContent,
-        version: metadata.version
-      };
-      
-      // Insert document
-      const { data: docData, error: docError } = await supabaseServiceRole
-        .from('knowledge_documents')
-        .insert(document)
-        .select()
-        .single();
-      
-      if (docError) throw docError;
-      
-      // Chunk the content
-      const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-        targetTokens: 150,
-        overlapPercent: 20
-      });
-      
-      // Insert chunks
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkContent = redactPII(chunks[i]);
-        
-        const chunk: KnowledgeChunkInsert = {
-          document_id: docData.id,
-          chunk_index: i,
-          content: chunkContent,
-          embedding: [], // Will be filled in M13.04
-          classification: metadata.classification,
-          metadata: {
-            source_file: filePath,
-            skill_type: 'technical',
-            skill_count: skillsData.technicalSkills.length,
-            original_length: content.length
-          }
-        };
-        
-        const { error: chunkError } = await supabaseServiceRole
-          .from('knowledge_chunks')
-          .insert(chunk);
-        
-        if (chunkError) throw chunkError;
-        
-        stats.chunksCreated++;
-      }
-      
-      stats.documentsProcessed++;
-    }
-    
-    // Process categorized skills
-    if (skillsData.categorizedSkills) {
-      const categories: SkillCategoryKey[] = ['qualityEngineering', 'backendApi', 'ciCd', 'cloudData', 'aiModernEngineering'];
-      for (const category of categories) {
-        const skillArray = skillsData.categorizedSkills[category];
-        if (skillArray && skillArray.length > 0) {
-          const content = `
-            ${category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: ${skillArray.join(', ')}
-          `.trim();
-          
-          // Redact PII
-          const cleanContent = redactPII(content);
-          
-          // Extract metadata
-          const metadata = extractMetadata(filePath, { category, skillArray });
-          
-          // Create document
-          const document: KnowledgeDocumentInsert = {
-            title: `${category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} Skills`,
-            source_type: metadata.source_type,
-            classification: metadata.classification,
-            content: cleanContent,
-            version: metadata.version
-          };
-          
-          // Insert document
-          const { data: docData, error: docError } = await supabaseServiceRole
-            .from('knowledge_documents')
-            .insert(document)
-            .select()
-            .single();
-          
-          if (docError) throw docError;
-          
-          // Chunk the content
-          const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-            targetTokens: 150,
-            overlapPercent: 20
-          });
-          
-          // Insert chunks
-          for (let i = 0; i < chunks.length; i++) {
-            const chunkContent = redactPII(chunks[i]);
-            
-            const chunk: KnowledgeChunkInsert = {
-              document_id: docData.id,
-              chunk_index: i,
-              content: chunkContent,
-              embedding: [], // Will be filled in M13.04
-              classification: metadata.classification,
-              metadata: {
-                source_file: filePath,
-                skill_type: category,
-                skill_count: skillArray.length,
-                original_length: content.length
-              }
-            };
-            
-            const { error: chunkError } = await supabaseServiceRole
-              .from('knowledge_chunks')
-              .insert(chunk);
-            
-            if (chunkError) throw chunkError;
-            
-            stats.chunksCreated++;
-          }
-          
-          stats.documentsProcessed++;
-        }
-      }
-    }
-  } catch (error) {
-    stats.errors.push({
-      source: 'skills',
-      error: error instanceof Error ? error.message : String(error)
+function buildSkillDocuments(): DocumentSpec[] {
+  const entries: Array<{
+    title: string;
+    content: string;
+    sourceData?: unknown;
+    chunkMetadata?: Record<string, unknown>;
+  }> = [];
+
+  if (skillsData.technicalSkills && skillsData.technicalSkills.length > 0) {
+    entries.push({
+      title: 'Technical Skills',
+      content: `Technical Skills: ${skillsData.technicalSkills.join(', ')}`,
+      sourceData: skillsData,
+      chunkMetadata: {
+        skill_type: 'technical',
+        skill_count: skillsData.technicalSkills.length,
+      },
     });
   }
-  
-  return stats;
+
+  const categorized = skillsData.categorizedSkills;
+
+  if (categorized) {
+    const categories = [
+      'qualityEngineering',
+      'backendApi',
+      'ciCd',
+      'cloudData',
+      'aiModernEngineering',
+    ] as const;
+
+    for (const category of categories) {
+      const skillArray = categorized[category];
+      if (!skillArray || skillArray.length === 0) continue;
+
+      const label = category
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (character) => character.toUpperCase());
+
+      entries.push({
+        title: `${label} Skills`,
+        content: `${label}: ${skillArray.join(', ')}`,
+        sourceData: { category, skillArray },
+        chunkMetadata: {
+          skill_type: category,
+          skill_count: skillArray.length,
+        },
+      });
+    }
+  }
+
+  return buildDocuments('src/data/skills.ts', entries);
 }
 
 /**
- * Processes career timeline data.
+ * Builds the documents for the career timeline sources.
  */
-async function processCareerTimeline(careerTimelineData: CareerTimelineEntry[], filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
-  for (const [index, role] of careerTimelineData.entries()) {
-    try {
-      const content = `
+function buildCareerTimelineDocuments(): DocumentSpec[] {
+  return buildDocuments(
+    'src/data/careerTimeline.ts',
+    careerTimelineData.map((role) => ({
+      title: `${role.role || ''} at ${role.company || ''}`,
+      content: `
         Role: ${role.role || ''}
         Company: ${role.company || ''}
         Domain: ${role.domain || ''}
@@ -724,411 +503,193 @@ async function processCareerTimeline(careerTimelineData: CareerTimelineEntry[], 
         Responsibilities: ${role.responsibilities?.join('\n') || ''}
         Technologies: ${role.technologies?.join(', ') || ''}
         Notable Projects: ${role.notableProjects?.join('\n') || ''}
-      `.trim();
-      
-      // Redact PII
-      const cleanContent = redactPII(content);
-      
-      // Extract metadata
-      const metadata = extractMetadata(filePath, role);
-      
-      // Create document
-      const document: KnowledgeDocumentInsert = {
-        title: `${role.role || ''} at ${role.company || ''}`,
-        source_type: metadata.source_type,
-        classification: metadata.classification,
-        content: cleanContent,
-        version: metadata.version
-      };
-      
-      // Insert document
-      const { data: docData, error: docError } = await supabaseServiceRole
-        .from('knowledge_documents')
-        .insert(document)
-        .select()
-        .single();
-      
-      if (docError) throw docError;
-      
-      // Chunk the content
-      const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-        targetTokens: 150,
-        overlapPercent: 20
-      });
-      
-      // Insert chunks
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkContent = redactPII(chunks[i]);
-        
-        const chunk: KnowledgeChunkInsert = {
-          document_id: docData.id,
-          chunk_index: i,
-          content: chunkContent,
-          embedding: [], // Will be filled in M13.04
-          classification: metadata.classification,
-          metadata: {
-            source_file: filePath,
-            role_id: index.toString(),
-            original_length: content.length
-          }
-        };
-        
-        const { error: chunkError } = await supabaseServiceRole
-          .from('knowledge_chunks')
-          .insert(chunk);
-        
-        if (chunkError) throw chunkError;
-        
-        stats.chunksCreated++;
-      }
-      
-      stats.documentsProcessed++;
-    } catch (error) {
-      stats.errors.push({
-        source: `career_timeline:${index}`,
-        error: error instanceof Error ? error.message : String(error)
-      });
-    }
-  }
-  
-  return stats;
+      `.trim(),
+      sourceData: role,
+    }))
+  );
 }
 
 /**
- * Processes professional snapshot data.
+ * Builds the document for the professional snapshot.
  */
-async function processProfessionalSnapshot(snapshotData: ProfessionalSnapshotData, filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
-  try {
-    const content = `
-      Years of Experience: ${snapshotData.yearsExperience || ''}
-      Domains: ${snapshotData.domains?.join(', ') || ''}
-      Automation Experience: ${snapshotData.automationExperience || ''}
-      Cloud and CI/CD Practices: ${snapshotData.cloudCIDPractices || ''}
-    `.trim();
-    
-    // Redact PII
-    const cleanContent = redactPII(content);
-    
-    // Extract metadata
-    const metadata = extractMetadata(filePath, snapshotData);
-    
-    // Create document
-    const document: KnowledgeDocumentInsert = {
+function buildProfessionalSnapshotDocuments(): DocumentSpec[] {
+  return buildDocuments('src/data/professionalSnapshot.ts', [
+    {
       title: 'Professional Snapshot',
-      source_type: metadata.source_type,
-      classification: metadata.classification,
-      content: cleanContent,
-      version: metadata.version
-    };
-    
-    // Insert document
-    const { data: docData, error: docError } = await supabaseServiceRole
-      .from('knowledge_documents')
-      .insert(document)
-      .select()
-      .single();
-    
-    if (docError) throw docError;
-    
-    // Chunk the content
-    const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-      targetTokens: 150,
-      overlapPercent: 20
-    });
-    
-    // Insert chunks
-    for (let i = 0; i < chunks.length; i++) {
-      const chunkContent = redactPII(chunks[i]);
-      
-      const chunk: KnowledgeChunkInsert = {
-        document_id: docData.id,
-        chunk_index: i,
-        content: chunkContent,
-        embedding: [], // Will be filled in M13.04
-        classification: metadata.classification,
-        metadata: {
-          source_file: filePath,
-          original_length: content.length
-        }
-      };
-      
-      const { error: chunkError } = await supabaseServiceRole
-        .from('knowledge_chunks')
-        .insert(chunk);
-      
-      if (chunkError) throw chunkError;
-      
-      stats.chunksCreated++;
-    }
-    
-    stats.documentsProcessed = 1;
-  } catch (error) {
-    stats.errors.push({
-      source: 'professional_snapshot',
-      error: error instanceof Error ? error.message : String(error)
-    });
-  }
-  
-  return stats;
+      content: `
+        Years of Experience: ${professionalSnapshotData.yearsExperience || ''}
+        Domains: ${professionalSnapshotData.domains?.join(', ') || ''}
+        Automation Experience: ${professionalSnapshotData.automationExperience || ''}
+        Cloud and CI/CD Practices: ${professionalSnapshotData.cloudCIDPractices || ''}
+      `.trim(),
+      sourceData: professionalSnapshotData,
+    },
+  ]);
 }
 
 /**
- * Processes testimonials data.
+ * Builds the documents for the testimonial sources.
  */
-async function processTestimonials(testimonialsData: Testimonial[], filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
-  for (const testimonial of testimonialsData) {
-    try {
-      const content = `
+function buildTestimonialDocuments(): DocumentSpec[] {
+  return buildDocuments(
+    'src/data/testimonials.ts',
+    testimonials.map((testimonial) => ({
+      title: `Testimonial - ${testimonial.name || ''}`,
+      content: `
         Quote: ${testimonial.quote || ''}
         Author: ${testimonial.name || ''}
         Role: ${testimonial.role || ''}
         Company: ${testimonial.company || ''}
         Profile URL: ${testimonial.profileUrl || ''}
-      `.trim();
-      
-      // Redact PII
-      const cleanContent = redactPII(content);
-      
-      // Extract metadata
-      const metadata = extractMetadata(filePath, testimonial);
-      
-      // Create document
-      const document: KnowledgeDocumentInsert = {
-        title: `Testimonial - ${testimonial.name || ''}`,
-        source_type: metadata.source_type,
-        classification: metadata.classification,
-        content: cleanContent,
-        version: metadata.version
-      };
-      
-      // Insert document
-      const { data: docData, error: docError } = await supabaseServiceRole
-        .from('knowledge_documents')
-        .insert(document)
-        .select()
-        .single();
-      
-      if (docError) throw docError;
-      
-      // Chunk the content
-      const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-        targetTokens: 150,
-        overlapPercent: 20
-      });
-      
-      // Insert chunks
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkContent = redactPII(chunks[i]);
-        
-        const chunk: KnowledgeChunkInsert = {
-          document_id: docData.id,
-          chunk_index: i,
-          content: chunkContent,
-          embedding: [], // Will be filled in M13.04
-          classification: metadata.classification,
-          metadata: {
-            source_file: filePath,
-            testimonial_id: testimonial.id || i.toString(),
-            original_length: content.length
-          }
-        };
-        
-        const { error: chunkError } = await supabaseServiceRole
-          .from('knowledge_chunks')
-          .insert(chunk);
-        
-        if (chunkError) throw chunkError;
-        
-        stats.chunksCreated++;
-      }
-      
-      stats.documentsProcessed++;
-    } catch (error) {
-      stats.errors.push({
-        source: `testimonial:${testimonial.id || 'unknown'}`,
-        error: error instanceof Error ? error.message : String(error)
-      });
-    }
-  }
-  
-  return stats;
+      `.trim(),
+      sourceData: testimonial,
+      chunkMetadata: { testimonial_id: testimonial.id },
+    }))
+  );
 }
 
 /**
- * Processes capability areas data.
+ * Builds the document for the capability areas.
  */
-async function processCapabilityAreas(capabilityAreasData: CapabilityAreasData, filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
+function buildCapabilityAreaDocuments(): DocumentSpec[] {
+  return buildDocuments('src/data/capabilityAreasData.ts', [
+    {
+      title: 'Capability Areas',
+      content: `Capability Areas: ${capabilityAreasData.capabilities.join(', ')}`,
+      sourceData: capabilityAreasData,
+      chunkMetadata: { capability_count: capabilityAreasData.capabilities.length },
+    },
+  ]);
+}
+
+/**
+ * Builds one document per social media platform.
+ */
+function buildSocialLinkDocuments(): DocumentSpec[] {
+  const linksByPlatform = new Map<string, typeof socialLinks>();
+
+  for (const link of socialLinks) {
+    const platform = link.platform || 'Other';
+    const existing = linksByPlatform.get(platform);
+    if (existing) {
+      existing.push(link);
+    } else {
+      linksByPlatform.set(platform, [link]);
+    }
+  }
+
+  return buildDocuments(
+    'src/data/socialLinks.ts',
+    Array.from(linksByPlatform.entries()).map(([platform, links]) => ({
+      title: `Social Links - ${platform}`,
+      content: `
+        Platform: ${platform}
+        Links: ${links.map((link) => `${link.label || ''}: ${link.url || ''}`).join('\n')}
+      `.trim(),
+      sourceData: { platform, links },
+      chunkMetadata: { platform, link_count: links.length },
+    }))
+  );
+}
+
+/**
+ * A markdown file offered to the pipeline.
+ */
+export interface MarkdownSource {
+  /**
+   * Path of the file, recorded on every chunk.
+   */
+  path: string;
+
+  /**
+   * The raw file contents.
+   */
+  content: string;
+}
+
+/**
+ * Ingests all knowledge source data into the knowledge base.
+ *
+ * This function:
+ * 1. Processes each knowledge source type
+ * 2. Converts each item to a document
+ * 3. Applies PII redaction
+ * 4. Splits into chunks
+ * 5. Extracts metadata
+ * 6. Stores documents and chunks in Supabase
+ *
+ * @param store The store to write to. Defaults to the Supabase service role
+ *              client, which is created on demand so that importing this
+ *              module does not require environment variables.
+ * @param markdownSources Markdown documents to ingest, such as public
+ *              articles and approved interview talking points (PRD §33).
+ * @returns Object with ingestion statistics
+ */
+export async function ingestKnowledgeSources(
+  store?: SupabaseClient,
+  markdownSources: MarkdownSource[] = []
+): Promise<IngestionStats> {
+  const stats: IngestionStats = {
+    documentsCreated: 0,
+    documentsUpdated: 0,
+    documentsUnchanged: 0,
+    chunksCreated: 0,
+    errors: [],
+  };
+
   try {
-    // Process capabilities array
-    if (capabilityAreasData.capabilities && capabilityAreasData.capabilities.length > 0) {
-      const content = `
-        Capability Areas: ${capabilityAreasData.capabilities.join(', ')}
-      `.trim();
-      
-      // Redact PII
-      const cleanContent = redactPII(content);
-      
-      // Extract metadata
-      const metadata = extractMetadata(filePath, capabilityAreasData);
-      
-      // Create document
-      const document: KnowledgeDocumentInsert = {
-        title: 'Capability Areas',
-        source_type: metadata.source_type,
-        classification: metadata.classification,
-        content: cleanContent,
-        version: metadata.version
-      };
-      
-      // Insert document
-      const { data: docData, error: docError } = await supabaseServiceRole
-        .from('knowledge_documents')
-        .insert(document)
-        .select()
-        .single();
-      
-      if (docError) throw docError;
-      
-      // Chunk the content
-      const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-        targetTokens: 150,
-        overlapPercent: 20
-      });
-      
-      // Insert chunks
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkContent = redactPII(chunks[i]);
-        
-        const chunk: KnowledgeChunkInsert = {
-          document_id: docData.id,
-          chunk_index: i,
-          content: chunkContent,
-          embedding: [], // Will be filled in M13.04
-          classification: metadata.classification,
-          metadata: {
-            source_file: filePath,
-            capability_count: capabilityAreasData.capabilities.length,
-            original_length: content.length
-          }
-        };
-        
-        const { error: chunkError } = await supabaseServiceRole
-          .from('knowledge_chunks')
-          .insert(chunk);
-        
-        if (chunkError) throw chunkError;
-        
-        stats.chunksCreated++;
+    const target =
+      store ?? (await import('../supabase.ts')).supabaseServiceRole;
+
+    const sources: Array<[string, DocumentSpec[]]> = [
+      ['project', buildProjectDocuments()],
+      ['achievement', buildAchievementDocuments()],
+      ['resume_summary', buildResumeSummaryDocuments()],
+      ['education', buildEducationDocuments()],
+      ['certification', buildCertificationDocuments()],
+      ['skill', buildSkillDocuments()],
+      ['career_timeline', buildCareerTimelineDocuments()],
+      ['professional_snapshot', buildProfessionalSnapshotDocuments()],
+      ['testimonial', buildTestimonialDocuments()],
+      ['capability_area', buildCapabilityAreaDocuments()],
+      ['social_link', buildSocialLinkDocuments()],
+    ];
+
+    for (const [label, specs] of sources) {
+      mergeStats(stats, await storeDocuments(target, label, specs));
+    }
+
+    // Markdown sources are ingested last so a malformed file never blocks the
+    // structured sources.
+    for (const source of markdownSources) {
+      try {
+        const specs = buildMarkdownDocuments(source.path, source.content);
+        mergeStats(stats, await storeDocuments(target, 'markdown', specs));
+      } catch (error) {
+        stats.errors.push({
+          source: `markdown:${source.path}`,
+          error: describeError(error),
+        });
       }
-      
-      stats.documentsProcessed++;
     }
   } catch (error) {
-    stats.errors.push({
-      source: 'capability_areas',
-      error: error instanceof Error ? error.message : String(error)
-    });
+    stats.errors.push({ source: 'general', error: describeError(error) });
   }
-  
+
   return stats;
 }
 
 /**
- * Processes social links data.
+ * Logs a summary of an ingestion run.
  */
-async function processSocialLinks(socialLinksData: SocialLink[], filePath: string) {
-  const stats = { documentsProcessed: 0, chunksCreated: 0, errors: [] as Array<{ source: string; error: string }> };
-  
-  // Group social links by platform for better organization
-  const linksByPlatform: Record<string, SocialLink[]> = {};
-  
-  for (const link of socialLinksData) {
-    const platform = link.platform || 'Other';
-    if (!linksByPlatform[platform]) {
-      linksByPlatform[platform] = [];
-    }
-    linksByPlatform[platform].push(link);
+export function logIngestionStats(stats: IngestionStats): void {
+  console.log(
+    `[ingestion] created=${stats.documentsCreated} updated=${stats.documentsUpdated} ` +
+      `unchanged=${stats.documentsUnchanged} chunks=${stats.chunksCreated} ` +
+      `errors=${stats.errors.length}`
+  );
+
+  for (const failure of stats.errors) {
+    console.error(`[ingestion] ${failure.source}: ${failure.error}`);
   }
-  
-  // Create a document for each platform
-  for (const [platform, links] of Object.entries(linksByPlatform)) {
-    try {
-      const content = `
-        Platform: ${platform}
-        Links: ${links.map(l => `${l.label || ''}: ${l.url || ''}`).join('\n')}
-      `.trim();
-      
-      // Redact PII
-      const cleanContent = redactPII(content);
-      
-      // Extract metadata
-      const metadata = extractMetadata(filePath, { platform, links });
-      
-      // Create document
-      const document: KnowledgeDocumentInsert = {
-        title: `Social Links - ${platform}`,
-        source_type: metadata.source_type,
-        classification: metadata.classification,
-        content: cleanContent,
-        version: metadata.version
-      };
-      
-      // Insert document
-      const { data: docData, error: docError } = await supabaseServiceRole
-        .from('knowledge_documents')
-        .insert(document)
-        .select()
-        .single();
-      
-      if (docError) throw docError;
-      
-      // Chunk the content
-      const chunks = chunkByParagraphsThenOverlay(cleanContent, {
-        targetTokens: 150,
-        overlapPercent: 20
-      });
-      
-      // Insert chunks
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkContent = redactPII(chunks[i]);
-        
-        const chunk: KnowledgeChunkInsert = {
-          document_id: docData.id,
-          chunk_index: i,
-          content: chunkContent,
-          embedding: [], // Will be filled in M13.04
-          classification: metadata.classification,
-          metadata: {
-            source_file: filePath,
-            platform,
-            link_count: links.length,
-            original_length: content.length
-          }
-        };
-        
-        const { error: chunkError } = await supabaseServiceRole
-          .from('knowledge_chunks')
-          .insert(chunk);
-        
-        if (chunkError) throw chunkError;
-        
-        stats.chunksCreated++;
-      }
-      
-      stats.documentsProcessed++;
-    } catch (error) {
-      stats.errors.push({
-        source: `social_links_platform:${platform}`,
-        error: error instanceof Error ? error.message : String(error)
-      });
-    }
-  }
-  
-  return stats;
 }
