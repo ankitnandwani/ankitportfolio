@@ -1,3 +1,9 @@
+## [0.1.112] - 2026-10-24
+- Implemented M13.04 embedding generation: added `src/lib/gemini.ts`, `src/lib/knowledge/embedding.ts`, `src/lib/knowledge/storage.ts`, `scripts/embed-knowledge.mts` and the `@google/genai` dependency
+- The embedding service asks Gemini for 768 dimensions, normalises the vector to unit length before storing it, validates the dimension count, retries rate limits and server errors with exponential backoff, and batches texts into a single request
+- Added `npm run embed` to backfill the embeddings of the chunks that do not have one yet
+- Added 26 tests covering the adapter, the embedding service and the storage layer, plus a live test that checks the dimension and the semantic similarity of related texts. The live test skips itself when no real API key is configured
+
 ## [0.1.111] - 2026-10-24
 - Store a null embedding instead of an empty array until the embedding has been generated. A pgvector column only accepts a vector with exactly the declared number of dimensions, so the empty array placeholder would have been rejected by the live database on every chunk insert
 

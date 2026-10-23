@@ -13,6 +13,7 @@ type Row = Record<string, unknown>;
 interface QueryResult {
   data: unknown;
   error: { message: string } | null;
+  count?: number | null;
 }
 
 /**
@@ -30,6 +31,9 @@ class FakeQuery implements PromiseLike<QueryResult> {
   private operation: 'select' | 'insert' | 'update' | 'delete' = 'select';
   private payload: Row = {};
   private readonly filters: Array<[string, unknown]> = [];
+  private readonly nullFilters: string[] = [];
+  private countMode = false;
+  private headOnly = false;
   private readonly store: FakeSupabase;
   private readonly table: string;
 
@@ -38,9 +42,14 @@ class FakeQuery implements PromiseLike<QueryResult> {
     this.table = table;
   }
 
-  select(): this {
+  select(
+    _columns?: string,
+    options?: { count?: string; head?: boolean }
+  ): this {
     // `insert(...).select()` asks for the affected rows back. It must not
     // change the operation the builder was set up for.
+    if (options?.count === 'exact') this.countMode = true;
+    if (options?.head) this.headOnly = true;
     return this;
   }
 
@@ -66,6 +75,15 @@ class FakeQuery implements PromiseLike<QueryResult> {
     return this;
   }
 
+  is(column: string, value: unknown): this {
+    if (value === null) {
+      this.nullFilters.push(column);
+    } else {
+      this.filters.push([column, value]);
+    }
+    return this;
+  }
+
   limit(): this {
     return this;
   }
@@ -86,7 +104,14 @@ class FakeQuery implements PromiseLike<QueryResult> {
   }
 
   private matches(row: Row): boolean {
-    return this.filters.every(([column, value]) => row[column] === value);
+    if (!this.filters.every(([column, value]) => row[column] === value)) {
+      return false;
+    }
+
+    return this.nullFilters.every((column) => {
+      const value = row[column];
+      return value === null || value === undefined;
+    });
   }
 
   private execute(): QueryResult {
@@ -94,7 +119,17 @@ class FakeQuery implements PromiseLike<QueryResult> {
 
     switch (this.operation) {
       case 'select': {
-        return { data: rows.filter((row) => this.matches(row)), error: null };
+        const matching = rows.filter((row) => this.matches(row));
+
+        if (this.countMode) {
+          return {
+            data: this.headOnly ? null : matching,
+            error: null,
+            count: matching.length,
+          };
+        }
+
+        return { data: matching, error: null };
       }
       case 'insert': {
         const row: FakeRow = {

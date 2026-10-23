@@ -11,10 +11,12 @@
     "format": "prettier --write .",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test",
     "ingest": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/ingest-knowledge.mts",
+    "embed": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/embed-knowledge.mts",
     "env:check": "node -e \"require('./src/lib/env')\""
   },
   "dependencies": {
     "@cred/neopop-web": "^1.0.0",
+    "@google/genai": "^2.31.0",
     "@supabase/supabase-js": "^2.118.0",
     "framer-motion": "^13.1.1",
     "lucide-react": "^1.34.0",

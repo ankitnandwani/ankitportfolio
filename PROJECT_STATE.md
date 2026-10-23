@@ -13,7 +13,8 @@
 - Task specifications created for M13 – AI Knowledge Base (see tasks/M13/).
 - M13.01 – Define AI Knowledge Base Document Format and Schema (completed)
 - M13.02 – Set Up Supabase Client Wrapper and Environment Validation (completed)
-- M13.03 – Implement Document Ingestion Pipeline (completed – pipeline processes 11 structured source types plus markdown documents, redacts PII, stores documents and chunks idempotently with version tracking, and is covered by 64 tests including an end-to-end run against an in-memory Supabase double; a run against a live Supabase project still needs real credentials and applied migrations)
+- M13.03 – Implement Document Ingestion Pipeline (completed – pipeline processes 11 structured source types plus markdown documents, redacts PII, stores documents and chunks idempotently with version tracking, and is covered by 64 tests including an end-to-end run against an in-memory Supabase double; verified against the live Supabase project on 2026-10-24, 39 documents and 39 chunks stored, row level security confirmed blocking the anon key)
+- M13.04 – Implement Embedding Generation and Vector Storage (in progress – embedding service, Gemini adapter, storage layer and the `npm run embed` backfill are implemented and covered by 26 tests; the live backfill still needs a real `GEMINI_API_KEY`)
 - M10.01 (Define resume data model) completed.
 - M10.02 (Create resume page route and layout) completed.
 - M10.03 (Create resume summary component and integrate summary data) completed.

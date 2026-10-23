@@ -24,6 +24,12 @@
 
 ## Decisions (M13 – AI Knowledge Base)
 
+- **Embedding generation is a separate step from ingestion:** The ingestion pipeline writes chunks with a null embedding and a separate backfill job fills them in. This keeps a Gemini outage from failing a knowledge base ingest, and it means the two concerns can be retried independently.
+- **The Gemini SDK is used through a thin adapter:** `src/lib/gemini.ts` is the only module that imports `@google/genai`. It returns plain numbers and raises `GeminiApiError` with a status code, so no SDK type reaches the rest of the code and the M13.06 provider abstraction has a single place to sit on top of.
+- **Embeddings are normalised before they are stored:** Gemini truncates a vector when a smaller output dimension is requested, and `gemini-embedding-001` does not re-normalise the truncated result. Cosine similarity compares direction, so both sides of a comparison have to be unit length. The service normalises every vector and rejects one whose magnitude is zero.
+- **The embedding model is asked for 768 dimensions explicitly:** The model returns 3072 by default, which the `vector(768)` column would reject. 768 is also at or below the 2000 dimension ceiling for indexing a pgvector `vector` column.
+- **Retries only cover failures that can succeed on a second attempt:** Rate limits, timeouts and server errors are retried with exponential backoff. A rejected request or an invalid key fails the same way every time, so it is reported straight away.
+- **The embedding service does not need the environment to be imported:** The Gemini module is loaded on demand, so the service can be imported and tested without a complete environment.
 - **Knowledge base schema (before first deployment):** The initial migration was corrected while it had never been applied to a live database, which was the cheapest moment to do it.
   - *Embedding size stays at 768.* `gemini-embedding-001` returns 3072 dimensions by default, so the embedding service has to ask for 768 explicitly. 768 also has to stay at or below 2000, the ceiling for indexing a pgvector `vector` column.
   - *HNSW instead of IVFFlat.* IVFFlat clusters the rows that exist when the index is built. On a fresh table it would have been created with no usable cluster centres, and pgvector expects IVFFlat indexes to be rebuilt after the data is loaded. HNSW has no training step, so it works on an empty table and stays correct as rows are inserted.
