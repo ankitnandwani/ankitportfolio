@@ -24,6 +24,8 @@
 
 ## Decisions (M13 – AI Knowledge Base)
 
+- **Each text is sent as its own content object:** The Gemini SDK reads an array of plain strings as one content with several parts, so a batch of twenty texts returned a single embedding and the rest came back empty. Sending `[{ parts: [{ text }] }]` per text returns one embedding per text. A test asserts the shape of the request so this cannot silently break again.
+- **A pgvector column is read back as a string:** PostgREST returns the vector as text such as `[0.1,0.2]`, not as an array of numbers. Anything that reads an embedding has to parse it.
 - **Embedding generation is a separate step from ingestion:** The ingestion pipeline writes chunks with a null embedding and a separate backfill job fills them in. This keeps a Gemini outage from failing a knowledge base ingest, and it means the two concerns can be retried independently.
 - **The Gemini SDK is used through a thin adapter:** `src/lib/gemini.ts` is the only module that imports `@google/genai`. It returns plain numbers and raises `GeminiApiError` with a status code, so no SDK type reaches the rest of the code and the M13.06 provider abstraction has a single place to sit on top of.
 - **Embeddings are normalised before they are stored:** Gemini truncates a vector when a smaller output dimension is requested, and `gemini-embedding-001` does not re-normalise the truncated result. Cosine similarity compares direction, so both sides of a comparison have to be unit length. The service normalises every vector and rejects one whose magnitude is zero.

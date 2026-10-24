@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, type Content } from '@google/genai';
 
 import { env } from './env.ts';
 
@@ -99,9 +99,14 @@ export async function embedTexts(
   }
 
   try {
+    // Each text has to be its own content object. An array of plain strings
+    // is read as one content with several parts, which returns a single
+    // embedding for the whole batch.
+    const contents: Content[] = texts.map((text) => ({ parts: [{ text }] }));
+
     const response = await getGeminiClient().models.embedContent({
       model: env.GEMINI_EMBEDDING_MODEL,
-      contents: texts,
+      contents,
       config,
     });
 

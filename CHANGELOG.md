@@ -1,3 +1,8 @@
+## [0.1.113] - 2026-10-24
+- Fixed the batch embedding request. The Gemini SDK reads an array of plain strings as one content with several parts, so a batch of twenty texts returned a single embedding and the rest came back empty. Each text is now sent as its own content object, which returns one embedding per text
+- Added a regression test that asserts the shape of the request sent to the SDK, so the batch cannot silently break again
+- The live test now loads the environment itself, so it runs whenever a real API key is configured instead of always being skipped
+
 ## [0.1.112] - 2026-10-24
 - Implemented M13.04 embedding generation: added `src/lib/gemini.ts`, `src/lib/knowledge/embedding.ts`, `src/lib/knowledge/storage.ts`, `scripts/embed-knowledge.mts` and the `@google/genai` dependency
 - The embedding service asks Gemini for 768 dimensions, normalises the vector to unit length before storing it, validates the dimension count, retries rate limits and server errors with exponential backoff, and batches texts into a single request

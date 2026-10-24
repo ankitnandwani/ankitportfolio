@@ -95,3 +95,50 @@ test('turns a request failure into an error with a status code', async () => {
     setClient(original);
   }
 });
+
+test('sends each text as its own content so a batch returns one embedding per text', async () => {
+  const { getGeminiClient: getClient, setGeminiClient: setClient } =
+    await import('./gemini.ts');
+
+  const original = getClient();
+  const requests: unknown[] = [];
+
+  setClient({
+    models: {
+      embedContent: async (params: unknown) => {
+        requests.push(params);
+
+        const contents = (
+          params as { contents: Array<{ parts: Array<{ text: string }> }> }
+        ).contents;
+
+        return {
+          embeddings: contents.map((content) => ({
+            values: content.parts.map((part) => part.text.length),
+          })),
+        };
+      },
+    },
+  } as unknown as ReturnType<typeof getClient>);
+
+  try {
+    const embeddings = await embedTexts(['first', 'second', 'third']);
+
+    assert.equal(embeddings.length, 3);
+    assert.deepEqual(embeddings, [[5], [6], [5]]);
+
+    // An array of plain strings would be read as one content with several
+    // parts, which returns a single embedding for the whole batch.
+    const contents = (
+      requests[0] as { contents: Array<{ parts: Array<{ text: string }> }> }
+    ).contents;
+
+    assert.equal(contents.length, 3);
+    assert.deepEqual(
+      contents.map((content) => content.parts[0].text),
+      ['first', 'second', 'third']
+    );
+  } finally {
+    setClient(original);
+  }
+});

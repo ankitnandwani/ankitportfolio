@@ -1,10 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import dotenv from 'dotenv';
 
 import {
   EMBEDDING_DIMENSIONS,
   batchGenerateEmbeddings,
 } from './embedding.ts';
+
+// The test runner does not load the environment, so the key is read from the
+// same file the scripts use.
+dotenv.config({ path: '.env.local' });
 
 /**
  * These tests call the real Gemini API.
