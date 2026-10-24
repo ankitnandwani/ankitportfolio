@@ -39,6 +39,30 @@ Following PRD §49 (LLM Provider: Google Gemini API) and the requirement to impl
 - Valid GEMINI_API_KEY and GEMINI_MODEL environment variables
 - Knowledge base retrieval system (M13.05) for RAG context
 
+## Implementation Notes
+
+Recorded when the task was implemented, so the differences between this
+specification and the delivered code are not a surprise later.
+
+- **The successor SDK is used.** `@google/generative-ai` is replaced by
+  `@google/genai`, which M13.04 already installed because it is the package
+  that can ask for the output dimension the vector column needs. Adding a
+  second Google SDK would double the surface area for no gain. The module
+  layout, the interface and the behaviour described below are unchanged.
+- **The interface has `generate()` and `stream()` only.** PRD §49 sketches
+  `embed()` and `moderate()` as well. Embedding is a separate concern that
+  M13.04 already solved and moderation belongs to the guardrails of M13.07.
+- **The provider is in `src/lib/llm/`, and `src/lib/gemini.ts` stays the
+  embedding adapter.** The two share the error helpers, which moved to
+  `src/lib/geminiErrors.ts` so that the provider can be imported without the
+  environment, and the retry helper, which moved to `src/lib/retry.ts` so
+  that the language model layer does not depend on the knowledge base.
+- **The timeout is 60 seconds.** The configured model needs between 13 and
+  57 seconds for a short question on the free tier, because it thinks before
+  it answers. A stream restarts the timeout every time a piece arrives.
+- **The live tests are opt in.** The free tier allows twenty generation
+  requests a day, so the live tests only run when `LIVE_LLM_TESTS=1` is set.
+
 ## Files / Areas Expected To Change
 - `src/lib/llm/provider.ts` (to be created) - LLMProvider interface
 - `src/lib/llm/geminiProvider.ts` (to be created) - GeminiProvider implementation

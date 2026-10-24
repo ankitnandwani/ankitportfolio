@@ -16,6 +16,7 @@
 - M13.03 – Implement Document Ingestion Pipeline (completed – pipeline processes 11 structured source types plus markdown documents, redacts PII, stores documents and chunks idempotently with version tracking, and is covered by 64 tests including an end-to-end run against an in-memory Supabase double; verified against the live Supabase project on 2026-10-24, 39 documents and 39 chunks stored, row level security confirmed blocking the anon key)
 - M13.04 – Implement Embedding Generation and Vector Storage (completed – embedding service, Gemini adapter, storage layer and the `npm run embed` backfill, covered by 27 tests; verified against the live project on 2026-10-24, all 39 chunks carry a normalised 768 dimension vector)
 - M13.05 – Implement Vector Search Retrieval with Metadata Filtering (completed – retrieval service, shared types and the `match_knowledge_chunks` database function, covered by 9 unit tests and 6 live tests against the real knowledge base; the similarity threshold was tuned against the measured score distribution on 2026-10-24)
+- M13.06 – Create LLMProvider Abstraction and Implement GeminiProvider (completed – the provider contract in `src/lib/llm/provider.ts`, the Gemini adapter in `src/lib/llm/geminiProvider.ts`, a factory that builds the provider from the environment, and 25 unit tests plus 6 live tests against the real Gemini API; generation, streaming, timeouts, retries on transient failures, token usage and provider independent error messages are all in place)
 - M10.01 (Define resume data model) completed.
 - M10.02 (Create resume page route and layout) completed.
 - M10.03 (Create resume summary component and integrate summary data) completed.
@@ -43,7 +44,7 @@
 
 ## Next Task
 
-- Begin implementation of M13.06 (LLM provider abstraction and GeminiProvider)
+- Begin implementation of M13.07 (AI guardrails: topic classification, PII detection and prompt injection protection)
 
 ## Completed (Milestone 01)
 

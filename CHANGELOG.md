@@ -1,3 +1,16 @@
+## [0.1.115] - 2026-10-24
+- Implemented M13.06: added the `LLMProvider` contract in `src/lib/llm/provider.ts`, the Gemini adapter in `src/lib/llm/geminiProvider.ts`, a factory that builds the provider from the environment in `src/lib/llm/factory.ts` and the entry point in `src/lib/llm/index.ts`
+- The provider supports text generation and streaming, the parameters temperature, max tokens, topP and stop sequences, a system instruction, a request timeout and a caller supplied cancellation signal
+- Every answer reports the finish reason and the token usage the API returned, in a provider independent shape
+- Transient failures are retried with exponential backoff: rate limits, timeouts and server errors. A rejected request or an invalid key is reported straight away
+- A stream is only retried while nothing has been handed to the caller, so an answer that already reached the screen is never repeated. The underlying stream is closed when the caller stops early, so nothing is left open
+- Failures are reported with a message that says what went wrong and how to fix it, and the API key is removed from every message
+- The environment is validated when the provider is created, and the model comes from `GEMINI_MODEL` rather than from a constant
+- The provider is usable from server code without the environment being loaded at import time, so `src/lib/llm/index.ts` can be imported from a route, a server action or a test
+- Moved the shared helpers out of the modules that owned them: `src/lib/retry.ts` and `src/lib/geminiErrors.ts`. The error helpers had to leave `src/lib/gemini.ts`, which reads the environment when it is imported, and the retry helper had to leave the knowledge base, which the language model layer must not depend on. The old import paths still work
+- Added 25 unit tests and 5 live tests. The live tests are opt in with `LIVE_LLM_TESTS=1`, because the free tier of the Gemini API allows twenty generation requests a day and a request over that limit is rejected for the rest of the day
+- Measured the latency of the configured model on the free tier: 13 to 57 seconds for a short question, because the model spends up to 75 tokens thinking before it answers. The default timeout is therefore 60 seconds, and the adapter can turn the thinking off
+
 ## [0.1.114] - 2026-10-24
 - Implemented M13.05 vector search: added `src/lib/knowledge/retrieval.ts`, `src/lib/knowledge/types.ts`, `supabase/migrations/20261024000001_add_vector_search.sql` and the matching tests
 - The similarity search runs in the database through a `match_knowledge_chunks` function, so the HNSW index on the embedding column is used and the classification filter cannot be bypassed by the caller
