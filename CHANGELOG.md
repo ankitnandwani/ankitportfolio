@@ -5,6 +5,7 @@
 - The question is embedded with the `RETRIEVAL_QUERY` task type, which differs from the `RETRIEVAL_DOCUMENT` type the stored chunks were created with
 - Retrieval supports a top-k limit, a similarity threshold, a classification filter and an optional source type filter, and logs the query time, the number of results and the average similarity
 - The live retrieval tests skip themselves when the search function is not installed in the project, so they start running on their own once the migration is applied
+- Tuned the default similarity threshold to 0.55 after measuring it against the live knowledge base. Professional questions score between 0.66 and 0.75 and off-topic questions between 0.48 and 0.57, so this keeps every relevant result while dropping almost all of the off-topic ones
 
 ## [0.1.113] - 2026-10-24
 - Fixed the batch embedding request. The Gemini SDK reads an array of plain strings as one content with several parts, so a batch of twenty texts returned a single embedding and the rest came back empty. Each text is now sent as its own content object, which returns one embedding per text

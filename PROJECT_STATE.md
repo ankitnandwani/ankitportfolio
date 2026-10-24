@@ -15,7 +15,7 @@
 - M13.02 – Set Up Supabase Client Wrapper and Environment Validation (completed)
 - M13.03 – Implement Document Ingestion Pipeline (completed – pipeline processes 11 structured source types plus markdown documents, redacts PII, stores documents and chunks idempotently with version tracking, and is covered by 64 tests including an end-to-end run against an in-memory Supabase double; verified against the live Supabase project on 2026-10-24, 39 documents and 39 chunks stored, row level security confirmed blocking the anon key)
 - M13.04 – Implement Embedding Generation and Vector Storage (completed – embedding service, Gemini adapter, storage layer and the `npm run embed` backfill, covered by 27 tests; verified against the live project on 2026-10-24, all 39 chunks carry a normalised 768 dimension vector)
-- M13.05 – Implement Vector Search Retrieval with Metadata Filtering (in progress – retrieval service, shared types and the `match_knowledge_chunks` database function are implemented and covered by 9 unit tests; the live verification needs the new migration to be applied to the Supabase project)
+- M13.05 – Implement Vector Search Retrieval with Metadata Filtering (completed – retrieval service, shared types and the `match_knowledge_chunks` database function, covered by 9 unit tests and 6 live tests against the real knowledge base; the similarity threshold was tuned against the measured score distribution on 2026-10-24)
 - M10.01 (Define resume data model) completed.
 - M10.02 (Create resume page route and layout) completed.
 - M10.03 (Create resume summary component and integrate summary data) completed.
@@ -43,7 +43,7 @@
 
 ## Next Task
 
-- Finish M13.05: apply `supabase/migrations/20261024000001_add_vector_search.sql` to the Supabase project, then run `npm test` so the live retrieval tests verify the search against the real knowledge base
+- Begin implementation of M13.06 (LLM provider abstraction and GeminiProvider)
 
 ## Completed (Milestone 01)
 

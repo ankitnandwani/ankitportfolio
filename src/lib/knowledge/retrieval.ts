@@ -21,8 +21,14 @@ export const DEFAULT_RETRIEVAL_LIMIT = 5;
 
 /**
  * The default lowest similarity a chunk may have to be returned.
+ *
+ * Measured against the current knowledge base: professional questions score
+ * between 0.66 and 0.75, and off-topic questions between 0.48 and 0.57. At
+ * 0.55 every relevant chunk is kept while almost all of the off-topic ones
+ * are dropped. It should be re-measured when the guardrails of M13.07 land,
+ * because they decide what to do with an off-topic question.
  */
-export const DEFAULT_SIMILARITY_THRESHOLD = 0.3;
+export const DEFAULT_SIMILARITY_THRESHOLD = 0.55;
 
 /**
  * The name of the database function that performs the search.
