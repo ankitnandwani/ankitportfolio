@@ -188,7 +188,7 @@ export async function withRetry<T>(
  * The Gemini module is loaded on demand so that importing this service does
  * not require the environment to be complete.
  */
-async function embedWithGemini(
+export async function embedWithGemini(
   texts: string[],
   options?: EmbedOptions
 ): Promise<number[][]> {

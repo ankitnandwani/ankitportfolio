@@ -20,6 +20,7 @@ import type {
   KnowledgeDocumentInsert,
   KnowledgeChunkInsert,
 } from './schema.ts';
+import type { KnowledgeClassification } from './types.ts';
 
 import { projectsData } from '../../data/projects.ts';
 import { achievementsData } from '../../data/achievements.ts';
@@ -34,13 +35,12 @@ import { capabilityAreasData } from '../../data/capabilityAreasData.ts';
 import { socialLinks } from '../../data/socialLinks.ts';
 
 /**
- * Classification levels allowed by the knowledge base (PRD §34).
+ * The classification levels allowed by the knowledge base (PRD §34).
+ *
+ * They live in the shared types module because the retrieval service uses
+ * them as well.
  */
-export type KnowledgeClassification =
-  | 'PUBLIC'
-  | 'PROFESSIONAL'
-  | 'CONFIDENTIAL'
-  | 'PRIVATE';
+export type { KnowledgeClassification };
 
 /**
  * Target chunk size and overlap used for every knowledge document.

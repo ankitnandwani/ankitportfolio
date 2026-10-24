@@ -1,3 +1,11 @@
+## [0.1.114] - 2026-10-24
+- Implemented M13.05 vector search: added `src/lib/knowledge/retrieval.ts`, `src/lib/knowledge/types.ts`, `supabase/migrations/20261024000001_add_vector_search.sql` and the matching tests
+- The similarity search runs in the database through a `match_knowledge_chunks` function, so the HNSW index on the embedding column is used and the classification filter cannot be bypassed by the caller
+- The function is revoked from `PUBLIC`, `anon` and `authenticated`, so it can only be reached with the service role key
+- The question is embedded with the `RETRIEVAL_QUERY` task type, which differs from the `RETRIEVAL_DOCUMENT` type the stored chunks were created with
+- Retrieval supports a top-k limit, a similarity threshold, a classification filter and an optional source type filter, and logs the query time, the number of results and the average similarity
+- The live retrieval tests skip themselves when the search function is not installed in the project, so they start running on their own once the migration is applied
+
 ## [0.1.113] - 2026-10-24
 - Fixed the batch embedding request. The Gemini SDK reads an array of plain strings as one content with several parts, so a batch of twenty texts returned a single embedding and the rest came back empty. Each text is now sent as its own content object, which returns one embedding per text
 - Added a regression test that asserts the shape of the request sent to the SDK, so the batch cannot silently break again

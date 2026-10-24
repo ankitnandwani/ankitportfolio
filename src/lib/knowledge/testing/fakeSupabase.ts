@@ -206,4 +206,115 @@ export class FakeSupabase {
   from(table: string): FakeQuery {
     return new FakeQuery(this, table);
   }
+
+  /**
+   * Calls a database function.
+   *
+   * Only `match_knowledge_chunks` is implemented, because it is the only
+   * function the knowledge base calls.
+   */
+  async rpc(
+    name: string,
+    params: Record<string, unknown>
+  ): Promise<QueryResult> {
+    if (name !== 'match_knowledge_chunks') {
+      throw new Error(`the fake does not implement the function ${name}`);
+    }
+
+    const queryEmbedding = toVector(params.query_embedding);
+    const matchCount = Number(params.match_count ?? 5);
+    const threshold = Number(params.match_threshold ?? 0);
+    const allowedClassifications =
+      (params.allowed_classifications as string[] | null) ?? [
+        'PUBLIC',
+        'PROFESSIONAL',
+      ];
+    const allowedSourceTypes = params.allowed_source_types as string[] | null;
+
+    const documentTypes = new Map(
+      this.documents.map((document) => [
+        document.id,
+        document.source_type as string,
+      ])
+    );
+
+    const matches = this.chunks
+      .filter((chunk) => {
+        if (chunk.embedding === null || chunk.embedding === undefined) {
+          return false;
+        }
+        if (!allowedClassifications.includes(chunk.classification as string)) {
+          return false;
+        }
+        if (allowedSourceTypes) {
+          const sourceType = documentTypes.get(chunk.document_id as string);
+          if (!sourceType || !allowedSourceTypes.includes(sourceType)) {
+            return false;
+          }
+        }
+        const similarity = cosineSimilarity(
+          toVector(chunk.embedding),
+          queryEmbedding
+        );
+        return similarity >= threshold;
+      })
+      .map((chunk) => {
+        const similarity = cosineSimilarity(
+          toVector(chunk.embedding),
+          queryEmbedding
+        );
+        const metadata = (chunk.metadata ?? {}) as Record<string, unknown>;
+
+        return {
+          chunk_id: chunk.id,
+          document_id: chunk.document_id,
+          chunk_index: chunk.chunk_index,
+          content: chunk.content,
+          similarity,
+          classification: chunk.classification,
+          source_file:
+            typeof metadata.source_file === 'string'
+              ? metadata.source_file
+              : null,
+        };
+      })
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, matchCount);
+
+    return { data: matches, error: null };
+  }
+}
+
+/**
+ * Reads a vector that may be stored as an array or as the text form that
+ * PostgREST returns.
+ */
+function toVector(value: unknown): number[] {
+  if (Array.isArray(value)) return value as number[];
+
+  if (typeof value === 'string') {
+    return JSON.parse(value) as number[];
+  }
+
+  throw new Error('the value is not a vector');
+}
+
+/**
+ * Cosine similarity between two vectors.
+ */
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0;
+  let magnitudeA = 0;
+  let magnitudeB = 0;
+
+  for (let index = 0; index < a.length; index++) {
+    dot += a[index] * b[index];
+    magnitudeA += a[index] * a[index];
+    magnitudeB += b[index] * b[index];
+  }
+
+  const denominator = Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB);
+  if (denominator === 0) return 0;
+
+  return dot / denominator;
 }

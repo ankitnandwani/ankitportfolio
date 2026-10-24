@@ -24,6 +24,9 @@
 
 ## Decisions (M13 – AI Knowledge Base)
 
+- **The similarity search runs in the database:** PostgREST cannot order by a vector distance, so the search is a `match_knowledge_chunks` function. That keeps the HNSW index usable, keeps the classification filter where it cannot be bypassed, and avoids sending every embedding over the wire on each question.
+- **The search function is revoked from the public roles:** PostgreSQL grants execute on a new function to `PUBLIC`, so the grant has to be revoked explicitly. Only the service role key, which bypasses row level security, may call it.
+- **A question is embedded with the retrieval task type:** The stored chunks were embedded with `RETRIEVAL_DOCUMENT`. A question is embedded with `RETRIEVAL_QUERY`, which is what the Gemini embedding models expect for a query.
 - **Each text is sent as its own content object:** The Gemini SDK reads an array of plain strings as one content with several parts, so a batch of twenty texts returned a single embedding and the rest came back empty. Sending `[{ parts: [{ text }] }]` per text returns one embedding per text. A test asserts the shape of the request so this cannot silently break again.
 - **A pgvector column is read back as a string:** PostgREST returns the vector as text such as `[0.1,0.2]`, not as an array of numbers. Anything that reads an embedding has to parse it.
 - **Embedding generation is a separate step from ingestion:** The ingestion pipeline writes chunks with a null embedding and a separate backfill job fills them in. This keeps a Gemini outage from failing a knowledge base ingest, and it means the two concerns can be retried independently.
