@@ -11,9 +11,13 @@
  *
  * The pattern requires a run of at least seven digit-ish characters, so short
  * numbers such as years of experience or repository counts are left alone.
+ *
+ * The repetitions are bounded. An unbounded one would make the pattern go
+ * back over the whole text for every position it starts at, which turns a
+ * long run of digits into a slow check.
  */
 const PHONE_NUMBER_PATTERN =
-  /(?:\+?(\d{1,3})[-.\s]?)?\(?(\d{1,4})[-.\s]?\)?[\d\s.-]{6,}(\d{1,4})/g;
+  /(?:\+?(\d{1,3})[-.\s]?)?\(?(\d{1,4})[-.\s]?\)?[\d\s.-]{6,64}(\d{1,4})/g;
 
 /**
  * Date-like sequences that must never be treated as phone numbers.

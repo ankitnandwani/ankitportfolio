@@ -1,3 +1,15 @@
+## [0.1.116] - 2026-10-25
+- Implemented M13.07 AI guardrails: added `src/lib/guardrails/` with the topic classification, the personal data detection, the prompt injection detection, the output validation, the redirects, the logger and the integration points
+- The topic classification tells a question about the professional profile apart from one about something else, using the goals of the assistant in PRD §28 and the source types of the knowledge base. It is keyword based, so it costs nothing and never has to be retried
+- Every question is checked for an attack before it reaches the knowledge base, and every answer is checked before it is shown. The order follows the privacy architecture of PRD §35
+- The attempts PRD §38 names are all caught, including the ones that are written as a single word or in a different case
+- The personal data of a question is removed before it is stored, and the personal data and the credentials of an answer are removed before it is shown
+- A question that is off topic, an attempt that changes the instructions and a request for private details all receive a polite redirect with the questions the assistant can answer instead, as PRD §39 and PRD §40 ask for
+- The guardrail events record what was done without recording the question or the answer, so the log does not hold the personal data that went through it
+- Three sensitivity levels are available: strict, balanced and relaxed. They change how much evidence a question needs and whether the attack phrases that also have an innocent reading are acted on
+- Added 57 tests, including the false positive checks for the questions PRD §29 suggests showing at the start, the attacks PRD §38 names, the phone number formats PRD §37 names and the performance of the checks
+- Fixed a slow path in the personal data detection. An unbounded repetition in the pattern for an email address made it go back over the whole text for every position it started at, so a question of a hundred thousand characters took twenty-eight seconds. It now takes three milliseconds. The same bound was added to the phone number pattern of the ingestion pipeline
+
 ## [0.1.115] - 2026-10-24
 - Implemented M13.06: added the `LLMProvider` contract in `src/lib/llm/provider.ts`, the Gemini adapter in `src/lib/llm/geminiProvider.ts`, a factory that builds the provider from the environment in `src/lib/llm/factory.ts` and the entry point in `src/lib/llm/index.ts`
 - The provider supports text generation and streaming, the parameters temperature, max tokens, topP and stop sequences, a system instruction, a request timeout and a caller supplied cancellation signal

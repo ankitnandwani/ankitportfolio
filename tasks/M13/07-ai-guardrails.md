@@ -117,6 +117,35 @@ Following PRD §35 (Privacy Architecture), PRD §36-40 (Sensitive Data Protectio
 - Logging should not be synchronous if it could delay responses.
 - Consider caching classification results for repeated queries (though queries may vary).
 
+## Implementation Notes
+
+Recorded when the task was implemented, so the differences between this
+specification and the delivered code are not a surprise later.
+
+- **The module layout grew three files.** The specification lists six. There
+  is a `types.ts` for the shared types, a `redirects.ts` for the answers the
+  assistant gives instead of the answer that was asked for, and a
+  `pipeline.ts` that holds the two integration points. A `text.ts` holds the
+  helpers the modules share.
+- **The integration points are two functions.** `evaluateInput()` checks a
+  question before it reaches the knowledge base and `applyOutputGuardrails()`
+  checks an answer before it is shown. The chat flow itself is M13.08 and
+  M13.09, so nothing was wired into a route yet.
+- **The classification is keyword based with a weight per word.** A word
+  that only has an innocent reading, such as "about", counts for half of a
+  signal, so a question about politics is not read as a question about the
+  professional profile.
+- **There are three sensitivity levels.** They change how much evidence a
+  question needs and whether the attack phrases that also have an innocent
+  reading are acted on. The balanced one is the default.
+- **A request for private data is told apart from an attempt.** An attempt
+  that changes the instructions is an injection. A question for a phone
+  number is a request for something that must not be disclosed. Both are
+  answered with a redirect, and they are reported apart.
+- **The patterns are matched on tokens, and their repetitions are bounded.**
+  The phone number pattern of the ingestion pipeline was bounded as well,
+  because it could be slowed down by a long run of digits.
+
 ## Definition of Done
 - Topic classification module can distinguish professional from off-topic topics.
 - PII detection correctly identifies and redacts phone numbers.
