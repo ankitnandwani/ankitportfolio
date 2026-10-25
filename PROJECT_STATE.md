@@ -19,6 +19,7 @@
 - M13.06 – Create LLMProvider Abstraction and Implement GeminiProvider (completed – the provider contract in `src/lib/llm/provider.ts`, the Gemini adapter in `src/lib/llm/geminiProvider.ts`, a factory that builds the provider from the environment, and 25 unit tests plus 6 live tests against the real Gemini API; generation, streaming, timeouts, retries on transient failures, token usage and provider independent error messages are all in place)
 - M13.07 – Implement AI Guardrails (completed – topic classification, personal data detection, prompt injection detection, output validation, professional redirects and guardrail logging under `src/lib/guardrails/`, covered by 57 tests including the false positive checks for the suggested questions of PRD §29 and the attacks of PRD §38; the phone number redaction of the ingestion pipeline was bounded as well, because it could be slowed down by a long run of digits)
 - M13.08 – Create AI Chat UI Components (completed – chat launcher (floating button), chat panel (desktop floating / mobile full-screen modal), message bubbles (user/assistant), streaming response with blinking cursor, suggested prompts, typing indicator, error states with retry/dismiss, conversation reset, keyboard navigation (Escape to close, Tab trap), focus management, reduced-motion support, NeoPOP design tokens, Framer Motion animations; integrated into root layout via ChatWrapper; API route at `/api/chat` with guardrails, knowledge retrieval, and LLM streaming; 189 tests pass)
+- M13.09 – Integrate Retrieval and Generation (RAG Pipeline) (completed – orchestration service in `src/lib/ai/` with `processChatMessage` and `processChatMessageStream`, prompt templates, types; API route updated to use orchestration layer; input guardrails, retrieval, prompt construction, LLM generation, and output guardrails all wired end-to-end; streaming and non-streaming modes supported; comprehensive metrics logging)
 - M10.01 (Define resume data model) completed.
 - M10.02 (Create resume page route and layout) completed.
 - M10.03 (Create resume summary component and integrate summary data) completed.
@@ -46,7 +47,7 @@
 
 ## Next Task
 
-- Begin implementation of M13.09 (RAG integration: wire chat UI to retrieval + LLM + guardrails end-to-end)
+- Begin implementation of M13.10 (Response validation, rate limiting, and analytics integration)
 
 ## Completed (Milestone 01)
 

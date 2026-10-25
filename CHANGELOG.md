@@ -1,3 +1,11 @@
+## [0.1.118] - 2026-10-26
+- Implemented M13.09 RAG Integration: created `src/lib/ai/` orchestration layer with `processChatMessage()` and `processChatMessageStream()` functions, prompt templates (`buildPromptContext`, `formatContext`, `formatHistory`), and shared types (`ChatOrchestrationOptions`, `ChatOrchestrationResult`, `ChatOrchestrationStreamChunk`, `OrchestrationMetrics`)
+- Refactored `/api/chat` route to use the orchestration layer, separating concerns between the API handler and the RAG pipeline
+- End-to-end pipeline now wires input guardrails (`evaluateInput`), knowledge retrieval (`retrieveChunks`), prompt construction with context and history, LLM generation (Gemini via `LLMProvider`), and output guardrails (`applyOutputGuardrails`)
+- Streaming and non-streaming modes both supported with proper SSE formatting and metadata propagation
+- Comprehensive metrics logging for each pipeline stage (guardrails, retrieval, prompt construction, generation, output guardrails)
+- Fallback handling for off-topic queries, prompt injection, retrieval failures, and generation errors with user-friendly messages
+
 ## [0.1.117] - 2026-10-25
 - Implemented M13.08 AI Chat UI Components: added `src/components/aiChat/` with ChatLauncher (floating action button), ChatPanel (desktop floating panel / mobile full-screen modal), ChatMessage (user/assistant bubbles), StreamingMessage (incremental text with blinking cursor), SuggestedPrompts (clickable starter questions), TypingIndicator (animated ellipsis), ChatError (retry/dismiss), ChatControls (clear/minimize/close), ChatInput (auto-resize textarea with Enter-to-send), and hooks `useChatState`/`useChatAPI` for state and data layer
 - Created `/api/chat` route integrating input guardrails (`evaluateInput`), knowledge retrieval (`retrieveChunks`), LLM streaming (`provider.stream`), and output guardrails (`applyOutputGuardrails`)
