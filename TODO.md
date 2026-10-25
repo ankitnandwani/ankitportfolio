@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M13.08 (chat UI components: launcher, message bubbles and streaming). The guardrails of M13.07 are ready to be used from `src/lib/guardrails/`: `evaluateInput()` before the question reaches the knowledge base and `applyOutputGuardrails()` before the answer reaches the visitor
+- Begin implementation of M13.09 (RAG integration: wire chat UI to retrieval + LLM + guardrails end-to-end). The chat UI of M13.08 is complete with launcher, panel, streaming, suggested prompts, typing indicator, error handling, and accessibility features. The guardrails of M13.07 are ready to be used from `src/lib/guardrails/`: `evaluateInput()` before the question reaches the knowledge base and `applyOutputGuardrails()` before the answer reaches the visitor
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M13 tasks. The point at which they become visible to users is M13.09, when the chatbot starts answering questions about skills. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch

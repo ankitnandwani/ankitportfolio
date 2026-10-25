@@ -1,3 +1,10 @@
+## [0.1.117] - 2026-10-25
+- Implemented M13.08 AI Chat UI Components: added `src/components/aiChat/` with ChatLauncher (floating action button), ChatPanel (desktop floating panel / mobile full-screen modal), ChatMessage (user/assistant bubbles), StreamingMessage (incremental text with blinking cursor), SuggestedPrompts (clickable starter questions), TypingIndicator (animated ellipsis), ChatError (retry/dismiss), ChatControls (clear/minimize/close), ChatInput (auto-resize textarea with Enter-to-send), and hooks `useChatState`/`useChatAPI` for state and data layer
+- Created `/api/chat` route integrating input guardrails (`evaluateInput`), knowledge retrieval (`retrieveChunks`), LLM streaming (`provider.stream`), and output guardrails (`applyOutputGuardrails`)
+- Integrated chat into root layout via `ChatWrapper` client component
+- All components follow NeoPOP design tokens, support dark/light themes, respect `prefers-reduced-motion`, and are keyboard accessible (Escape to close, Tab focus trap, Cmd/Ctrl+K to open)
+- Added comprehensive Framer Motion animations for panel entrance/exit, message staggering, button hover/tap, and typing indicator
+
 ## [0.1.116] - 2026-10-25
 - Implemented M13.07 AI guardrails: added `src/lib/guardrails/` with the topic classification, the personal data detection, the prompt injection detection, the output validation, the redirects, the logger and the integration points
 - The topic classification tells a question about the professional profile apart from one about something else, using the goals of the assistant in PRD §28 and the source types of the knowledge base. It is keyword based, so it costs nothing and never has to be retried

@@ -8,6 +8,7 @@ import { NavigationBar } from '@/src/components/navigation';
 import { Footer } from '@/src/components/footer';
 import { PageTransitions } from '@/src/components/layout';
 import { CommandPalette } from '@/src/components/command-palette';
+import { ChatWrapper } from '@/src/components/aiChat/ChatWrapper';
 import { generateBaseMetadata, generateOrganizationSchema } from '@/src/seo/metadata';
 
 const geistSans = Geist({
@@ -49,6 +50,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <CommandPalette className="pointer-events-none" />
+          <ChatWrapper />
           {/* JSON-LD Structured Data for Organization */}
           <script
             type="application/ld+json"
