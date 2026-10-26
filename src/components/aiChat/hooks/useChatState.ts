@@ -11,6 +11,10 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
+  /** Query ID from the orchestration layer (for analytics/feedback) */
+  queryId?: string;
+  /** Whether the response was a redirect (off-topic, injection, etc.) */
+  isRedirect?: boolean;
 }
 
 /**
@@ -138,12 +142,12 @@ export function useChatState() {
   /**
    * Completes the streaming message.
    */
-  const completeStreamingMessage = useCallback(() => {
+  const completeStreamingMessage = useCallback((queryId?: string, isRedirect?: boolean) => {
     if (!streamingMessageIdRef.current) return;
     setMessages((prev) =>
       prev.map((msg) =>
         msg.id === streamingMessageIdRef.current
-          ? { ...msg, isStreaming: false }
+          ? { ...msg, isStreaming: false, queryId, isRedirect }
           : msg
       )
     );

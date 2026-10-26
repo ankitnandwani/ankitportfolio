@@ -12,6 +12,7 @@
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test",
     "ingest": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/ingest-knowledge.mts",
     "embed": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/embed-knowledge.mts",
+    "scan:kb": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/scanKnowledgeBase.mts",
     "env:check": "node -e \"require('./src/lib/env')\""
   },
   "dependencies": {
@@ -21,6 +22,7 @@
     "framer-motion": "^13.1.1",
     "lucide-react": "^1.34.0",
     "next": "16.3.2",
+    "posthog-node": "^4.5.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.7.0",

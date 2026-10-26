@@ -15,6 +15,7 @@ export { TypingIndicator } from './TypingIndicator';
 export { ChatError } from './ChatError';
 export { ChatControls } from './ChatControls';
 export { ChatInput } from './ChatInput';
+export { FeedbackButton } from './FeedbackButton';
 
 // Hooks
 export { useChatState, type ChatMessage as ChatMessageType, type ChatState, type StreamingState, type UseChatStateReturn } from './hooks/useChatState';

@@ -13,6 +13,24 @@ interface ChatAPIRequest {
 }
 
 /**
+ * Metadata from the streaming response.
+ */
+interface StreamMetadata {
+  queryId?: string;
+  isRedirect?: boolean;
+  inputGuardrails?: unknown;
+  retrieval?: unknown;
+  outputGuardrails?: unknown;
+  tokenUsage?: {
+    promptTokens: number | null;
+    completionTokens: number | null;
+    totalTokens: number | null;
+  };
+  finishReason?: string;
+  model?: string;
+}
+
+/**
  * The shape of a response from the chat API.
  */
 interface ChatAPIResponse {
@@ -26,6 +44,8 @@ interface ChatAPIResponse {
   model?: string;
 }
 
+
+
 /**
  * Custom hook for interacting with the chat backend API.
  *
@@ -37,12 +57,13 @@ export function useChatAPI() {
   const isStreamingRef = useRef(false);
 
   /**
-   * Sends a message to the chat API and returns an async iterable of response chunks.
+   * Sends a message to the chat API and returns an async iterable of response chunks
+   * along with metadata from the stream.
    *
    * @param message The user's message.
    * @param history The conversation history (excluding the current message).
    * @param signal Optional abort signal for cancellation.
-   * @returns An async iterable that yields response chunks.
+   * @returns An object with textChunks (async iterable) and metadata (promise).
    */
   const sendMessage = useCallback(
     async function* (
@@ -55,6 +76,13 @@ export function useChatAPI() {
       }
 
       isStreamingRef.current = true;
+
+      let metadata: StreamMetadata = {};
+      let metadataResolved = false;
+      const metadataPromise = new Promise<StreamMetadata>((resolve) => {
+        // Store resolver to be called when metadata is available
+        (metadataPromise as { _resolve?: (value: StreamMetadata) => void })._resolve = resolve;
+      });
 
       try {
         const controller = new AbortController();
@@ -86,6 +114,7 @@ export function useChatAPI() {
         const decoder = new TextDecoder();
 
         try {
+          let firstChunk = true;
           while (true) {
             const { done, value } = await reader.read();
 
@@ -99,12 +128,37 @@ export function useChatAPI() {
               if (line.startsWith('data: ')) {
                 const data = line.slice(6);
                 if (data === '[DONE]') {
+                  if (!metadataResolved) {
+                    (metadataPromise as { _resolve?: (value: StreamMetadata) => void })._resolve?.(metadata);
+                    metadataResolved = true;
+                  }
                   return;
                 }
                 try {
                   const parsed = JSON.parse(data);
                   if (parsed.text) {
                     yield parsed.text;
+                  }
+                  // Capture metadata from first and last chunks
+                  if (firstChunk) {
+                    firstChunk = false;
+                    metadata = {
+                      ...metadata,
+                      queryId: parsed.queryId,
+                      isRedirect: parsed.isRedirect,
+                      inputGuardrails: parsed.inputGuardrails,
+                      retrieval: parsed.retrieval,
+                    };
+                  }
+                  if (parsed.done) {
+                    metadata = {
+                      ...metadata,
+                      outputGuardrails: parsed.outputGuardrails,
+                      tokenUsage: parsed.tokenUsage,
+                      finishReason: parsed.finishReason,
+                      model: parsed.model,
+                      isRedirect: parsed.isRedirect ?? metadata.isRedirect,
+                    };
                   }
                 } catch {
                   // If not JSON, treat as plain text
@@ -115,6 +169,10 @@ export function useChatAPI() {
                 yield line;
               }
             }
+          }
+          if (!metadataResolved) {
+            (metadataPromise as { _resolve?: (value: StreamMetadata) => void })._resolve?.(metadata);
+            metadataResolved = true;
           }
         } finally {
           reader.releaseLock();

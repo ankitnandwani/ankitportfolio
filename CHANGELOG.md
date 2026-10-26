@@ -1,3 +1,13 @@
+## [0.1.119] - 2026-10-26
+- Implemented M13.11: added analytics tracking in `src/lib/analytics/` with privacy-conscious session IDs, message/response/feedback events, and PostHog integration
+- Created feedback UI component `src/components/aiChat/FeedbackButton.tsx` with thumbs up/down and optional comment
+- Added `/api/feedback` endpoint for feedback submission
+- Created knowledge base scan script `scripts/scanKnowledgeBase.mts` for phone number verification
+- Updated `/api/chat` route to track message sent and response received events
+- Updated ChatMessage, useChatAPI, and useChatState to support feedback metadata (queryId, isRedirect)
+- Added `npm run scan:kb` script for knowledge base PII verification
+- All 219 tests pass, lint passes, typecheck passes, build succeeds
+
 ## [0.1.118] - 2026-10-26
 - Implemented M13.09 RAG Integration: created `src/lib/ai/` orchestration layer with `processChatMessage()` and `processChatMessageStream()` functions, prompt templates (`buildPromptContext`, `formatContext`, `formatHistory`), and shared types (`ChatOrchestrationOptions`, `ChatOrchestrationResult`, `ChatOrchestrationStreamChunk`, `OrchestrationMetrics`)
 - Refactored `/api/chat` route to use the orchestration layer, separating concerns between the API handler and the RAG pipeline

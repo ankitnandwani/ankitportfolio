@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { ChatMessage } from './hooks/useChatState';
+import { FeedbackButton } from './FeedbackButton';
 
 interface ChatMessageProps {
   message: ChatMessage;
@@ -108,6 +109,14 @@ export function ChatMessageComponent({ message, theme }: ChatMessageProps) {
           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
+      {!isUser && !message.isStreaming && message.queryId && (
+        <FeedbackButton
+          messageId={message.id}
+          queryId={message.queryId}
+          isRedirect={message.isRedirect}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }

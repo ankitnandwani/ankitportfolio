@@ -54,12 +54,17 @@ export function Chat() {
         const abortSignal = getAbortSignal();
 
         // Stream response from API
-        for await (const chunk of sendMessage(message, messages, abortSignal)) {
+        const stream = sendMessage(message, messages, abortSignal);
+        
+        for await (const chunk of stream) {
           updateStreamingMessage(chunk);
         }
 
-        // Complete streaming
-        completeStreamingMessage();
+        // Wait for metadata - stream has a metadata property attached
+        const metadata = await (stream as AsyncIterable<string> & { metadata: Promise<{ queryId?: string; isRedirect?: boolean }> }).metadata;
+
+        // Complete streaming with metadata
+        completeStreamingMessage(metadata.queryId, metadata.isRedirect);
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
           // Cancelled, clean up
