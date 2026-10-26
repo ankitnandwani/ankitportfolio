@@ -20,6 +20,12 @@ const serverEnvSchema = publicEnvSchema.extend({
   SENTRY_DSN: z.string().nonempty(),
   UPSTASH_REDIS_REST_URL: z.string().nonempty(),
   UPSTASH_REDIS_REST_TOKEN: z.string().nonempty(),
+  // The limits of the chat. They are optional, because the code has the
+  // values PRD §48 suggests and a missing variable only means the default
+  // is used.
+  RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
+  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
+  RATE_LIMIT_DAILY_MAX: z.coerce.number().int().positive().optional(),
 });
 
 export type Env = z.infer<typeof serverEnvSchema>;

@@ -209,7 +209,7 @@ function countEmoji(text: string): number {
  * @param text The answer.
  * @returns What was found.
  */
-function findToneViolations(text: string): OutputViolation[] {
+export function findToneViolations(text: string): OutputViolation[] {
   const violations: OutputViolation[] = [];
   const tokens = tokenize(text);
 

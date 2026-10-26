@@ -13,6 +13,15 @@
 - All components follow NeoPOP design tokens, support dark/light themes, respect `prefers-reduced-motion`, and are keyboard accessible (Escape to close, Tab focus trap, Cmd/Ctrl+K to open)
 - Added comprehensive Framer Motion animations for panel entrance/exit, message staggering, button hover/tap, and typing indicator
 
+## [0.1.117] - 2026-10-26
+- Implemented M13.10: added the response validation in `src/lib/ai/validation.ts` and the rate limiter in `src/lib/ai/rateLimiter.ts`, and wired both into the chat route
+- The chat route now counts a visitor before the request is processed. The limit is twenty messages every thirty minutes and a hundred a day, as PRD §48 suggests, and the limits can be changed with `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_MAX_REQUESTS` and `RATE_LIMIT_DAILY_MAX`
+- A request over the limit is answered with the status 429, a friendly message, a `Retry-After` header and the `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` headers. The same headers are sent with every answer that goes through
+- The answer is checked before it is sent. Personal data that is still in the answer after the guardrails keeps the answer from being shown at all, and a safe answer is sent instead. A tone that is too informal, an answer that is too long and details that are not in the context are reported but do not keep the answer from being shown
+- The limits are kept in memory and are lost when the instance restarts. PRD §48 accepts a limit per instance, and the store is injected so a shared store can replace it later
+- Added 25 tests for the validation and the limiter, and verified the whole thing against the running site: the limit headers, the 429 answer, the friendly message and the streamed final chunk all behave as they should
+- Cleaned up the leftovers of M13.08 and M13.09: removed the unused imports, wired the retry and dismiss actions of the error state, which did nothing before, and switched the imports of the orchestration layer from the path alias to relative ones so the layer can be loaded by a test
+
 ## [0.1.116] - 2026-10-25
 - Implemented M13.07 AI guardrails: added `src/lib/guardrails/` with the topic classification, the personal data detection, the prompt injection detection, the output validation, the redirects, the logger and the integration points
 - The topic classification tells a question about the professional profile apart from one about something else, using the goals of the assistant in PRD §28 and the source types of the knowledge base. It is keyword based, so it costs nothing and never has to be retried

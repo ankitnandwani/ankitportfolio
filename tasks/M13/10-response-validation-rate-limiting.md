@@ -119,6 +119,31 @@ Following PRD §42 (AI Answer Quality), PRD §46 (Chat Analytics), PRD §47 (AI 
 - For serverless functions, in-memory state is not shared across instances, so rate limiting is per-instance. This may be acceptable for low traffic.
 - If using Upstash Redis, consider network latency.
 
+## Implementation Notes
+
+Recorded when the task was implemented, so the differences between this
+specification and the delivered code are not a surprise later.
+
+- **The files live in `src/lib/ai/`.** The specification points at
+  `src/lib/ai/validation.ts` and `src/lib/ai/rateLimiter.ts`, and the route
+  it names as `src/lib/ai/api/chat/route.ts` is `app/api/chat/route.ts`, the
+  place the Next.js routes live in this project.
+- **The rate limit is kept in memory.** The store is injected, so a shared
+  store can replace it later without changing the callers. The Upstash Redis
+  of PRD §53 is not used yet, because its variables are still placeholders
+  and the task leaves distributed limiting out of scope.
+- **Both windows slide.** A request only counts against the half hour and
+  the day it was made in.
+- **The limits are optional in the environment.** The code holds the values
+  PRD §48 suggests, so a missing variable only means the default is used.
+- **The validation runs in the route.** The route is the boundary where the
+  answer leaves the server. For a streamed answer the check runs on the
+  final text, which the interface shows in place of the text it streamed.
+- **The tone is reported and not changed.** An answer that is a little too
+  informal is still a correct answer, so it is shown and the finding is
+  reported. Personal data that survived the guardrails is the one thing
+  that keeps an answer from being shown at all.
+
 ## Definition of Done
 - Response validation function checks for PII, tone, and length.
 - Rate limiting implementation enforces per-IP or per-session limits.
