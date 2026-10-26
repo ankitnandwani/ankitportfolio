@@ -1,8 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useTheme } from '@/design/themeContext';
-import { Button } from '@/src/components/ui/Button';
 
 interface ChatControlsProps {
   onClose: () => void;
@@ -46,9 +44,6 @@ export function ChatControls({
       : 'background-color 0.2s ease, color 0.2s ease',
   };
 
-  const buttonHoverStyle: React.CSSProperties = {
-    backgroundColor: theme === 'dark' ? '#3D3D3D' : '#F0F0F0',
-  };
 
   return (
     <div style={{ display: 'flex', gap: 4 }} role="group" aria-label="Chat controls">

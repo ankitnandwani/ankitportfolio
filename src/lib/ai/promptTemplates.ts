@@ -6,8 +6,8 @@
  * user's current message.
  */
 
-import type { RetrievedChunk } from '@/src/lib/knowledge/types';
-import type { PromptContext } from './types';
+import type { RetrievedChunk } from '../knowledge/types.ts';
+import type { PromptContext } from './types.ts';
 
 /**
  * The system instruction that defines the AI's role and behavior.

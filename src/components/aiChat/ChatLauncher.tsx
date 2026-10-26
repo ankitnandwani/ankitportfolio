@@ -3,7 +3,6 @@
 import React, { forwardRef } from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
 import { useTheme } from '@/design/themeContext';
-import { Button } from '@/src/components/ui/Button';
 
 interface ChatLauncherProps extends Omit<HTMLMotionProps<'button'>, 'children' | 'onClick'> {
   onClick: () => void;

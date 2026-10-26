@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useRef, useCallback, useState } from 'react';
-import { useTheme } from '@/design/themeContext';
-import { Button } from '@/src/components/ui/Button';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;

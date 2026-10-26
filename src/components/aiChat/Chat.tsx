@@ -5,7 +5,6 @@ import { useChatState } from './hooks/useChatState';
 import { useChatAPI } from './hooks/useChatAPI';
 import { ChatPanel } from './ChatPanel';
 import { ChatLauncher } from './ChatLauncher';
-import { ChatMessage } from './hooks/useChatState';
 
 /**
  * Main chat component that integrates all chat UI components.
@@ -24,7 +23,6 @@ export function Chat() {
     error,
     isLoading,
     suggestedPrompts,
-    openChat,
     closeChat,
     minimizeChat,
     toggleChat,
@@ -34,13 +32,12 @@ export function Chat() {
     completeStreamingMessage,
     setStreamingError,
     clearChat,
-    createAbortController,
     getAbortSignal,
     clearError,
     setIsLoading,
   } = useChatState();
 
-  const { sendMessage, isStreaming } = useChatAPI();
+  const { sendMessage } = useChatAPI();
 
   const isOpen = chatState === 'open';
 
@@ -55,7 +52,6 @@ export function Chat() {
 
       try {
         const abortSignal = getAbortSignal();
-        const controller = createAbortController();
 
         // Stream response from API
         for await (const chunk of sendMessage(message, messages, abortSignal)) {
@@ -85,7 +81,6 @@ export function Chat() {
       setStreamingError,
       sendMessage,
       getAbortSignal,
-      createAbortController,
       setIsLoading,
     ]
   );
@@ -151,6 +146,8 @@ export function Chat() {
         onSendMessage={handleSendMessage}
         onClearChat={handleClearChat}
         onPromptClick={handlePromptClick}
+        onRetry={handleRetry}
+        onDismissError={clearError}
       />
     </>
   );

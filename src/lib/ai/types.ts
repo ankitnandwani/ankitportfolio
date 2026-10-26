@@ -6,9 +6,9 @@
  * provider and guardrail types so the orchestration layer can evolve independently.
  */
 
-import type { RetrievalResult, RetrievedChunk } from '@/src/lib/knowledge/types';
-import type { InputGuardrailResult, OutputGuardrailResult } from '@/src/lib/guardrails/pipeline';
-import type { TokenUsage, FinishReason } from '@/src/lib/llm/provider';
+import type { RetrievalResult } from '../knowledge/types.ts';
+import type { InputGuardrailResult, OutputGuardrailResult } from '../guardrails/pipeline.ts';
+import type { TokenUsage, FinishReason } from '../llm/provider.ts';
 
 /**
  * The options passed to the orchestration function.

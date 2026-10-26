@@ -6,25 +6,22 @@
  * that processes a user message and returns an AI response.
  */
 
-import { getSupabaseServiceRoleClient } from '@/src/lib/supabase';
-import { getLLMProvider } from '@/src/lib/llm';
-import { evaluateInput, applyOutputGuardrails, SUGGESTED_QUESTIONS } from '@/src/lib/guardrails';
-import { retrieveChunks, DEFAULT_RETRIEVAL_LIMIT, DEFAULT_SIMILARITY_THRESHOLD } from '@/src/lib/knowledge/retrieval';
-import type { RetrievalOptions, RetrievalResult, RetrievedChunk } from '@/src/lib/knowledge/types';
-import type { LLMProvider, GenerationOptions, TokenUsage, FinishReason } from '@/src/lib/llm/provider';
+import { getSupabaseServiceRoleClient } from '../supabase.ts';
+import { getLLMProvider } from '../llm/index.ts';
+import { evaluateInput, applyOutputGuardrails, SUGGESTED_QUESTIONS } from '../guardrails/index.ts';
+import { retrieveChunks, DEFAULT_RETRIEVAL_LIMIT, DEFAULT_SIMILARITY_THRESHOLD } from '../knowledge/retrieval.ts';
+import type { RetrievalOptions } from '../knowledge/types.ts';
+import type { LLMProvider, GenerationOptions, TokenUsage, FinishReason } from '../llm/provider.ts';
 import type {
   ChatOrchestrationOptions,
   ChatOrchestrationResult,
   ChatOrchestrationStreamChunk,
   OrchestrationMetrics,
-  PromptContext,
-} from './types';
+} from './types.ts';
 import {
   SYSTEM_INSTRUCTION,
   buildPromptContext,
-  buildRedirectPromptContext,
-  buildErrorPromptContext,
-} from './promptTemplates';
+} from './promptTemplates.ts';
 
 /**
  * The default temperature for generation.

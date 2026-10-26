@@ -24,6 +24,8 @@ interface ChatPanelProps {
   onSendMessage: (message: string) => void;
   onClearChat: () => void;
   onPromptClick: (prompt: string) => void;
+  onRetry?: () => void;
+  onDismissError?: () => void;
   className?: string;
 }
 
@@ -47,6 +49,8 @@ export function ChatPanel({
   onSendMessage,
   onClearChat,
   onPromptClick,
+  onRetry,
+  onDismissError,
   className = '',
 }: ChatPanelProps) {
   const { theme } = useTheme();
@@ -244,7 +248,12 @@ export function ChatPanel({
           )}
 
           {error && (
-            <ChatError message={error} theme={theme} />
+            <ChatError
+              message={error}
+              theme={theme}
+              onRetry={onRetry}
+              onDismiss={onDismissError}
+            />
           )}
         </div>
 
