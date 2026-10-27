@@ -139,6 +139,9 @@ export interface FitEvidence {
 
   /** The confidence of the match, between 0 and 1. */
   confidence: number;
+
+  /** The text content of the evidence chunk. */
+  content?: string;
 }
 
 /**
@@ -225,7 +228,27 @@ export interface JobFitMetadata {
 
   /** Whether the analysis was cut short because of the requirement limit. */
   truncated: boolean;
+
+  /** Whether a fallback analysis was used because the model answer could not be parsed. */
+  usedFallback: boolean;
 }
+
+/**
+ * Options for the analysis engine.
+ */
+export interface AnalyzeJobFitOptions {
+  /** Optional retrieval limit override. */
+  retrievalLimit?: number;
+  /** Optional minimum similarity threshold override. */
+  minSimilarity?: number;
+}
+
+/**
+ * The result of a job fit analysis.
+ */
+export type JobFitAnalysisResult =
+  | { ok: true; analysis: JobFitAnalysis; evidence: FitEvidence[]; metadata: JobFitMetadata }
+  | { ok: false; error: string; metadata: JobFitMetadata };
 
 /**
  * The shape of the response from the job fit API.

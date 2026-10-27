@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M17.03.
+- Begin implementation of M17.04.
 - Two decisions of the M17 plan are waiting for a human before M17.08 is started: the job fit analyzer lives at `/job-fit` and is not added to the main navigation, because PRD §8 and PRD §92 fix the navigation and it has no entry for it; and the analyzer gets its own rate limit bucket, because one analysis is not one message and PRD §48 sets the policy for messages
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch
@@ -35,6 +35,20 @@
 - `jdParser.test.mts` – 101 unit tests covering all parser functions, edge cases, and acceptance criteria
 - All tests pass (101/101), lint clean (0 errors), typecheck clean, build succeeds
 - Total test suite: 335 tests (330 pass, 0 fail, 5 opt-in skipped)
+
+## Completed (M17.03)
+
+- Implemented Job Fit Analysis Engine in `src/lib/jobFit/analysis.ts` with prompt builder in `src/lib/jobFit/prompts.ts`:
+  - Single retrieval with classification filter (PUBLIC and PROFESSIONAL only)
+  - Prompt enforces PRD §31 (never reject due to gaps), PRD §41 (professional tone), PRD §42 (answer quality), PRD §88 (five classifications, no rejection, fixed wording for unsupported requirements)
+  - Job description marked as untrusted data in prompt, system instruction forbids instruction following
+  - JSON schema validation via zod with code fence handling and requirement ID validation
+  - Fallback analysis when model answer is unparsable, preserving six sections and evidence
+  - Output guardrails applied to all text fields (redacts PII, secrets; warns on tone)
+  - Injected dependencies (provider, retrieve, clock) for testability
+  - Metrics logging without job description or answer content
+  - `analysis.test.mts` – 15 unit tests covering happy path, malformed answers, code fences, guardrails, provider errors, metrics logging
+  - All 350 tests pass (345 pass, 0 fail, 5 opt-in skipped), lint clean, typecheck clean, build succeeds
 
 ## Completed (M13.11)
 

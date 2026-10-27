@@ -1,3 +1,20 @@
+## [0.1.124] - 2026-10-27
+- Implemented M17.03 – Implement the Job Fit Analysis Engine:
+  - Created `src/lib/jobFit/analysis.ts` with the analysis engine:
+    - Single retrieval with classification filter (PUBLIC and PROFESSIONAL only)
+    - Prompt enforces PRD §31 (never reject due to gaps), PRD §41 (professional tone), PRD §42 (answer quality), PRD §88 (five classifications, no rejection, fixed wording for unsupported requirements)
+    - Job description marked as untrusted data in prompt, system instruction forbids instruction following
+    - JSON schema validation via zod with code fence handling and requirement ID validation
+    - Fallback analysis when model answer is unparsable, preserving six sections and evidence
+    - Output guardrails applied to all text fields (redacts PII, secrets; warns on tone)
+    - Injected dependencies (provider, retrieve, clock) for testability
+    - Metrics logging without job description or answer content
+  - Created `src/lib/jobFit/prompts.ts` with system instruction and prompt builder
+  - Updated `src/lib/jobFit/types.ts` with `FitEvidence.content` optional field and `JobFitMetadata.usedFallback` flag
+  - Updated `src/lib/jobFit/index.ts` to export engine and prompt functions
+  - Created `src/lib/jobFit/analysis.test.mts` with 15 unit tests covering happy path, malformed answers, code fences, guardrails, provider errors, metrics logging
+- All 15 engine tests pass, total test suite: 350 tests (345 pass, 0 fail, 5 opt-in skipped), lint 0 errors (only pre-existing warnings), typecheck clean, build succeeds
+
 ## [0.1.123] - 2026-10-27
 - Implemented M17.02 – Parse a Job Description into Requirements:
   - Created `src/lib/jobFit/jdParser.ts` with deterministic parser (no model calls):
