@@ -1,3 +1,18 @@
+## [0.1.123] - 2026-10-27
+- Implemented M17.02 – Parse a Job Description into Requirements:
+  - Created `src/lib/jobFit/jdParser.ts` with deterministic parser (no model calls):
+    - `splitLines` – normalises line endings, trims trailing spaces, filters empty lines
+    - `stripBullet` – recognises dash, asterisk, unicode bullet, en/em dash, numbered (1., 2), 3 -), checkboxes ([ ], [x], [X])
+    - `classifyHeading` – token-based matching for responsibility, requirement, qualification, nice_to_have headings (case-insensitive)
+    - `isNoise` – filters salary, equal opportunity, diversity, accommodation, application instructions, benefits, about company, contact, URLs, email-only, phone-only lines (matched at line start)
+    - `extractTitle` – finds labelled (Role:, Position:, Job title:, Title:) or "X at Y" pattern or first short non-heading line
+    - `extractCompany` – finds labelled (Company:, Organisation:, Organization:, Employer:) or "X at Y" pattern
+    - `parseJobDescription` – main parser returning discriminated union with requirements, title, company, omitted count; enforces length limits (80-12000 chars), requirement limit (40, required-first ordering)
+  - Created `src/lib/jobFit/jdParser.test.mts` with 101 unit tests covering all parser functions, edge cases, and acceptance criteria
+  - Updated `src/lib/jobFit/types.ts` with `ParsedJobDescription` discriminated union type
+  - Updated `src/lib/jobFit/index.ts` to export parser functions
+- All 101 parser tests pass, total test suite: 335 tests (330 pass, 0 fail, 5 opt-in skipped), lint 0 errors (only pre-existing warnings), typecheck clean, build succeeds
+
 ## [0.1.122] - 2026-10-27
 - Implemented M17.01 – Define the Job Fit Analysis Contract:
   - Created `src/lib/jobFit/types.ts` with requirement classification (DIRECT_MATCH, STRONG_TRANSFER, RELATED, LEARNABLE, UNKNOWN), alignment bands (strong, transferable, growth), requirement kinds, JobRequirement, ClassifiedRequirement, FitEvidence, JobFitAnalysis, JobFitRequest, JobFitResponse

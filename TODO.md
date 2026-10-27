@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M17.02.
+- Begin implementation of M17.03.
 - Two decisions of the M17 plan are waiting for a human before M17.08 is started: the job fit analyzer lives at `/job-fit` and is not added to the main navigation, because PRD §8 and PRD §92 fix the navigation and it has no entry for it; and the analyzer gets its own rate limit bucket, because one analysis is not one message and PRD §48 sets the policy for messages
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch
@@ -21,6 +21,20 @@
   - `index.ts` – public exports
   - `schema.test.mts` – 15 unit tests covering schema validation, parser behavior, limits, and fixed wording
 - All tests pass (15/15), lint clean (0 errors), typecheck clean, build succeeds
+
+## Completed (M17.02)
+
+- Implemented deterministic job description parser in `src/lib/jobFit/jdParser.ts`:
+  - `splitLines` – normalises line endings, trims trailing spaces, filters empty lines
+  - `stripBullet` – recognises dash, asterisk, unicode bullet, en/em dash, numbered (1., 2), 3 -), checkboxes ([ ], [x], [X])
+  - `classifyHeading` – token-based matching for responsibility, requirement, qualification, nice_to_have headings (case-insensitive)
+  - `isNoise` – filters salary, equal opportunity, diversity, accommodation, application instructions, benefits, about company, contact, URLs, email-only, phone-only lines (matched at line start)
+  - `extractTitle` – finds labelled (Role:, Position:, Job title:, Title:) or "X at Y" pattern or first short non-heading line
+  - `extractCompany` – finds labelled (Company:, Organisation:, Organization:, Employer:) or "X at Y" pattern
+  - `parseJobDescription` – main parser returning discriminated union with requirements, title, company, omitted count; enforces length limits (80-12000 chars), requirement limit (40, required-first ordering)
+- `jdParser.test.mts` – 101 unit tests covering all parser functions, edge cases, and acceptance criteria
+- All tests pass (101/101), lint clean (0 errors), typecheck clean, build succeeds
+- Total test suite: 335 tests (330 pass, 0 fail, 5 opt-in skipped)
 
 ## Completed (M13.11)
 

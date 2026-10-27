@@ -89,6 +89,16 @@ export interface JobRequirement {
 }
 
 /**
+ * The result of parsing a job description.
+ *
+ * This is a discriminated union so the caller must handle both success
+ * and failure cases.
+ */
+export type ParsedJobDescription =
+  | { ok: true; title: string | null; company: string | null; requirements: JobRequirement[]; omittedRequirements: number }
+  | { ok: false; reason: 'too_short' | 'too_long' | 'no_requirements' };
+
+/**
  * A requirement plus its classification, rationale and evidence references.
  */
 export interface ClassifiedRequirement {
