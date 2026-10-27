@@ -13,6 +13,7 @@
     "ingest": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/ingest-knowledge.mts",
     "embed": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/embed-knowledge.mts",
     "scan:kb": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/scanKnowledgeBase.mts",
+    "verify:job-fit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifyJobFit.mts",
     "env:check": "node -e \"require('./src/lib/env')\""
   },
   "dependencies": {

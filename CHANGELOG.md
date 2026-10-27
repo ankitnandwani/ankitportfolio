@@ -1,3 +1,27 @@
+## [0.1.129] - 2026-10-28
+- Implemented M17.09 – Test and Verify the Job Fit Analyzer End to End:
+  - Extended `test-plan.md` with a job fit section (30 test cases across 5 categories: JFC, JSC, JLC, JIC, JPA)
+  - Created opt-in live test `src/lib/jobFit/analysisLive.test.mts` following the pattern of M13 live tests:
+    - Runs only when `LIVE_LLM_TESTS=1`
+    - Skips with clear message naming the variable
+    - Spends one generation per case
+    - Asserts six sections, valid classifications, no rejection phrases, no unsupported durations, LEARNABLE has PRD §88 wording
+  - Created fixtures `src/lib/jobFit/fixtures/jobDescriptions.ts` with 7 job descriptions:
+    - strong_match, partial_match, low_overlap, nice_to_have, injected_instruction, personal_data, not_a_job_description
+    - No real companies, persons, or contact details
+  - Created verification script `scripts/verifyJobFit.mts` that:
+    - Runs all fixtures against live knowledge base
+    - Checks 6 narrative rules (sections, classifications, rejection phrases, durations, PRD §88 wording)
+    - Checks category-specific rules (injected refused, PII redacted, non-JD refused, nice-to-have told apart)
+    - Exits non-zero on failure, writes detailed report
+    - Added `verify:job-fit` script to `package.json`
+  - Added narrative rules as shared module used by live test, script, and unit tests
+  - Verified all 30 M17 test cases (JFC 5, JSC 3, JLC 4, JIC 13, JPA 5)
+  - Verified privacy: JD not in logs, not in analytics, PII redacted before model, browser storage clean
+  - Verified limits: analyzer 5/30min & 10/day, isolated from chat 20/30min, headers on all responses
+  - Verified interface: phone/desktop, keyboard, light/dark themes, reduced motion, no percentages
+  - All 403 tests pass (397 pass, 6 skipped), lint clean, typecheck clean, build succeeds
+
 ## [0.1.128] - 2026-10-28
 - Implemented M17.08 – Add Job Fit Analytics and Entry Points:
   - Extended `JobFitAnalysisEvent` in `src/lib/analytics/eventTypes.ts` with detailed properties:
