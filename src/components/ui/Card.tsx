@@ -33,6 +33,9 @@ interface CardProps {
   style?: React.CSSProperties;
   children?: ReactNode;
   className?: string;
+  role?: string;
+  'aria-live'?: 'polite' | 'assertive' | 'off';
+  'aria-label'?: string;
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -44,6 +47,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     children,
     className,
     style,
+    role,
+    'aria-live': ariaLive,
+    'aria-label': ariaLabel,
     ...props
   }, ref) => {
     const { getThemeTokens } = useTheme();
@@ -87,6 +93,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         className={combinedClass}
         style={mergedStyle}
+        role={role}
+        aria-live={ariaLive}
+        aria-label={ariaLabel}
         {...props}
       >
         <Components.ElevatedCard elevation={elevation}>

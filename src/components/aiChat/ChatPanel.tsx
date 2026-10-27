@@ -265,6 +265,36 @@ export function ChatPanel({
           />
         )}
 
+        {messages.length === 0 && streamingState === 'idle' && (
+          <div
+            style={{
+              padding: '0 16px 16px',
+              textAlign: 'center',
+            }}
+          >
+            <a
+              href="/job-fit"
+              style={{
+                display: 'inline-block',
+                padding: '8px 16px',
+                fontSize: '0.8125rem',
+                fontWeight: 500,
+                color: theme === 'dark' ? '#90CAF9' : '#0D47A1',
+                textDecoration: 'underline',
+                textUnderlineOffset: 2,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = theme === 'dark' ? '#BBDEFB' : '#1565C0';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = theme === 'dark' ? '#90CAF9' : '#0D47A1';
+              }}
+            >
+              Analyze a job description →
+            </a>
+          </div>
+        )}
+
         <div style={inputContainerStyle}>
           <ChatInput
             onSendMessage={onSendMessage}

@@ -10,10 +10,12 @@ interface ButtonProps extends React.ComponentPropsWithRef<typeof Components.Butt
   children: ReactNode;
   className?: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+  style?: React.CSSProperties;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', size = 'md', colorScheme, children, className, ...props }, ref) => {
+  ({ variant = 'primary', size = 'md', colorScheme, children, className, disabled, style, ...props }, ref) => {
     const { theme } = useTheme();
     // Use the provided colorScheme or fall back to the current theme
     const effectiveColorScheme = colorScheme ?? theme;
@@ -41,6 +43,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         size={neoSize}
         className={className}
         ref={ref}
+        disabled={disabled}
+        style={style}
         {...props}
       >
         {children}
