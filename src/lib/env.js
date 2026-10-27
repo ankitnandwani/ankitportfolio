@@ -26,6 +26,14 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
   RATE_LIMIT_DAILY_MAX: z.coerce.number().int().positive().optional(),
+  // The limits of the job fit analyzer. They are optional, because the
+  // code has the defaults and a missing variable only means the default
+  // is used.
+  JOB_FIT_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
+  JOB_FIT_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
+  JOB_FIT_DAILY_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
+  JOB_FIT_DAILY_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
+  JOB_FIT_MAX_TOKENS: z.coerce.number().int().positive().optional(),
 });
 
 // Validate process.env against the schema

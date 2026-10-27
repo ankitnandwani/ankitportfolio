@@ -32,6 +32,8 @@ import {
 } from '../llm/provider.ts';
 import { validateResponse } from '../guardrails/outputValidation.ts';
 import { parseModelAnswer, buildClassifiedRequirements, buildAlignmentBands, type ModelAnswer } from './schema.ts';
+import { createJobFitPolicy, type JobFitPolicyOptions } from './policy.ts';
+import { applyOutputGuardrails } from '../guardrails/pipeline.ts';
 import type {
   JobRequirement,
   ParsedJobDescription,
@@ -130,28 +132,28 @@ async function applyGuardrailsToAnalysis(
   const guarded = { ...analysis };
 
   for (const field of textFields) {
-    const result = validateResponse(analysis[field] as string);
+    const result = await applyOutputGuardrails(analysis[field] as string);
     (guarded as Record<string, unknown>)[field] = result.text;
   }
 
   // Guard the arrays
   guarded.strongMatches = await Promise.all(
     analysis.strongMatches.map(async (text) => {
-      const result = validateResponse(text);
+      const result = await applyOutputGuardrails(text);
       return result.text;
     })
   );
 
   guarded.transferableExperience = await Promise.all(
     analysis.transferableExperience.map(async (text) => {
-      const result = validateResponse(text);
+      const result = await applyOutputGuardrails(text);
       return result.text;
     })
   );
 
   guarded.interviewTalkingPoints = await Promise.all(
     analysis.interviewTalkingPoints.map(async (text) => {
-      const result = validateResponse(text);
+      const result = await applyOutputGuardrails(text);
       return result.text;
     })
   );
@@ -181,6 +183,8 @@ export interface AnalysisServiceOptions {
   maxTokens?: number;
   /** The timeout for the generation in milliseconds. */
   timeoutMs?: number;
+  /** The input policy options. */
+  policyOptions?: JobFitPolicyOptions;
 }
 
 /**
@@ -197,6 +201,7 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
     temperature = DEFAULT_ANALYSIS_TEMPERATURE,
     maxTokens = MAX_JOB_FIT_RESPONSE_TOKENS,
     timeoutMs = 120000,
+    policyOptions,
   } = options;
 
   /**
@@ -208,9 +213,64 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
   ): Promise<JobFitAnalysisResult> {
     const startedAt = clock();
 
+    // Stage 0: Apply input policy (PRD §35)
+    const policy = createJobFitPolicy(policyOptions);
+
+    // Rate limit check
+    const clientKey = options.clientKey ?? 'anonymous';
+    const rateLimitResult = policy.checkRateLimit(clientKey);
+    if (!rateLimitResult.allowed) {
+      return {
+        ok: false,
+        error: 'Rate limit exceeded. Please wait before requesting another analysis.',
+        metadata: {
+          latencyMs: clock() - startedAt,
+          tokenUsage: { promptTokens: null, completionTokens: null, totalTokens: null },
+          model: 'none',
+          requirementCount: 0,
+          truncated: false,
+          usedFallback: false,
+          redactions: 0,
+          rateLimit: {
+            limit: rateLimitResult.limit,
+            remaining: rateLimitResult.remaining,
+            resetAt: rateLimitResult.resetAt,
+            scope: rateLimitResult.scope,
+          },
+        },
+      };
+    }
+
+    // Stage 0b: Apply input policy (PRD §35)
+    const inputCheck = policy.checkInput(jobDescription);
+    if (!inputCheck.allowed) {
+      return {
+        ok: false,
+        error: `Failed to parse job description: ${inputCheck.reason}`,
+        metadata: {
+          latencyMs: clock() - startedAt,
+          tokenUsage: { promptTokens: null, completionTokens: null, totalTokens: null },
+          model: 'none',
+          requirementCount: 0,
+          truncated: false,
+          usedFallback: false,
+          redactions: inputCheck.redactions,
+          rateLimit: {
+            limit: rateLimitResult.limit,
+            remaining: rateLimitResult.remaining,
+            resetAt: rateLimitResult.resetAt,
+            scope: rateLimitResult.scope,
+          },
+        },
+      };
+    }
+
+    const redactedJobDescription = inputCheck.jobDescription;
+    const redactions = inputCheck.redactions;
+
     // Stage 1: Parse
     const parseStartedAt = clock();
-    const parsed = parseJobDescription(jobDescription);
+    const parsed = parseJobDescription(redactedJobDescription);
     const parseMs = clock() - parseStartedAt;
 
     if (!parsed.ok) {
@@ -224,6 +284,13 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
           requirementCount: 0,
           truncated: false,
           usedFallback: false,
+          redactions,
+          rateLimit: {
+            limit: rateLimitResult.limit,
+            remaining: rateLimitResult.remaining,
+            resetAt: rateLimitResult.resetAt,
+            scope: rateLimitResult.scope,
+          },
         },
       };
     }
@@ -256,7 +323,7 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
       company: parsed.company,
       requirements,
       evidence,
-      jobDescription,
+      jobDescription: redactedJobDescription,
     });
     const promptMs = clock() - promptStartedAt;
 
@@ -319,9 +386,9 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
     // Stage 7: Build the analysis from the model answer
     const analysisBuiltFromModel = !usedFallback;
 
-    let analysis: JobFitAnalysis;
+    let modelAnalysis: JobFitAnalysis;
     if (analysisBuiltFromModel) {
-      analysis = {
+      modelAnalysis = {
         overallPositioning: modelAnswer.overallPositioning,
         strongMatches: modelAnswer.strongMatches,
         transferableExperience: modelAnswer.transferableExperience,
@@ -333,23 +400,86 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
         evidence,
       };
     } else {
-      analysis = buildFallbackAnalysis(evidence, requirementCount);
+      modelAnalysis = buildFallbackAnalysis(evidence, requirementCount);
     }
 
     // Stage 8: Validate claims against evidence (PRD §31)
     const claimValidationStartedAt = clock();
-    const { analysis: validatedAnalysis, report: claimReport } = validateClaims(
-      analysis,
+    const { analysis: claimValidatedAnalysis, report: claimReport } = validateClaims(
+      modelAnalysis,
       evidence,
       requirements
     );
     const claimValidationMs = clock() - claimValidationStartedAt;
-    analysis = validatedAnalysis;
+    let analysis = claimValidatedAnalysis;
 
     // Stage 9: Apply output guardrails
     const guardrailsStartedAt = clock();
     analysis = await applyGuardrailsToAnalysis(analysis);
     const guardrailsMs = clock() - guardrailsStartedAt;
+
+    // Stage 10: Apply response validation with evidence as context (PRD §42, §43)
+    const validationStartedAt = clock();
+    const evidenceText = evidence
+      .filter((e) => e.content)
+      .map((e) => e.content!)
+      .join('\n\n');
+
+    const narrativeFields: Array<keyof JobFitAnalysis> = [
+      'overallPositioning',
+      'strongMatches',
+      'transferableExperience',
+      'learningAgility',
+      'interviewTalkingPoints',
+      'recommendedPositioning',
+    ];
+
+    let validatedAnalysis = { ...analysis };
+    let hasErrors = false;
+    let fallbackText = '';
+
+    for (const field of narrativeFields) {
+      const value = validatedAnalysis[field];
+      if (Array.isArray(value)) {
+        const validatedItems: string[] = [];
+        for (const item of value) {
+          if (item.trim().length === 0) continue;
+          const result = validateResponse(item, { context: evidenceText });
+          if (!result.isValid) hasErrors = true;
+          if (!fallbackText && result.fallback) fallbackText = result.fallback;
+          validatedItems.push(result.text);
+        }
+        (validatedAnalysis as Record<string, unknown>)[field] = validatedItems;
+      } else if (typeof value === 'string') {
+        if (value.trim().length === 0) continue;
+        const result = validateResponse(value, { context: evidenceText });
+        if (!result.isValid) hasErrors = true;
+        (validatedAnalysis as Record<string, unknown>)[field] = result.text;
+      }
+    }
+
+    // If validation failed, or the analysis has no meaningful content, replace with safe fallback
+    const hasMeaningfulContent = narrativeFields.some(field => {
+      const value = validatedAnalysis[field];
+      if (Array.isArray(value)) return value.some(item => item.trim().length > 0);
+      return value.trim().length > 0;
+    });
+
+    if (hasErrors || !hasMeaningfulContent) {
+      const fallback = fallbackText || validateResponse('', {}).fallback;
+      validatedAnalysis = {
+        ...validatedAnalysis,
+        overallPositioning: fallback,
+        strongMatches: [],
+        transferableExperience: [],
+        learningAgility: fallback,
+        interviewTalkingPoints: [],
+        recommendedPositioning: fallback,
+      };
+    }
+
+    analysis = validatedAnalysis;
+    const validationMs = clock() - validationStartedAt;
 
     const totalMs = clock() - startedAt;
 
@@ -357,10 +487,11 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
     console.log(
       `[job-fit] total=${totalMs}ms parse=${parseMs}ms retrieval=${retrievalMs}ms ` +
         `prompt=${promptMs}ms generation=${generationMs}ms claimValidation=${claimValidationMs}ms ` +
-        `guardrails=${guardrailsMs}ms ` +
+        `guardrails=${guardrailsMs}ms validation=${validationMs}ms ` +
         `chunks=${retrieval.chunks.length} requirements=${requirementCount} ` +
         `fallback=${usedFallback ? 'yes' : 'no'} ` +
-        `downgraded=${claimReport.downgradedRequirements.length} durationsRemoved=${claimReport.removedDurations.length}`
+        `downgraded=${claimReport.downgradedRequirements.length} durationsRemoved=${claimReport.removedDurations.length} ` +
+        `redactions=${redactions} rateLimit=${rateLimitResult.allowed ? 'ok' : 'blocked'}`
     );
 
     return {
@@ -378,8 +509,15 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
         requirementCount,
         truncated,
         usedFallback,
-      },
-    };
+        redactions,
+        rateLimit: {
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining,
+          resetAt: rateLimitResult.resetAt,
+          scope: rateLimitResult.scope,
+        },
+      }
+    }
   }
 
   return { analyzeJobFit };

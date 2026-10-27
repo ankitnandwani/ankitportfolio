@@ -210,6 +210,38 @@ export interface JobFitRequest {
 }
 
 /**
+ * Options for the job fit analyzer policy.
+ */
+export interface JobFitPolicyOptions {
+  /** The maximum length of the job description. */
+  maxLength?: number;
+  /** The minimum length of the job description. */
+  minLength?: number;
+  /** The window in seconds for the rate limiter. */
+  windowSeconds?: number;
+  /** The maximum number of requests in the window. */
+  maxRequests?: number;
+  /** The daily window in seconds. */
+  dailyWindowSeconds?: number;
+  /** The maximum number of requests in the daily window. */
+  dailyMaxRequests?: number;
+  /** A function that returns the current time in milliseconds. */
+  now?: () => number;
+}
+
+/**
+ * Options for the analysis engine.
+ */
+export interface AnalyzeJobFitOptions {
+  /** Optional retrieval limit override. */
+  retrievalLimit?: number;
+  /** Optional minimum similarity threshold override. */
+  minSimilarity?: number;
+  /** Optional client key for rate limiting. */
+  clientKey?: string;
+}
+
+/**
  * Metadata returned with the analysis.
  */
 export interface JobFitMetadata {
@@ -234,16 +266,17 @@ export interface JobFitMetadata {
 
   /** Whether a fallback analysis was used because the model answer could not be parsed. */
   usedFallback: boolean;
-}
 
-/**
- * Options for the analysis engine.
- */
-export interface AnalyzeJobFitOptions {
-  /** Optional retrieval limit override. */
-  retrievalLimit?: number;
-  /** Optional minimum similarity threshold override. */
-  minSimilarity?: number;
+  /** Number of PII redactions performed on the job description. */
+  redactions: number;
+
+  /** Rate limit information for the request. */
+  rateLimit: {
+    limit: number;
+    remaining: number;
+    resetAt: number;
+    scope: 'window' | 'daily' | null;
+  };
 }
 
 /**

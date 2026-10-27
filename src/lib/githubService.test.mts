@@ -24,10 +24,25 @@ const REQUIRED_ENV_VARS = [
   'SENTRY_DSN',
   'UPSTASH_REDIS_REST_URL',
   'UPSTASH_REDIS_REST_TOKEN',
+  // Job fit analyzer limits (optional) - these are optional and have defaults
+  // They are validated as positive integers if present, so we set valid numbers
+  'JOB_FIT_WINDOW_SECONDS',
+  'JOB_FIT_MAX_REQUESTS',
+  'JOB_FIT_DAILY_WINDOW_SECONDS',
+  'JOB_FIT_DAILY_MAX_REQUESTS',
+  'JOB_FIT_MAX_TOKENS',
 ] as const;
 
 for (const name of REQUIRED_ENV_VARS) {
-  process.env[name] = process.env[name] ?? 'test-placeholder';
+  // For optional numeric variables, set valid default values instead of placeholder
+  const numericDefaults: Record<string, string> = {
+    JOB_FIT_WINDOW_SECONDS: '1800',
+    JOB_FIT_MAX_REQUESTS: '5',
+    JOB_FIT_DAILY_WINDOW_SECONDS: '86400',
+    JOB_FIT_DAILY_MAX_REQUESTS: '10',
+    JOB_FIT_MAX_TOKENS: '2048',
+  };
+  process.env[name] = process.env[name] ?? numericDefaults[name] ?? 'test-placeholder';
 }
 
 const { fetchGitHubRepoData } = await import('./githubService.ts');
