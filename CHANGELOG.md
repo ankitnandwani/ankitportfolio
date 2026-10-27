@@ -1,3 +1,20 @@
+## [0.1.121] - 2026-10-27
+- Planned the next milestone: M17 – Job Description Analyzer, which is ROADMAP Milestone 17. No application code was written and no dependency was added
+- Re-verified Milestone 13 independently before planning: 219 tests (214 pass, 0 fail, 5 opt-in skipped), lint 0 errors with 3 pre-existing warnings, typecheck clean, build succeeds, CI (lint, typecheck, test) green
+- Created `tasks/M17/` with a README and nine task specifications:
+  - M17.01 – Define the Job Fit Analysis Contract (types, zod schema, limits, the fixed wording of PRD §88)
+  - M17.02 – Parse a Job Description into Requirements (a deterministic parser, no model call)
+  - M17.03 – Implement the Job Fit Analysis Engine (one retrieval, one generation, the rules of PRD §30, §31, §41, §42 and §88 in the prompt)
+  - M17.04 – Enforce the Job-Matching Rule with Claim Grounding Validation (an unsupported claim is downgraded to a learning area, never dropped and never turned into a rejection)
+  - M17.05 – Apply the Privacy and Safety Guardrails to the Job Fit Flow (the job description is untrusted data, its personal data is removed, the analyzer gets its own rate limit)
+  - M17.06 – Create the Job Fit API Route (`POST /api/job-fit`)
+  - M17.07 – Build the Job Fit Analyzer Interface (`/job-fit`, the six sections, the qualitative alignment bars, the call to action)
+  - M17.08 – Add Job Fit Analytics and the Entry Points (the `job_fit_analysis` event of PRD §78)
+  - M17.09 – Test and Verify the Job Fit Analyzer End to End
+- The README of the milestone carries the execution order, the parallel work, the traceability table for every requirement of PRD §30, §31, §43, §78, §88, §89, §90, §126 and ROADMAP Milestone 17, and the decisions the implementation has to follow
+- Ten decisions were recorded. Two of them need a human: the analyzer lives at `/job-fit` and is not added to the main navigation, because PRD §8 and PRD §92 fix the navigation and it has no entry for it; and the analyzer gets its own rate limit bucket, because one analysis is not one message
+- Pointed the folders `tasks/M14/`, `tasks/M15/` and `tasks/M16/` at the tasks of the Milestone 13 bundle that delivered ROADMAP Milestones 14 to 16, so the placeholders no longer read as unfinished work
+
 ## [0.1.120] - 2026-10-27
 - Implemented M13.12: End-to-End Testing and Verification of the complete AI Knowledge Base and Chat Assistant system
 - Created comprehensive test plan (`test-plan.md`) with 40 test cases across 5 categories:

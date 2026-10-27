@@ -6,10 +6,22 @@
 
 ## Current Milestone
 
-- M13 – AI Knowledge Base
+- M17 – Job Description Analyzer (ROADMAP Milestone 17)
 
 ## Status
 
+- Task specifications created for M17 – Job Description Analyzer (see tasks/M17/). Awaiting implementation. Nothing in tasks/M17/ is implemented yet.
+- M17.01 – Define the Job Fit Analysis Contract (not started)
+- M17.02 – Parse a Job Description into Requirements (not started)
+- M17.03 – Implement the Job Fit Analysis Engine (not started)
+- M17.04 – Enforce the Job-Matching Rule with Claim Grounding Validation (not started)
+- M17.05 – Apply the Privacy and Safety Guardrails to the Job Fit Flow (not started)
+- M17.06 – Create the Job Fit API Route (not started)
+- M17.07 – Build the Job Fit Analyzer Interface (not started)
+- M17.08 – Add Job Fit Analytics and the Entry Points (not started)
+- M17.09 – Test and Verify the Job Fit Analyzer End to End (not started)
+- Milestone 13 (AI Knowledge Base) is complete and was independently re-verified before this milestone was planned: 219 tests (214 pass, 0 fail, 5 opt-in skipped), lint 0 errors with 3 pre-existing warnings, typecheck clean, build succeeds, CI (lint, typecheck, test) green.
+- ROADMAP Milestones 14 (Gemini Integration), 15 (AI Guardrails) and 16 (AI Chat UX) were delivered inside the Milestone 13 bundle as tasks M13.06 to M13.11. The folders tasks/M14/, tasks/M15/ and tasks/M16/ now point at where the work lives.
 - Task specifications created for M13 – AI Knowledge Base (see tasks/M13/).
 - M13.01 – Define AI Knowledge Base Document Format and Schema (completed)
 - M13.02 – Set Up Supabase Client Wrapper and Environment Validation (completed)
@@ -50,10 +62,10 @@
 
 ## Next Task
 
-- M13.12 – End-to-End Testing and Verification (completed)
+- M17.01 – Define the Job Fit Analysis Contract (the next action: begin implementation of M17.01)
+- The job fit analyzer is planned in tasks/M17/. Two decisions there are waiting for a human: the analyzer lives at /job-fit and is not added to the main navigation, because PRD §8 and PRD §92 fix the navigation and it has no entry for it; and the analyzer gets its own rate limit bucket, because one analysis is not one message and PRD §48 sets the policy for messages
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
-- Proceed to Milestone 14 (Gemini Integration) - already completed as part of M13
-- Next active milestone: M17 (Job Description Analyzer) per roadmap
+- The standing items are listed in TODO.md
 
 ## Completed (Milestone 01)
 
