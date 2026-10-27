@@ -1,3 +1,20 @@
+## [0.1.127] - 2026-10-27
+- Implemented M17.06 – Create the Job Fit API Route:
+  - Created `app/api/job-fit/route.ts` with POST handler:
+    - Request validation (JSON body, required `jobDescription` string)
+    - Rate limiting via M17.05 policy (5/30min, 10/day, namespaced keys `jobfit:`)
+    - Input policy checks (length, PII redaction, injection detection)
+    - Analysis execution via M17.03 engine (`analyzeJobFit`)
+    - Error mapping: `LLMConfigurationError` → 503, retryable `LLMError` → 503, other → 500
+    - Rate limit headers on all responses (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After` on 429)
+    - `Cache-Control: no-store` header on all responses
+    - Analytics event `job_fit_analysis` fired fire-and-forget via `trackJobFitAnalysis`
+  - Added analytics event type `JobFitAnalysisEvent` and tracking function `trackJobFitAnalysis` in `src/lib/analytics/`
+    - Added `JobFitAnalysisEvent` to `AnalyticsEvent` union in `eventTypes.ts`
+    - Exported new types and functions from `analytics/index.ts`
+  - Response shape matches PRD §43 with `analysis`, `evidence`, and `meta` fields
+- All 397 tests pass, lint 0 errors (only pre-existing warnings), typecheck clean, build succeeds
+
 ## [0.1.126] - 2026-10-27
 - Implemented M17.05 – Apply the Privacy and Safety Guardrails to the Job Fit Flow:
   - Created `src/lib/jobFit/policy.ts` with input policy and rate limiter:

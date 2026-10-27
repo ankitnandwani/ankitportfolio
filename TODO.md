@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M17.06.
+- Begin implementation of M17.07.
 - Two decisions of the M17 plan are waiting for a human before M17.08 is started: the job fit analyzer lives at `/job-fit` and is not added to the main navigation, because PRD §8 and PRD §92 fix the navigation and it has no entry for it; and the analyzer gets its own rate limit bucket, because one analysis is not one message and PRD §48 sets the policy for messages
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch
@@ -120,3 +120,17 @@
 - Analytics and feedback: Session tracking, message/response events, feedback submission all operational
 - Test plan documented in `test-plan.md`
 - All 219 unit tests pass, lint passes, typecheck passes, build succeeds
+
+## Completed (M17.06)
+
+- Created Job Fit API Route at `app/api/job-fit/route.ts`:
+  - POST handler with request validation (JSON body, required jobDescription string)
+  - Rate limiting via M17.05 policy (5/30min, 10/day, namespaced keys `jobfit:`)
+  - Input policy checks (length, PII redaction, injection detection)
+  - Analysis execution via M17.03 engine (`analyzeJobFit`)
+  - Error mapping: LLMConfigurationError → 503, retryable LLMError → 503, other → 500
+  - Rate limit headers on all responses (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After on 429)
+  - `Cache-Control: no-store` header on all responses
+  - Analytics event `job_fit_analysis` fired fire-and-forget via `trackJobFitAnalysis`
+- Added analytics event type `JobFitAnalysisEvent` and tracking function `trackJobFitAnalysis` in `src/lib/analytics/`
+- All 397 tests pass, lint clean (0 errors), typecheck clean, build succeeds

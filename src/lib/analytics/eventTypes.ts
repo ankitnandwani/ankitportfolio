@@ -142,6 +142,39 @@ export interface CtaClickedEvent extends BaseAnalyticsEvent {
 }
 
 /**
+ * Event fired when a job fit analysis is completed.
+ */
+export interface JobFitAnalysisEvent extends BaseAnalyticsEvent {
+  eventType: 'job_fit_analysis';
+  /** The query ID from the analysis */
+  queryId: string;
+  /** Whether the analysis succeeded */
+  success: boolean;
+  /** Number of requirements in the job description */
+  requirementCount: number;
+  /** Number of chunks retrieved */
+  chunksRetrieved: number;
+  /** Average similarity score */
+  averageSimilarity: number | null;
+  /** Total latency in ms */
+  latencyMs: number;
+  /** Token usage */
+  tokenUsage: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  } | null;
+  /** Model used */
+  model: string;
+  /** Whether fallback was used */
+  usedFallback: boolean;
+  /** Number of PII redactions */
+  redactions: number;
+  /** Rate limit scope if blocked */
+  rateLimitScope: 'window' | 'daily' | null;
+}
+
+/**
  * Union of all analytics event types.
  */
 export type AnalyticsEvent =
@@ -149,7 +182,8 @@ export type AnalyticsEvent =
   | MessageSentEvent
   | ResponseReceivedEvent
   | FeedbackGivenEvent
-  | CtaClickedEvent;
+  | CtaClickedEvent
+  | JobFitAnalysisEvent;
 
 /**
  * Configuration for the analytics system.

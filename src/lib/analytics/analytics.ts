@@ -16,6 +16,7 @@ import {
   type ResponseReceivedEvent,
   type FeedbackGivenEvent,
   type CtaClickedEvent,
+  type JobFitAnalysisEvent,
   type QuestionCategory,
   type GuardrailAction,
   type OutputGuardrailAction,
@@ -274,6 +275,47 @@ export async function trackCtaClicked(
     queryId,
     ctaType,
     targetDomain,
+  };
+  await sendEvent(event, config);
+}
+
+/**
+ * Tracks a job fit analysis completion.
+ */
+export async function trackJobFitAnalysis(
+  sessionId: string,
+  queryId: string,
+  success: boolean,
+  requirementCount: number,
+  chunksRetrieved: number,
+  averageSimilarity: number | null,
+  latencyMs: number,
+  tokenUsage: TokenUsage | null,
+  model: string,
+  usedFallback: boolean,
+  redactions: number,
+  rateLimitScope: 'window' | 'daily' | null,
+  config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
+): Promise<void> {
+  const event: JobFitAnalysisEvent = {
+    ...createBaseEvent(sessionId, 'job_fit_analysis'),
+    queryId,
+    success,
+    requirementCount,
+    chunksRetrieved,
+    averageSimilarity,
+    latencyMs,
+    tokenUsage: tokenUsage
+      ? {
+          promptTokens: tokenUsage.promptTokens ?? 0,
+          completionTokens: tokenUsage.completionTokens ?? 0,
+          totalTokens: tokenUsage.totalTokens ?? 0,
+        }
+      : null,
+    model,
+    usedFallback,
+    redactions,
+    rateLimitScope,
   };
   await sendEvent(event, config);
 }
