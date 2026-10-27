@@ -32,7 +32,8 @@ import {
 } from '../llm/provider.ts';
 import { validateResponse } from '../guardrails/outputValidation.ts';
 import { parseModelAnswer, buildClassifiedRequirements, buildAlignmentBands, type ModelAnswer } from './schema.ts';
-import { createJobFitPolicy, type JobFitPolicyOptions } from './policy.ts';
+import { createJobFitPolicy } from './policy.ts';
+import type { JobFitPolicyOptions } from './types.ts';
 import { applyOutputGuardrails } from '../guardrails/pipeline.ts';
 import type {
   JobRequirement,
@@ -425,14 +426,14 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
       .map((e) => e.content!)
       .join('\n\n');
 
-    const narrativeFields: Array<keyof JobFitAnalysis> = [
+    const narrativeFields = [
       'overallPositioning',
       'strongMatches',
       'transferableExperience',
       'learningAgility',
       'interviewTalkingPoints',
       'recommendedPositioning',
-    ];
+    ] as const;
 
     let validatedAnalysis = { ...analysis };
     let hasErrors = false;
@@ -442,7 +443,7 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
       const value = validatedAnalysis[field];
       if (Array.isArray(value)) {
         const validatedItems: string[] = [];
-        for (const item of value) {
+        for (const item of value as string[]) {
           if (item.trim().length === 0) continue;
           const result = validateResponse(item, { context: evidenceText });
           if (!result.isValid) hasErrors = true;
@@ -461,8 +462,8 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
     // If validation failed, or the analysis has no meaningful content, replace with safe fallback
     const hasMeaningfulContent = narrativeFields.some(field => {
       const value = validatedAnalysis[field];
-      if (Array.isArray(value)) return value.some(item => item.trim().length > 0);
-      return value.trim().length > 0;
+      if (Array.isArray(value)) return value.some(item => typeof item === 'string' && item.trim().length > 0);
+      return typeof value === 'string' && value.trim().length > 0;
     });
 
     if (hasErrors || !hasMeaningfulContent) {

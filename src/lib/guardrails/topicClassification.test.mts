@@ -93,9 +93,9 @@ test('names the subject of the question', () => {
 test('reports the words that were matched', () => {
   const result = classifyTopic('What backend technologies has he worked with?');
 
-  assert.ok(result.matches.includes('technologies'));
-  assert.ok(result.matches.includes('backend'));
-  assert.match(result.reason, /professional signal/);
+  assert.ok(result.matches?.includes('technologies'));
+  assert.ok(result.matches?.includes('backend'));
+  assert.match(result.reason ?? '', /professional signal/);
 });
 
 test('gives a higher confidence to a question with more signals', () => {

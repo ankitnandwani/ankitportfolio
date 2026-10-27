@@ -57,27 +57,9 @@ export const DEFAULT_JOB_FIT_MAX_TOKENS = 2048;
  */
 export type JobFitInputPolicy =
   | { allowed: true; jobDescription: string; redactions: number }
-  | { allowed: false; reason: 'too_short' | 'too_long' | 'injection' };
+  | { allowed: false; reason: 'too_short' | 'too_long' | 'injection'; redactions: number };
 
-/**
- * The options for the job fit policy.
- */
-export interface JobFitPolicyOptions {
-  /** The maximum length of the job description. */
-  maxLength?: number;
-  /** The minimum length of the job description. */
-  minLength?: number;
-  /** The window in seconds for the rate limiter. */
-  windowSeconds?: number;
-  /** The maximum number of requests in the window. */
-  maxRequests?: number;
-  /** The daily window in seconds. */
-  dailyWindowSeconds?: number;
-  /** The maximum number of requests in the daily window. */
-  dailyMaxRequests?: number;
-  /** A function that returns the current time in milliseconds. */
-  now?: () => number;
-}
+import type { JobFitPolicyOptions } from './types.ts';
 
 /**
  * Creates the job fit input policy.
@@ -111,23 +93,23 @@ export function createJobFitPolicy(options: JobFitPolicyOptions = {}) {
   function checkInput(raw: string): JobFitInputPolicy {
     // Length check first (cheapest)
     if (raw.length > maxLength) {
-      return { allowed: false, reason: 'too_long' };
+      return { allowed: false, reason: 'too_long', redactions: 0 };
     }
     if (raw.trim().length < effectiveMinLength) {
-      return { allowed: false, reason: 'too_short' };
+      return { allowed: false, reason: 'too_short', redactions: 0 };
     }
 
     // Personal data removal
     const detection = detectPii(raw);
     const redacted = detection.hasPii ? redactPii(raw) : raw;
-    const redactions = detection.findings.reduce((sum, f) => sum + f.count, 0);
+    const redactions = detection.findings.reduce((sum: number, f: typeof detection.findings[0]) => sum + f.count, 0);
 
     // Attack detection on the redacted text (so a credential is not matched as an attack)
     const injection = detectInjection(redacted);
 
     // A sensitive data request is not a reason to block - it's a requirement to analyse
     if (injection.isInjection) {
-      return { allowed: false, reason: 'injection' };
+      return { allowed: false, reason: 'injection', redactions: 0 };
     }
 
     return { allowed: true, jobDescription: redacted, redactions };
@@ -168,14 +150,14 @@ export async function applyOutputValidation(
   );
 
   // Apply output guardrails to all text fields
-  const textFields: Array<keyof JobFitAnalysis> = [
+  const textFields = [
     'overallPositioning',
     'strongMatches',
     'transferableExperience',
     'learningAgility',
     'interviewTalkingPoints',
     'recommendedPositioning',
-  ];
+  ] as const;
 
   const guarded = { ...claimValidatedAnalysis };
 
@@ -183,7 +165,7 @@ export async function applyOutputValidation(
     const value = guarded[field];
     if (Array.isArray(value)) {
       const guardedItems: string[] = [];
-      for (const item of value) {
+      for (const item of value as string[]) {
         if (item.trim().length === 0) continue;
         const result = applyOutputGuardrails(item);
         guardedItems.push(result.text);
@@ -202,14 +184,14 @@ export async function applyOutputValidation(
     .join('\n\n');
 
   // Run response validation on each narrative field
-  const narrativeFields: Array<keyof JobFitAnalysis> = [
+  const narrativeFields = [
     'overallPositioning',
     'strongMatches',
     'transferableExperience',
     'learningAgility',
     'interviewTalkingPoints',
     'recommendedPositioning',
-  ];
+  ] as const;
 
   let validatedAnalysis = { ...guarded };
   let hasErrors = false;
@@ -218,8 +200,8 @@ export async function applyOutputValidation(
     const value = validatedAnalysis[field];
     if (Array.isArray(value)) {
       const validatedItems: string[] = [];
-      for (const item of value) {
-        if (typeof item === 'string' && item.trim().length === 0) continue;
+      for (const item of value as string[]) {
+        if (item.trim().length === 0) continue;
         const result = validateResponse(item, { context: evidenceText });
         if (!result.isValid) hasErrors = true;
         validatedItems.push(result.text);

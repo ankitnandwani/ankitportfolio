@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M17.05.
+- Begin implementation of M17.06.
 - Two decisions of the M17 plan are waiting for a human before M17.08 is started: the job fit analyzer lives at `/job-fit` and is not added to the main navigation, because PRD §8 and PRD §92 fix the navigation and it has no entry for it; and the analyzer gets its own rate limit bucket, because one analysis is not one message and PRD §48 sets the policy for messages
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch
@@ -49,6 +49,21 @@
   - Metrics logging without job description or answer content
   - `analysis.test.mts` – 15 unit tests covering happy path, malformed answers, code fences, guardrails, provider errors, metrics logging
   - All 350 tests pass (345 pass, 0 fail, 5 opt-in skipped), lint clean, typecheck clean, build succeeds
+
+## Completed (M17.05)
+
+- Implemented Privacy and Safety Guardrails for Job Fit Flow in `src/lib/jobFit/policy.ts`:
+  - Input policy with length checks (80-12000 chars), PII redaction via `detectPii`/`redactPii`, injection detection via `detectInjection`
+  - Topic classification explicitly NOT run on job descriptions (they are not questions)
+  - Sensitive data requests (e.g., "his phone number") allowed as requirements, not blocked
+  - Analyzer rate limiter with separate in-memory store, namespaced keys (`jobfit:`), configurable limits (5/30min, 10/day)
+  - Output guardrails applied to all six narrative text fields
+  - Response validation with evidence as context for grounding checks
+  - Validation failure replaces analysis with safe fallback
+  - Environment variables added: `JOB_FIT_WINDOW_SECONDS`, `JOB_FIT_MAX_REQUESTS`, `JOB_FIT_DAILY_WINDOW_SECONDS`, `JOB_FIT_DAILY_MAX_REQUESTS`, `JOB_FIT_MAX_TOKENS`
+  - Updates to `src/lib/guardrails/types.ts`, `src/lib/guardrails/outputValidation.ts`, `src/lib/ai/orchestration.ts`, `src/lib/ai/validation.ts`, `src/lib/env.ts`, `src/lib/env.js`, `.env.example`, `src/lib/githubService.test.mts`
+  - `policy.test.mts` – 25 unit tests covering all acceptance criteria
+  - All 397 tests pass, lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M17.04)
 

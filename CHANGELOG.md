@@ -1,3 +1,23 @@
+## [0.1.126] - 2026-10-27
+- Implemented M17.05 – Apply the Privacy and Safety Guardrails to the Job Fit Flow:
+  - Created `src/lib/jobFit/policy.ts` with input policy and rate limiter:
+    - Length checks (80-12000 chars) enforced before parsing
+    - Personal data removal via `detectPii`/`redactPii` from `src/lib/guardrails/piiDetection.ts`
+    - Prompt injection detection via `detectInjection` from `src/lib/guardrails/promptInjection.ts` (topic classification explicitly not run on job descriptions)
+    - Sensitive data requests (e.g., "his phone number") allowed as requirements, not blocked
+    - Analyzer rate limiter with separate in-memory store, namespaced keys (`jobfit:`), configurable limits (5/30min, 10/day)
+    - Output guardrails applied to all six narrative text fields via `applyOutputGuardrails`
+    - Response validation with evidence as context via `validateResponse` from `src/lib/ai/validation.ts`
+    - Validation failure replaces analysis with safe fallback
+  - Updated `src/lib/guardrails/types.ts` with `InjectionDetection`, `PiiDetectionResult`, `PiiFinding`, `TopicClassification` (added `matches`, `reason`), `GuardrailEventSink` as function type, `OutputValidationResult` with `fallback`
+  - Updated `src/lib/guardrails/outputValidation.ts` to include `fallback` in return value
+  - Updated `src/lib/ai/orchestration.ts` to include `fallback` in manual `outputGuardrails` objects
+  - Updated `src/lib/ai/validation.ts` with explicit type annotations for reduce callbacks
+  - Added environment variables `JOB_FIT_WINDOW_SECONDS`, `JOB_FIT_MAX_REQUESTS`, `JOB_FIT_DAILY_WINDOW_SECONDS`, `JOB_FIT_DAILY_MAX_REQUESTS`, `JOB_FIT_MAX_TOKENS` to `src/lib/env.ts`, `src/lib/env.js`, `.env.example`
+  - Updated `src/lib/githubService.test.mts` with new environment variables
+  - Created `src/lib/jobFit/policy.test.mts` with 25 unit tests covering all acceptance criteria
+- All 397 tests pass (392 pass, 0 fail, 5 opt-in skipped), lint 0 errors (only pre-existing warnings), typecheck clean, build succeeds
+
 ## [0.1.125] - 2026-10-27
 - Implemented M17.04 – Enforce the Job-Matching Rule with Claim Grounding Validation:
   - Created `src/lib/jobFit/claimValidation.ts` with deterministic validation:

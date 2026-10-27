@@ -221,7 +221,7 @@ export function validateResponse(
           finding.type === 'phone' ? 'a phone number' : 'an email address'
         )
         .join(' and '),
-      count: pii.findings.reduce((sum, finding) => sum + finding.count, 0),
+      count: pii.findings.reduce((sum: number, finding: typeof pii.findings[0]) => sum + finding.count, 0),
     });
   }
 

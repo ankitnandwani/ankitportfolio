@@ -48,13 +48,13 @@ const TEST_REQUIREMENTS: JobRequirement[] = [
 test('checkInput rejects too short job description', () => {
   const policy = createJobFitPolicy({ minLength: 80 });
   const result = policy.checkInput('Short');
-  assert.deepEqual(result, { allowed: false, reason: 'too_short' });
+  assert.deepEqual(result, { allowed: false, reason: 'too_short', redactions: 0 });
 });
 
 test('checkInput rejects too long job description', () => {
   const policy = createJobFitPolicy({ maxLength: 100 });
   const result = policy.checkInput('x'.repeat(101));
-  assert.deepEqual(result, { allowed: false, reason: 'too_long' });
+  assert.deepEqual(result, { allowed: false, reason: 'too_long', redactions: 0 });
 });
 
 test('checkInput accepts exactly at min length', () => {

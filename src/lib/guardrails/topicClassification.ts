@@ -471,7 +471,7 @@ export function classifyTopic(
     return {
       isAllowed: false,
       topic: 'off_topic',
-      label: 'off topic',
+      name: 'off topic',
       confidence,
       matches: [],
       reason:
@@ -485,7 +485,7 @@ export function classifyTopic(
     return {
       isAllowed: true,
       topic: 'profile',
-      label: 'professional profile',
+      name: 'professional profile',
       confidence,
       matches: [],
       reason: 'the question mentions Ankit without naming a subject',
@@ -499,7 +499,7 @@ export function classifyTopic(
   return {
     isAllowed: true,
     topic: bestTopic,
-    label: definition?.label ?? 'professional profile',
+    name: definition?.label ?? 'professional profile',
     confidence,
     matches: signals.get(bestTopic)?.keywords ?? [],
     reason: `the question carries ${weight} in professional signal`,

@@ -77,6 +77,7 @@ export async function processChatMessage(
         wasRedacted: false,
         violations: [],
         action: 'output_allowed',
+        fallback: redirect.message,
       },
       retrieval: {
         query: inputResult.query,
@@ -204,6 +205,7 @@ export async function* processChatMessageStream(
         wasRedacted: false,
         violations: [],
         action: 'output_allowed',
+        fallback: redirect.message,
       },
       retrieval: {
         query: inputResult.query,
@@ -301,6 +303,7 @@ export async function* processChatMessageStream(
         wasRedacted: false,
         violations: [],
         action: 'output_allowed',
+        fallback: errorMessage,
       },
       retrieval: retrievalResult,
       isRedirect: false,
@@ -398,6 +401,7 @@ export function createOrchestrationService(provider: LLMProvider) {
             wasRedacted: false,
             violations: [],
             action: 'output_allowed',
+            fallback: redirect.message,
           },
           retrieval: {
             query: inputResult.query,
@@ -516,6 +520,7 @@ export function createOrchestrationService(provider: LLMProvider) {
             wasRedacted: false,
             violations: [],
             action: 'output_allowed',
+            fallback: redirect.message,
           },
           retrieval: {
             query: inputResult.query,
@@ -608,6 +613,7 @@ export function createOrchestrationService(provider: LLMProvider) {
             wasRedacted: false,
             violations: [],
             action: 'output_allowed',
+            fallback: errorMessage,
           },
           retrieval: retrievalResult,
           isRedirect: false,

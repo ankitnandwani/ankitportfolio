@@ -287,7 +287,13 @@ export function validateResponse(
   options: GuardrailOptions = {}
 ): OutputValidationResult {
   if (!response) {
-    return { text: response ?? '', isValid: true, violations: [], wasRedacted: false };
+    return {
+      text: response ?? '',
+      isValid: true,
+      violations: [],
+      wasRedacted: false,
+      fallback: options.fallback ?? "I don't have enough information in Ankit's professional profile to answer that accurately. I can tell you about his experience with automation, backend quality, cloud, CI/CD or his engineering projects.",
+    };
   }
 
   const violations: OutputViolation[] = [];
@@ -313,7 +319,7 @@ export function validateResponse(
       detail: pii.findings
         .map((finding) => (finding.type === 'phone' ? 'a phone number' : 'an email address'))
         .join(' and '),
-      count: pii.findings.reduce((sum, finding) => sum + finding.count, 0),
+      count: pii.findings.reduce((sum: number, finding: typeof pii.findings[0]) => sum + finding.count, 0),
     });
   }
 
@@ -341,5 +347,6 @@ export function validateResponse(
     isValid,
     violations,
     wasRedacted: pii.text !== response,
+    fallback: options.fallback ?? "I don't have enough information in Ankit's professional profile to answer that accurately. I can tell you about his experience with automation, backend quality, cloud, CI/CD or his engineering projects.",
   };
 }
