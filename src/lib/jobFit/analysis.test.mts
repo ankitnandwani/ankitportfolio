@@ -82,8 +82,8 @@ const VALID_MODEL_ANSWER = {
   interviewTalkingPoints: ['Talking point 1', 'Talking point 2'],
   recommendedPositioning: 'Position as a senior automation engineer.',
   requirements: [
-    { id: 'r1', classification: 'DIRECT_MATCH', rationale: 'Direct experience with Java', evidenceIds: ['e1'] },
-    { id: 'r2', classification: 'STRONG_TRANSFER', rationale: 'Spring transfers to similar frameworks', evidenceIds: ['e1'] },
+    { id: 'r1', classification: 'DIRECT_MATCH', rationale: 'Direct experience with Java', evidenceIds: ['doc1'] },
+    { id: 'r2', classification: 'STRONG_TRANSFER', rationale: 'Spring transfers to similar frameworks', evidenceIds: ['doc2'] },
     { id: 'r3', classification: 'UNKNOWN', rationale: 'No evidence found', evidenceIds: [] },
   ],
   alignmentBands: [

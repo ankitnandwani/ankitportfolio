@@ -1,3 +1,14 @@
+## [0.1.125] - 2026-10-27
+- Implemented M17.04 – Enforce the Job-Matching Rule with Claim Grounding Validation:
+  - Created `src/lib/jobFit/claimValidation.ts` with deterministic validation:
+    - Evidence quote check: validates requirement evidence IDs exist in retrieved evidence and key terms from requirements appear in cited evidence; downgrades unsupported requirements to LEARNABLE with PRD §88 wording
+    - Duration check: scans all six narrative fields for experience durations (e.g., "5 years", "3+ years"); removes unsupported durations; drops empty sentences; preserves non-experience durations (company history, job titles, education years)
+    - Unsupported claims downgraded to LEARNABLE with PRD §88 wording, never dropped from analysis
+    - Report captures downgraded requirement IDs and removed duration phrases without analysis text
+  - Created `src/lib/jobFit/claimValidation.test.mts` with 20 unit tests covering requirement validation, duration checks, edge cases, performance
+  - Integrated `validateClaims` into analysis engine after model answer parsing, before output guardrails
+- All 20 claim validation tests pass, total test suite: 370 tests (365 pass, 0 fail, 5 opt-in skipped), lint 0 errors (only pre-existing warnings), typecheck clean, build succeeds
+
 ## [0.1.124] - 2026-10-27
 - Implemented M17.03 – Implement the Job Fit Analysis Engine:
   - Created `src/lib/jobFit/analysis.ts` with the analysis engine:

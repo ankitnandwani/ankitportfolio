@@ -9,6 +9,9 @@
 
 import type { KnowledgeClassification } from '../knowledge/types.ts';
 
+// Re-export for consumers
+ export type { KnowledgeClassification };
+
 /**
  * The classification of a single requirement from the job description.
  *

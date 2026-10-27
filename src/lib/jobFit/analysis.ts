@@ -15,6 +15,7 @@ import {
   buildJobFitPrompt,
   JOB_FIT_SYSTEM_INSTRUCTION,
 } from './prompts.ts';
+import { validateClaims } from './claimValidation.ts';
 import { retrieveChunks } from '../knowledge/retrieval.ts';
 import {
   type RetrievalOptions,
@@ -335,7 +336,17 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
       analysis = buildFallbackAnalysis(evidence, requirementCount);
     }
 
-    // Stage 8: Apply output guardrails
+    // Stage 8: Validate claims against evidence (PRD §31)
+    const claimValidationStartedAt = clock();
+    const { analysis: validatedAnalysis, report: claimReport } = validateClaims(
+      analysis,
+      evidence,
+      requirements
+    );
+    const claimValidationMs = clock() - claimValidationStartedAt;
+    analysis = validatedAnalysis;
+
+    // Stage 9: Apply output guardrails
     const guardrailsStartedAt = clock();
     analysis = await applyGuardrailsToAnalysis(analysis);
     const guardrailsMs = clock() - guardrailsStartedAt;
@@ -345,8 +356,11 @@ export function createAnalysisService(options: AnalysisServiceOptions = {}) {
     // Log metrics
     console.log(
       `[job-fit] total=${totalMs}ms parse=${parseMs}ms retrieval=${retrievalMs}ms ` +
-        `prompt=${promptMs}ms generation=${generationMs}ms guardrails=${guardrailsMs}ms ` +
-        `chunks=${retrieval.chunks.length} requirements=${requirementCount} fallback=${usedFallback ? 'yes' : 'no'}`
+        `prompt=${promptMs}ms generation=${generationMs}ms claimValidation=${claimValidationMs}ms ` +
+        `guardrails=${guardrailsMs}ms ` +
+        `chunks=${retrieval.chunks.length} requirements=${requirementCount} ` +
+        `fallback=${usedFallback ? 'yes' : 'no'} ` +
+        `downgraded=${claimReport.downgradedRequirements.length} durationsRemoved=${claimReport.removedDurations.length}`
     );
 
     return {

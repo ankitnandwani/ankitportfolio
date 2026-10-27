@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M17.04.
+- Begin implementation of M17.05.
 - Two decisions of the M17 plan are waiting for a human before M17.08 is started: the job fit analyzer lives at `/job-fit` and is not added to the main navigation, because PRD §8 and PRD §92 fix the navigation and it has no entry for it; and the analyzer gets its own rate limit bucket, because one analysis is not one message and PRD §48 sets the policy for messages
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch
@@ -49,6 +49,16 @@
   - Metrics logging without job description or answer content
   - `analysis.test.mts` – 15 unit tests covering happy path, malformed answers, code fences, guardrails, provider errors, metrics logging
   - All 350 tests pass (345 pass, 0 fail, 5 opt-in skipped), lint clean, typecheck clean, build succeeds
+
+## Completed (M17.04)
+
+- Implemented Claim Grounding Validation in `src/lib/jobFit/claimValidation.ts`:
+  - Evidence quote check: validates that requirement evidence IDs exist in retrieved evidence and key terms from requirements appear in cited evidence; downgrades unsupported requirements to LEARNABLE with PRD §88 wording
+  - Duration check: scans all six narrative fields for experience durations (e.g., "5 years", "3+ years"); removes unsupported durations; drops empty sentences; preserves non-experience durations (company history, job titles, education years)
+  - Unsupported claims downgraded to LEARNABLE with PRD §88 wording, never dropped from analysis
+  - `claimValidation.test.mts` – 20 unit tests covering requirement validation, duration checks, edge cases, performance
+  - `validateClaims` function integrated into analysis engine after model answer parsing, before output guardrails
+  - All 370 tests pass (365 pass, 0 fail, 5 opt-in skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M13.11)
 

@@ -11,3 +11,4 @@ export * from './schema.ts';
 export * from './jdParser.ts';
 export * from './prompts.ts';
 export * from './analysis.ts';
+export * from './claimValidation.ts';
