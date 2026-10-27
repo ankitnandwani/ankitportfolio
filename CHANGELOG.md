@@ -1,3 +1,19 @@
+## [0.1.120] - 2026-10-27
+- Implemented M13.12: End-to-End Testing and Verification of the complete AI Knowledge Base and Chat Assistant system
+- Created comprehensive test plan (`test-plan.md`) with 40 test cases across 5 categories:
+  - Functional Correctness (10): Automation tools, Java/REST APIs, projects, career timeline, skills, certifications, education, achievements, backend technologies, CI/CD
+  - Safety/Guardrails (10): Off-topic redirects (2), prompt injection blocking (7 variants), PII protection (phone, email, address)
+  - Edge Cases (6): Empty message, message too long, long question, gibberish, special chars/emojis, non-English
+  - Performance (4): Non-streaming avg <5s, streaming first chunk <2s, retrieval <500ms, rate limiting enforcement
+  - Integration (10): Analytics events, feedback submission, rate limit headers, KB documents/chunks/embeddings, PII scan
+- All 40 test cases pass
+- Knowledge base verified: 39 documents, 39 chunks, all with 768-dim embeddings, 0 PII detected
+- Response time: ~3.2s avg (non-streaming), ~1.8s first chunk (streaming)
+- Rate limiting: 20 req/30min enforced with proper headers
+- Analytics and feedback: Session tracking, message/response events, feedback submission all operational
+- Milestone 13 Definition of Done satisfied: "Factual question retrieves correct professional information."
+- All 219 tests pass, lint passes, typecheck passes, build succeeds
+
 ## [0.1.119] - 2026-10-26
 - Implemented M13.11: added analytics tracking in `src/lib/analytics/` with privacy-conscious session IDs, message/response/feedback events, and PostHog integration
 - Created feedback UI component `src/components/aiChat/FeedbackButton.tsx` with thumbs up/down and optional comment

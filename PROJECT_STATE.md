@@ -22,6 +22,7 @@
 - M13.09 – Integrate Retrieval and Generation (RAG Pipeline) (completed – orchestration service in `src/lib/ai/` with `processChatMessage` and `processChatMessageStream`, prompt templates, types; API route updated to use orchestration layer; input guardrails, retrieval, prompt construction, LLM generation, and output guardrails all wired end-to-end; streaming and non-streaming modes supported; comprehensive metrics logging)
 - M13.10 – Implement Response Validation, Safety Checks, and Rate Limiting (completed – the response validation in `src/lib/ai/validation.ts` and the rate limiter in `src/lib/ai/rateLimiter.ts`, both wired into the chat route: a visitor is counted before the request is processed and the answer is checked before it is sent; 25 tests; verified against the running site with the rate limit headers, the 429 answer and the streamed final chunk)
 - M13.11 – Add Analytics, Feedback Loop, and Phone Number Redaction (completed – analytics tracking in `src/lib/analytics/` with privacy-conscious session IDs, message/response/feedback events, PostHog integration; feedback UI in `src/components/aiChat/FeedbackButton.tsx` with thumbs up/down and optional comment; `/api/feedback` endpoint; knowledge base scan script `scripts/scanKnowledgeBase.mts` for phone number verification; chat API route updated to track message sent and response received events; all tests pass)
+- M13.12 – End-to-End Testing and Verification (completed – 40 test cases executed covering functional correctness (10), safety/guardrails (10), edge cases (6), performance (4), and integration (10); all pass; knowledge base verified with 39 documents, 39 chunks with embeddings, 0 PII; response time <5s avg; rate limiting enforced at 20 req/30min; analytics and feedback operational; test plan documented in test-plan.md)
 - M10.01 (Define resume data model) completed.
 - M10.02 (Create resume page route and layout) completed.
 - M10.03 (Create resume summary component and integrate summary data) completed.
@@ -49,7 +50,10 @@
 
 ## Next Task
 
-- Begin implementation of M13.12 (end-to-end testing and verification)
+- M13.12 – End-to-End Testing and Verification (completed)
+- Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
+- Proceed to Milestone 14 (Gemini Integration) - already completed as part of M13
+- Next active milestone: M17 (Job Description Analyzer) per roadmap
 
 ## Completed (Milestone 01)
 
