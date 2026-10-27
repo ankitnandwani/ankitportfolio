@@ -6,7 +6,7 @@
  * otherwise logs to console in development.
  */
 
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from './crypto.ts';
 import {
   type AnalyticsConfig,
   type AnalyticsEvent,
@@ -17,10 +17,12 @@ import {
   type FeedbackGivenEvent,
   type CtaClickedEvent,
   type JobFitAnalysisEvent,
+  type JobFitAnalysisProperties,
   type QuestionCategory,
   type GuardrailAction,
   type OutputGuardrailAction,
   type FeedbackRating,
+  type CtaType,
   DEFAULT_ANALYTICS_CONFIG,
 } from './eventTypes.ts';
 import type { TokenUsage } from '../llm/provider.ts';
@@ -266,7 +268,7 @@ export async function trackFeedbackGiven(
 export async function trackCtaClicked(
   sessionId: string,
   queryId: string,
-  ctaType: 'resume' | 'project' | 'github' | 'linkedin' | 'other',
+  ctaType: CtaType,
   targetDomain: string,
   config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
 ): Promise<void> {
@@ -285,37 +287,13 @@ export async function trackCtaClicked(
 export async function trackJobFitAnalysis(
   sessionId: string,
   queryId: string,
-  success: boolean,
-  requirementCount: number,
-  chunksRetrieved: number,
-  averageSimilarity: number | null,
-  latencyMs: number,
-  tokenUsage: TokenUsage | null,
-  model: string,
-  usedFallback: boolean,
-  redactions: number,
-  rateLimitScope: 'window' | 'daily' | null,
+  properties: JobFitAnalysisProperties,
   config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
 ): Promise<void> {
   const event: JobFitAnalysisEvent = {
     ...createBaseEvent(sessionId, 'job_fit_analysis'),
     queryId,
-    success,
-    requirementCount,
-    chunksRetrieved,
-    averageSimilarity,
-    latencyMs,
-    tokenUsage: tokenUsage
-      ? {
-          promptTokens: tokenUsage.promptTokens ?? 0,
-          completionTokens: tokenUsage.completionTokens ?? 0,
-          totalTokens: tokenUsage.totalTokens ?? 0,
-        }
-      : null,
-    model,
-    usedFallback,
-    redactions,
-    rateLimitScope,
+    properties,
   };
   await sendEvent(event, config);
 }

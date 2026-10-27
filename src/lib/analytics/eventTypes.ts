@@ -43,6 +43,11 @@ export type OutputGuardrailAction =
 export type FeedbackRating = 'up' | 'down';
 
 /**
+ * The type of CTA clicked.
+ */
+export type CtaType = 'resume' | 'project' | 'github' | 'linkedin' | 'email' | 'other';
+
+/**
  * Base properties shared by all analytics events.
  */
 export interface BaseAnalyticsEvent {
@@ -136,26 +141,40 @@ export interface CtaClickedEvent extends BaseAnalyticsEvent {
   /** The query ID the CTA was in */
   queryId: string;
   /** Type of CTA clicked */
-  ctaType: 'resume' | 'project' | 'github' | 'linkedin' | 'other';
+  ctaType: CtaType;
   /** Target URL (domain only for privacy) */
   targetDomain: string;
 }
 
 /**
- * Event fired when a job fit analysis is completed.
+ * Properties for the job fit analysis event.
+ * All properties are counts/timings - no job description text or PII.
  */
-export interface JobFitAnalysisEvent extends BaseAnalyticsEvent {
-  eventType: 'job_fit_analysis';
+export interface JobFitAnalysisProperties {
   /** The query ID from the analysis */
   queryId: string;
   /** Whether the analysis succeeded */
   success: boolean;
-  /** Number of requirements in the job description */
+  /** Number of requirements found in the job description */
   requirementCount: number;
+  /** Number of requirements analysed (after limit) */
+  analysedRequirementCount: number;
+  /** Number of requirements classified as DIRECT_MATCH */
+  directMatchCount: number;
+  /** Number of requirements classified as STRONG_TRANSFER */
+  strongTransferCount: number;
+  /** Number of requirements classified as RELATED */
+  relatedCount: number;
+  /** Number of requirements classified as LEARNABLE */
+  learnableCount: number;
+  /** Number of requirements classified as UNKNOWN */
+  unknownCount: number;
   /** Number of chunks retrieved */
   chunksRetrieved: number;
-  /** Average similarity score */
+  /** Average similarity score of retrieved chunks */
   averageSimilarity: number | null;
+  /** Whether retrieval found any chunks */
+  retrievalSuccess: boolean;
   /** Total latency in ms */
   latencyMs: number;
   /** Token usage */
@@ -166,12 +185,27 @@ export interface JobFitAnalysisEvent extends BaseAnalyticsEvent {
   } | null;
   /** Model used */
   model: string;
-  /** Whether fallback was used */
+  /** Whether the fallback analysis was used (M17.03) */
   usedFallback: boolean;
-  /** Number of PII redactions */
+  /** Whether the analysis was replaced by the safe fallback (M17.05) */
+  replacedBySafeFallback: boolean;
+  /** Number of claims corrected by M17.04 (downgraded to LEARNABLE) */
+  correctedClaims: number;
+  /** Number of PII redactions on the job description */
   redactions: number;
   /** Rate limit scope if blocked */
   rateLimitScope: 'window' | 'daily' | null;
+}
+
+/**
+ * Event fired when a job fit analysis is completed.
+ */
+export interface JobFitAnalysisEvent extends BaseAnalyticsEvent {
+  eventType: 'job_fit_analysis';
+  /** The query ID from the analysis */
+  queryId: string;
+  /** Properties for the job fit analysis */
+  properties: JobFitAnalysisProperties;
 }
 
 /**

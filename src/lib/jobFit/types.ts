@@ -277,6 +277,9 @@ export interface JobFitMetadata {
     resetAt: number;
     scope: 'window' | 'daily' | null;
   };
+
+  /** The query ID for this analysis. */
+  queryId?: string;
 }
 
 /**

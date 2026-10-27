@@ -5,18 +5,23 @@
  * responses, and user feedback. Integrates with PostHog when configured.
  */
 
+// Server-side analytics (with PostHog integration)
 export {
   trackChatSessionStart,
   trackMessageSent,
   trackResponseReceived,
   trackFeedbackGiven,
-  trackCtaClicked,
   trackJobFitAnalysis,
+  shutdownAnalytics,
+} from './analytics.ts';
+
+// Client-side analytics (no PostHog, no Node.js dependencies)
+export {
   getSessionId,
   generateClientKey,
   getAnalyticsConfig,
-  shutdownAnalytics,
-} from './analytics.ts';
+  trackCtaClicked,
+} from './client.ts';
 
 export {
   type AnalyticsConfig,
@@ -27,8 +32,10 @@ export {
   type FeedbackGivenEvent,
   type CtaClickedEvent,
   type JobFitAnalysisEvent,
+  type JobFitAnalysisProperties,
   type QuestionCategory,
   type GuardrailAction,
   type OutputGuardrailAction,
   type FeedbackRating,
+  type CtaType,
 } from './eventTypes.ts';

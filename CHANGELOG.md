@@ -1,3 +1,20 @@
+## [0.1.128] - 2026-10-28
+- Implemented M17.08 – Add Job Fit Analytics and Entry Points:
+  - Extended `JobFitAnalysisEvent` in `src/lib/analytics/eventTypes.ts` with detailed properties:
+    - Classification counts (directMatch, strongTransfer, related, learnable, unknown)
+    - Requirement counts (total, analysed)
+    - Retrieval outcome (chunksRetrieved, averageSimilarity, retrievalSuccess)
+    - Latency, token usage, model, fallback/replacement flags, corrected claims, redactions, rate limit scope
+    - No job description text, company, role, or evidence text (privacy-safe)
+  - Added `CtaType` with `email` variant for PRD §90 CTA tracking
+  - Added `trackJobFitAnalysis` and `trackCtaClicked` in `src/lib/analytics/analytics.ts` and client wrapper in `src/lib/analytics/client.ts`
+  - Updated `app/api/job-fit/route.ts` to fire `job_fit_analysis` event with all required properties
+  - Updated `src/components/jobFit/JobFitResults.tsx` to track CTA clicks (resume, LinkedIn, email)
+  - Added entry point on homepage (`app/page.tsx`) with link to `/job-fit`
+  - Added link in chat panel (`src/components/aiChat/ChatPanel.tsx`) under suggested prompts
+  - Navigation unchanged per PRD §8/§92 (decision D7)
+  - All 402 tests pass, lint clean, typecheck clean, build succeeds
+
 ## [0.1.127] - 2026-10-27
 - Implemented M17.06 – Create the Job Fit API Route:
   - Created `app/api/job-fit/route.ts` with POST handler:

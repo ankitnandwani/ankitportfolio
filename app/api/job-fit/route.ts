@@ -3,6 +3,7 @@ import {
   analyzeJobFit,
   getJobFitPolicy,
   type JobFitAnalysisResult,
+  type ClassifiedRequirement,
 } from '@/src/lib/jobFit';
 import {
   trackJobFitAnalysis,
@@ -41,6 +42,56 @@ function getClientKey(request: NextRequest): string {
   if (realIp) return realIp.trim();
 
   return 'unknown';
+}
+
+/**
+ * Computes the classification counts from the classified requirements.
+ */
+function computeClassificationCounts(
+  requirements: ReadonlyArray<ClassifiedRequirement>
+): {
+  directMatch: number;
+  strongTransfer: number;
+  related: number;
+  learnable: number;
+  unknown: number;
+} {
+  const counts = {
+    directMatch: 0,
+    strongTransfer: 0,
+    related: 0,
+    learnable: 0,
+    unknown: 0,
+  };
+
+  for (const req of requirements) {
+    switch (req.classification) {
+      case 'DIRECT_MATCH':
+        counts.directMatch++;
+        break;
+      case 'STRONG_TRANSFER':
+        counts.strongTransfer++;
+        break;
+      case 'RELATED':
+        counts.related++;
+        break;
+      case 'LEARNABLE':
+        counts.learnable++;
+        break;
+      case 'UNKNOWN':
+        counts.unknown++;
+        break;
+    }
+  }
+
+  return counts;
+}
+
+/**
+ * Type guard for successful analysis result.
+ */
+function isSuccessResult(result: JobFitAnalysisResult): result is JobFitAnalysisResult & { ok: true } {
+  return result.ok === true;
 }
 
 /**
@@ -124,7 +175,8 @@ export async function POST(request: NextRequest) {
 
     const latencyMs = Date.now() - startTime;
 
-    if (!result.ok) {
+    // Use type guard to narrow the union
+    if (!isSuccessResult(result)) {
       // Map policy errors to 400 responses
       const errorMessage = result.error;
 
@@ -144,16 +196,28 @@ export async function POST(request: NextRequest) {
       trackJobFitAnalysis(
         sessionId,
         queryId,
-        false,
-        result.metadata.requirementCount,
-        0,
-        null,
-        latencyMs,
-        null,
-        'none',
-        false,
-        result.metadata.redactions,
-        result.metadata.rateLimit.scope,
+        {
+          queryId,
+          success: false,
+          requirementCount: result.metadata.requirementCount,
+          analysedRequirementCount: 0,
+          directMatchCount: 0,
+          strongTransferCount: 0,
+          relatedCount: 0,
+          learnableCount: 0,
+          unknownCount: 0,
+          chunksRetrieved: 0,
+          averageSimilarity: null,
+          retrievalSuccess: false,
+          latencyMs,
+          tokenUsage: null,
+          model: 'none',
+          usedFallback: false,
+          replacedBySafeFallback: false,
+          correctedClaims: 0,
+          redactions: result.metadata.redactions,
+          rateLimitScope: result.metadata.rateLimit.scope,
+        },
         analyticsConfig
       ).catch((err) => console.warn('[analytics] trackJobFitAnalysis failed:', err));
 
@@ -163,22 +227,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Compute classification counts
+    const classificationCounts = computeClassificationCounts(result.analysis.requirements);
+    const analysedCount = result.analysis.requirements.length;
+
+    // Determine if analysis was replaced by safe fallback
+    const replacedBySafeFallback = result.metadata.usedFallback ||
+      result.analysis.requirements.length === 0;
+
     // Fire analytics event (fire and forget)
     trackJobFitAnalysis(
       sessionId,
       queryId,
-      true,
-      result.metadata.requirementCount,
-      result.evidence.length,
-      result.evidence.length > 0
-        ? result.evidence.reduce((sum, e) => sum + e.confidence, 0) / result.evidence.length
-        : null,
-      latencyMs,
-      result.metadata.tokenUsage,
-      result.metadata.model,
-      result.metadata.usedFallback,
-      result.metadata.redactions,
-      result.metadata.rateLimit.scope,
+      {
+        queryId,
+        success: true,
+        requirementCount: result.metadata.requirementCount,
+        analysedRequirementCount: analysedCount,
+        directMatchCount: classificationCounts.directMatch,
+        strongTransferCount: classificationCounts.strongTransfer,
+        relatedCount: classificationCounts.related,
+        learnableCount: classificationCounts.learnable,
+        unknownCount: classificationCounts.unknown,
+        chunksRetrieved: result.evidence.length,
+        averageSimilarity: result.evidence.length > 0
+          ? result.evidence.reduce((sum, e) => sum + e.confidence, 0) / result.evidence.length
+          : null,
+        retrievalSuccess: result.evidence.length > 0,
+        latencyMs,
+        tokenUsage: result.metadata.tokenUsage
+          ? {
+              promptTokens: result.metadata.tokenUsage.promptTokens ?? 0,
+              completionTokens: result.metadata.tokenUsage.completionTokens ?? 0,
+              totalTokens: result.metadata.tokenUsage.totalTokens ?? 0,
+            }
+          : null,
+        model: result.metadata.model,
+        usedFallback: result.metadata.usedFallback,
+        replacedBySafeFallback,
+        correctedClaims: 0, // TODO: Get this from claimValidation report when available
+        redactions: result.metadata.redactions,
+        rateLimitScope: result.metadata.rateLimit.scope,
+      },
       analyticsConfig
     ).catch((err) => console.warn('[analytics] trackJobFitAnalysis failed:', err));
 
@@ -194,6 +284,7 @@ export async function POST(request: NextRequest) {
           requirementCount: result.metadata.requirementCount,
           chunksRetrieved: result.evidence.length,
           usedFallback: result.metadata.usedFallback,
+          queryId,
         },
       },
       { headers: { ...rateLimitHeaders, 'Cache-Control': 'no-store' } }
@@ -205,16 +296,28 @@ export async function POST(request: NextRequest) {
     trackJobFitAnalysis(
       sessionId,
       queryId,
-      false,
-      0,
-      0,
-      null,
-      0,
-      null,
-      'error',
-      false,
-      0,
-      null,
+      {
+        queryId,
+        success: false,
+        requirementCount: 0,
+        analysedRequirementCount: 0,
+        directMatchCount: 0,
+        strongTransferCount: 0,
+        relatedCount: 0,
+        learnableCount: 0,
+        unknownCount: 0,
+        chunksRetrieved: 0,
+        averageSimilarity: null,
+        retrievalSuccess: false,
+        latencyMs: 0,
+        tokenUsage: null,
+        model: 'error',
+        usedFallback: false,
+        replacedBySafeFallback: false,
+        correctedClaims: 0,
+        redactions: 0,
+        rateLimitScope: null,
+      },
       analyticsConfig
     ).catch((err) => console.warn('[analytics] trackJobFitAnalysis failed:', err));
 

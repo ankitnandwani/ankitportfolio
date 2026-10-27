@@ -118,19 +118,6 @@ export function JobFitAnalyzer() {
     setState({ status: 'idle' });
   }, []);
 
-  const handleDownloadResume = useCallback(() => {
-    // The link handles navigation; this is for analytics in M17.08
-    console.log('[job-fit] CTA: Download Resume clicked');
-  }, []);
-
-  const handleConnectLinkedIn = useCallback(() => {
-    console.log('[job-fit] CTA: Connect on LinkedIn clicked');
-  }, []);
-
-  const handleEmailAnkit = useCallback(() => {
-    console.log('[job-fit] CTA: Email Ankit clicked');
-  }, []);
-
   const containerStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
@@ -379,9 +366,7 @@ export function JobFitAnalyzer() {
             analysis={state.result.analysis}
             evidence={state.result.evidence}
             jobDescription={jobDescription}
-            onDownloadResume={handleDownloadResume}
-            onConnectLinkedIn={handleConnectLinkedIn}
-            onEmailAnkit={handleEmailAnkit}
+            queryId={state.result.metadata?.queryId ?? crypto.randomUUID()}
           />
         </div>
       )}

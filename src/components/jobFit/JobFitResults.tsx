@@ -6,15 +6,14 @@ import { motion } from 'framer-motion';
 import { AlignmentBars } from './AlignmentBars';
 import { Card } from '@/src/components/ui/Card';
 import { PRIVACY_NOTICE, AI_DISCLAIMER } from './notices';
+import { siteConfig } from '@/src/siteConfig';
 import type { JobFitAnalysis, FitEvidence } from '@/src/lib/jobFit/types';
 
 interface JobFitResultsProps {
   analysis: JobFitAnalysis;
   evidence: FitEvidence[];
   jobDescription: string;
-  onDownloadResume: () => void;
-  onConnectLinkedIn: () => void;
-  onEmailAnkit: () => void;
+  queryId: string;
 }
 
 /**
@@ -23,20 +22,51 @@ interface JobFitResultsProps {
  * Presents the six sections of PRD §30 with the qualitative alignment
  * summary of PRD §89 and the call to action of PRD §90.
  * Also shows the sources, privacy notice and disclaimer.
+ * Tracks CTA clicks via analytics.
  */
 export function JobFitResults({
   analysis,
   evidence,
   jobDescription,
-  onDownloadResume,
-  onConnectLinkedIn,
-  onEmailAnkit,
+  queryId,
 }: JobFitResultsProps) {
   const { theme } = useTheme();
   const prefersReducedMotion = React.useMemo(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     []
   );
+
+  // Track CTA clicks using client-side analytics
+  const trackCtaClick = async (ctaType: 'resume' | 'linkedin' | 'email', targetDomain: string) => {
+    try {
+      // Import client-side analytics (no Node.js dependencies)
+      const { trackCtaClicked, generateClientKey, getSessionId, getAnalyticsConfig } = await import('@/src/lib/analytics/client');
+      
+      // Generate client key from current context (best effort on client)
+      const forwardedFor = null; // Not available on client
+      const realIp = null; // Not available on client
+      const userAgent = navigator.userAgent;
+      const analyticsClientKey = generateClientKey(forwardedFor, realIp, userAgent);
+      const sessionId = getSessionId(analyticsClientKey);
+      const config = getAnalyticsConfig();
+      
+      await trackCtaClicked(sessionId, queryId, ctaType, targetDomain, config);
+    } catch (error) {
+      console.warn('[analytics] trackCtaClicked failed:', error);
+    }
+  };
+
+  const handleDownloadResume = async () => {
+    await trackCtaClick('resume', new URL(siteConfig.url).hostname);
+  };
+
+  const handleConnectLinkedIn = async () => {
+    await trackCtaClick('linkedin', 'linkedin.com');
+  };
+
+  const handleEmailAnkit = async () => {
+    await trackCtaClick('email', new URL(siteConfig.url).hostname);
+  };
 
   const containerStyle: React.CSSProperties = {
     display: 'flex',
@@ -339,7 +369,7 @@ export function JobFitResults({
           <div style={ctaButtonsStyle}>
             <a
               href="/resume"
-              onClick={onDownloadResume}
+              onClick={handleDownloadResume}
               style={ctaButtonStyle}
               onMouseEnter={(e) => Object.assign(e.currentTarget.style, ctaButtonHoverStyle)}
               onMouseLeave={(e) => Object.assign(e.currentTarget.style, ctaButtonStyle)}
@@ -355,7 +385,7 @@ export function JobFitResults({
               href="https://linkedin.com/in/ankitnandwani"
               target="_blank"
               rel="noopener noreferrer"
-              onClick={onConnectLinkedIn}
+              onClick={handleConnectLinkedIn}
               style={ctaButtonStyle}
               onMouseEnter={(e) => Object.assign(e.currentTarget.style, ctaButtonHoverStyle)}
               onMouseLeave={(e) => Object.assign(e.currentTarget.style, ctaButtonStyle)}
@@ -367,7 +397,7 @@ export function JobFitResults({
             </a>
             <a
               href="mailto:contact@ankitnandwani.com"
-              onClick={onEmailAnkit}
+              onClick={handleEmailAnkit}
               style={ctaButtonStyle}
               onMouseEnter={(e) => Object.assign(e.currentTarget.style, ctaButtonHoverStyle)}
               onMouseLeave={(e) => Object.assign(e.currentTarget.style, ctaButtonStyle)}
