@@ -10,8 +10,8 @@
 
 ## Status
 
-- Task specifications created for M17 – Job Description Analyzer (see tasks/M17/). Awaiting implementation. Nothing in tasks/M17/ is implemented yet.
-- M17.01 – Define the Job Fit Analysis Contract (not started)
+- Task specifications created for M17 – Job Description Analyzer (see tasks/M17/). Awaiting implementation. M17.01 is implemented.
+- M17.01 – Define the Job Fit Analysis Contract (completed – types, zod schema, limits and fixed wording of PRD §88 in `src/lib/jobFit/`, 15 unit tests pass)
 - M17.02 – Parse a Job Description into Requirements (not started)
 - M17.03 – Implement the Job Fit Analysis Engine (not started)
 - M17.04 – Enforce the Job-Matching Rule with Claim Grounding Validation (not started)
@@ -62,8 +62,8 @@
 
 ## Next Task
 
-- M17.01 – Define the Job Fit Analysis Contract (the next action: begin implementation of M17.01)
-- The job fit analyzer is planned in tasks/M17/. Two decisions there are waiting for a human: the analyzer lives at /job-fit and is not added to the main navigation, because PRD §8 and PRD §92 fix the navigation and it has no entry for it; and the analyzer gets its own rate limit bucket, because one analysis is not one message and PRD §48 sets the policy for messages
+- M17.02 – Parse a Job Description into Requirements (the next action: begin implementation of M17.02)
+- The job fit analyzer is planned in tasks/M17/. Two decisions there are waiting for a human before M17.08 is started: the analyzer lives at `/job-fit` and is not added to the main navigation, because PRD §8 and PRD §92 fix the navigation and it has no entry for it; and the analyzer gets its own rate limit bucket, because one analysis is not one message and PRD §48 sets the policy for messages
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - The standing items are listed in TODO.md
 

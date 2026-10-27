@@ -1,3 +1,13 @@
+## [0.1.122] - 2026-10-27
+- Implemented M17.01 – Define the Job Fit Analysis Contract:
+  - Created `src/lib/jobFit/types.ts` with requirement classification (DIRECT_MATCH, STRONG_TRANSFER, RELATED, LEARNABLE, UNKNOWN), alignment bands (strong, transferable, growth), requirement kinds, JobRequirement, ClassifiedRequirement, FitEvidence, JobFitAnalysis, JobFitRequest, JobFitResponse
+  - Created `src/lib/jobFit/schema.ts` with zod schema for model answer validation, parser with code fence handling, buildClassifiedRequirements, buildAlignmentBands
+  - Created `src/lib/jobFit/limits.ts` with input limits (MAX_JOB_DESCRIPTION_LENGTH=12000, MIN_JOB_DESCRIPTION_LENGTH=80, MAX_ANALYSED_REQUIREMENTS=40, MAX_JOB_FIT_RESPONSE_TOKENS=2048) and PRD §88 fixed wording (UNSUPPORTED_REQUIREMENT_NOTE)
+  - Created `src/lib/jobFit/index.ts` as the public export surface
+  - Created `src/lib/jobFit/schema.test.mts` with 15 unit tests covering schema validation, parser behavior, limits, and fixed wording
+- All 15 tests pass, lint 0 errors (only pre-existing warnings), typecheck clean, build succeeds
+- Total test suite: 234 tests (229 pass, 0 fail, 5 opt-in skipped)
+
 ## [0.1.121] - 2026-10-27
 - Planned the next milestone: M17 – Job Description Analyzer, which is ROADMAP Milestone 17. No application code was written and no dependency was added
 - Re-verified Milestone 13 independently before planning: 219 tests (214 pass, 0 fail, 5 opt-in skipped), lint 0 errors with 3 pre-existing warnings, typecheck clean, build succeeds, CI (lint, typecheck, test) green
