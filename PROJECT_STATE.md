@@ -6,11 +6,13 @@
 
 ## Current Milestone
 
-- M17 – Job Description Analyzer (ROADMAP Milestone 17)
+- M18 – Contact Form (ROADMAP Milestone 18)
 
 ## Status
 
-- Task specifications created for M17 – Job Description Analyzer (see tasks/M17/). M17.01 through M17.09 implemented.
+- Task specifications created for M17 – Job Description Analyzer (see tasks/M17/). M17.01 through M17.09 implemented and verified.
+- Task specifications created for M18 – Contact Form (see tasks/M18/). M18.01 through M18.08 specified, ready for implementation.
+- M17.01 through M17.09 completed and verified (see previous entries).
 - M17.01 – Define the Job Fit Analysis Contract (completed – types, zod schema, limits and fixed wording of PRD §88 in `src/lib/jobFit/`, 15 unit tests pass)
 - M17.02 – Parse a Job Description into Requirements (completed – deterministic parser in `src/lib/jobFit/jdParser.ts` with 101 unit tests covering bullet points, numbered lists, checkboxes, heading recognition, noise filtering, title/company extraction, length limits, requirement limit with required-first ordering; all tests pass, lint clean, typecheck clean)
 - M17.03 – Implement the Job Fit Analysis Engine (completed – engine in `src/lib/jobFit/analysis.ts` with prompt builder in `src/lib/jobFit/prompts.ts`; single retrieval with classification filter, prompt enforcing PRD §31/§41/§42/§88 rules, JSON schema validation with fallback, output guardrails on all text fields, injected dependencies for testability; 15 unit tests cover happy path, malformed answers, code fences, guardrails, provider errors, metrics logging; all 345 tests pass, lint clean, typecheck clean, build succeeds)
@@ -63,7 +65,9 @@
 ## Next Task
 
 - M18.01 – Define contact form data model and validation (the next action: begin Milestone 18 – Contact Form)
-- The job fit analyzer is planned in tasks/M17/. Two decisions there are waiting for a human before M17.08 is started: the analyzer lives at `/job-fit` and is not added to the main navigation, because PRD §8 and PRD §92 fix the navigation and it has no entry for it; and the analyzer gets its own rate limit bucket, because one analysis is not one message and PRD §48 sets the policy for messages
+- A decision is needed on the transactional email provider before M18.05 (Resend recommended – 3,000/month free, modern API)
+- Contact form rate limit thresholds need confirmation (suggested: 3/30min, 5/day, stricter than job-fit)
+- Contact form placement: dedicated `/contact` page linked from footer and homepage
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - The standing items are listed in TODO.md
 

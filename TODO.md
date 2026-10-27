@@ -1,15 +1,18 @@
 # Immediate Next Actions
 
 - Begin implementation of M18.01.
-- Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
-- Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch
-- The rate limit of the chat is kept in memory, so it is lost when the instance restarts and it is per instance. That is what PRD §48 accepts for a site with low traffic, but a shared store (the Upstash Redis of PRD §53) would make it hold across instances. The store of the limiter is injected, so this is a change in one place
-- The visitor is counted by the address the hosting platform writes into the request. A visitor who can change that header can get around the limit, so the limit is a guard against accidents rather than a wall
-- The model of the chat is now `gemini-flash-lite-latest`, which answers in a few seconds without spending tokens on thinking. `gemini-flash-latest` needed 13 to 57 seconds for the same question, because it spends up to 75 tokens thinking before it answers
-- Run the live language model tests with `LIVE_LLM_TESTS=1`. They are off by default because the free tier of the Gemini API allows twenty generation requests a day and a request over that limit is rejected for the rest of the day
-- The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow
-- The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch
-- Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks
+- A decision is needed on the transactional email provider before M18.05 (Resend recommended – 3,000/month free, modern API).
+- Contact form rate limit thresholds need confirmation (suggested: 3/30min, 5/day, stricter than job-fit's 5/30min).
+- Contact form placement: dedicated `/contact` page linked from footer and homepage.
+- Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch.
+- Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch.
+- The rate limit of the chat is kept in memory, so it is lost when the instance restarts and it is per instance. That is what PRD §48 accepts for a site with low traffic, but a shared store (the Upstash Redis of PRD §53) would make it hold across instances. The store of the limiter is injected, so this is a change in one place.
+- The visitor is counted by the address the hosting platform writes into the request. A visitor who can change that header can get around the limit, so the limit is a guard against accidents rather than a wall.
+- The model of the chat is now `gemini-flash-lite-latest`, which answers in a few seconds without spending tokens on thinking. `gemini-flash-latest` needed 13 to 57 seconds for the same question, because it spends up to 75 tokens thinking before it answers.
+- Run the live language model tests with `LIVE_LLM_TESTS=1`. They are off by default because the free tier of the Gemini API allows twenty generation requests a day and a request over that limit is rejected for the rest of the day.
+- The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow.
+- The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
+- Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
 
 ## Completed (M17.01)
 
@@ -49,6 +52,16 @@
   - `analysis.test.mts` – 15 unit tests covering happy path, malformed answers, code fences, guardrails, provider errors, metrics logging
   - All 350 tests pass (345 pass, 0 fail, 5 opt-in skipped), lint clean, typecheck clean, build succeeds
 
+## Completed (M17.04)
+
+- Implemented Claim Grounding Validation in `src/lib/jobFit/claimValidation.ts`:
+  - Evidence quote check: validates that requirement evidence IDs exist in retrieved evidence and key terms from requirements appear in cited evidence; downgrades unsupported requirements to LEARNABLE with PRD §88 wording
+  - Duration check: scans all six narrative fields for experience durations (e.g., "5 years", "3+ years"); removes unsupported durations; drops empty sentences; preserves non-experience durations (company history, job titles, education years)
+  - Unsupported claims downgraded to LEARNABLE with PRD §88 wording, never dropped from analysis
+  - `claimValidation.test.mts` – 20 unit tests covering requirement validation, duration checks, edge cases, performance
+  - `validateClaims` function integrated into analysis engine after model answer parsing, before output guardrails
+  - All 370 tests pass (365 pass, 0 fail, 5 opt-in skipped), lint clean, typecheck clean, build succeeds
+
 ## Completed (M17.05)
 
 - Implemented Privacy and Safety Guardrails for Job Fit Flow in `src/lib/jobFit/policy.ts`:
@@ -63,62 +76,6 @@
   - Updates to `src/lib/guardrails/types.ts`, `src/lib/guardrails/outputValidation.ts`, `src/lib/ai/orchestration.ts`, `src/lib/ai/validation.ts`, `src/lib/env.ts`, `src/lib/env.js`, `.env.example`, `src/lib/githubService.test.mts`
   - `policy.test.mts` – 25 unit tests covering all acceptance criteria
   - All 397 tests pass, lint clean (0 errors), typecheck clean, build succeeds
-
-## Completed (M17.04)
-
-- Implemented Claim Grounding Validation in `src/lib/jobFit/claimValidation.ts`:
-  - Evidence quote check: validates that requirement evidence IDs exist in retrieved evidence and key terms from requirements appear in cited evidence; downgrades unsupported requirements to LEARNABLE with PRD §88 wording
-  - Duration check: scans all six narrative fields for experience durations (e.g., "5 years", "3+ years"); removes unsupported durations; drops empty sentences; preserves non-experience durations (company history, job titles, education years)
-  - Unsupported claims downgraded to LEARNABLE with PRD §88 wording, never dropped from analysis
-  - `claimValidation.test.mts` – 20 unit tests covering requirement validation, duration checks, edge cases, performance
-  - `validateClaims` function integrated into analysis engine after model answer parsing, before output guardrails
-  - All 370 tests pass (365 pass, 0 fail, 5 opt-in skipped), lint clean (0 errors), typecheck clean, build succeeds
-
-## Completed (M13.11)
-
-- Analytics tracking system in `src/lib/analytics/` with:
-  - Privacy-conscious session IDs (hashed IP + user agent)
-  - Event tracking for: chat_session_start, message_sent, response_received, feedback_given, cta_clicked
-  - PostHog integration (optional, via POSTHOG_KEY/POSTHOG_HOST env vars)
-  - Console logging in development
-  - PII redaction for feedback comments
-- Feedback UI component `src/components/aiChat/FeedbackButton.tsx`:
-  - Thumbs up/down buttons after each AI response
-  - Optional comment field for negative ratings
-  - Optimistic UI updates
-  - Accessible with proper ARIA labels
-- Feedback API endpoint `/api/feedback`:
-  - Accepts messageId, queryId, rating, comment, isRedirect
-  - Tracks feedback via analytics
-- Knowledge base scan script `scripts/scanKnowledgeBase.mts`:
-  - Scans knowledge_chunks and knowledge_documents tables for phone numbers
-  - Uses same phone number pattern as ingestion pipeline
-  - Excludes date patterns (ISO dates, MM/DD/YYYY)
-  - Exits with error code if phone numbers found
-- Chat API route updated to track:
-  - Message sent events (with question category, guardrail action, message length)
-  - Response received events (with retrieval success, chunks, similarity, latency, token usage, confidence)
-- ChatMessage component updated to include FeedbackButton for assistant messages
-- useChatAPI hook updated to capture metadata (queryId, isRedirect) from streaming response
-- useChatState hook updated to store queryId and isRedirect on messages
-- All 219 tests pass, lint passes, typecheck passes, build succeeds
-
-## Completed (M13.12)
-
-- End-to-end testing and verification of the complete AI Knowledge Base and Chat Assistant system
-- Test plan created with 40 test cases across 5 categories:
-  - Functional Correctness (10 tests): AI answers factual questions about automation tools, projects, career timeline, skills, certifications, education, achievements, backend technologies, CI/CD
-  - Safety/Guardrails (10 tests): Off-topic redirects, prompt injection blocking (7 variants), PII protection (phone, email, address)
-  - Edge Cases (6 tests): Empty message, message too long, long question, gibberish, special chars/emojis, non-English
-  - Performance (4 tests): Non-streaming avg <5s, streaming first chunk <2s, retrieval <500ms, rate limiting enforcement
-  - Integration (10 tests): Analytics events, feedback submission, rate limit headers, KB documents/chunks/embeddings, PII scan
-- All 40 test cases pass
-- Knowledge base verified: 39 documents, 39 chunks, all with 768-dim embeddings, 0 PII detected
-- Response time: ~3.2s avg (non-streaming), ~1.8s first chunk (streaming)
-- Rate limiting: 20 req/30min enforced with proper headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After)
-- Analytics and feedback: Session tracking, message/response events, feedback submission all operational
-- Test plan documented in `test-plan.md`
-- All 219 unit tests pass, lint passes, typecheck passes, build succeeds
 
 ## Completed (M17.06)
 
@@ -139,18 +96,12 @@
 - Built the Job Fit Analyzer Interface at `app/job-fit/page.tsx`:
   - Server component page with metadata using `generateBaseMetadata`
   - Client component `JobFitAnalyzer` in `src/components/jobFit/JobFitAnalyzer.tsx` with state management
-  - Input field with label, placeholder, character counter (80-12000 chars), auto-resize up to max height
+  - Input field with label, placeholder, character counter (80-12000 chars), auto-resize
   - Analyze button disabled when empty or loading, Ctrl/Cmd+Enter to submit
   - Loading state with TypingIndicator and explanatory text
   - Error state with message, retry and dismiss buttons (reuses ChatError pattern)
-  - Results component `JobFitResults` in `src/components/jobFit/JobFitResults.tsx` showing:
-    - Heading "HOW ANKIT MAPS TO THIS ROLE" (PRD §89)
-    - Three qualitative alignment bars (Strong Alignment, Transferable, Growth Areas) with 4 segments each, no percentages
-    - Six sections in order: Overall Positioning, Strong Matches, Transferable Experience, Learning Agility, Interview Talking Points, Recommended Positioning (PRD §30)
-    - Sources list with titles only (no identifiers, no scores)
-    - Call to action with Download Resume, Connect on LinkedIn, Email Ankit links (PRD §90)
-    - Privacy notice (PRD §99) and AI disclaimer (PRD §100)
-  - AlignmentBars component in `src/components/jobFit/AlignmentBars.tsx` with text alternatives for screen readers
+  - Results component `JobFitResults` with six PRD §30 sections, three qualitative alignment bars (PRD §89, no percentages), sources list (titles only), CTA with three links (PRD §90), privacy notice (PRD §99) and disclaimer (PRD §100)
+  - `AlignmentBars` component with screen reader text alternatives
   - Job description shown above results for reference
   - Light/dark theme support, reduced motion support, keyboard accessible, mobile responsive
   - Job description never stored in browser storage or URL, only sent to `/api/job-fit`
@@ -162,52 +113,45 @@
 ## Completed (M17.08)
 
 - Added Job Fit Analytics and Entry Points:
-  - Extended `JobFitAnalysisEvent` in `src/lib/analytics/eventTypes.ts` with:
-    - Classification counts (directMatch, strongTransfer, related, learnable, unknown)
-    - Requirement counts (requirementCount, analysedRequirementCount)
-    - Retrieval outcome (chunksRetrieved, averageSimilarity, retrievalSuccess)
-    - Latency, token usage, model, fallback/replacement flags, corrected claims, redactions, rate limit scope
-    - No job description text or PII (privacy-safe by construction)
+  - Extended `JobFitAnalysisEvent` in `src/lib/analytics/eventTypes.ts` with classification counts, requirement counts, retrieval outcome, latency, token usage, model, fallback/replacement flags, corrected claims, redactions, rate limit scope
   - Added `CtaType` with `email` variant for PRD §90 CTA tracking
-  - Added `trackJobFitAnalysis` in `src/lib/analytics/analytics.ts` (server-side with PostHog)
-  - Added client-side analytics wrapper in `src/lib/analytics/client.ts` (no Node.js deps)
-  - Added `crypto.ts` for cross-platform UUID generation
-  - Updated `app/api/job-fit/route.ts` to fire `job_fit_analysis` event with all properties
-  - Updated `src/components/jobFit/JobFitResults.tsx` to track CTA clicks (resume, LinkedIn, email)
-  - Added homepage entry point in `app/page.tsx` with link to `/job-fit`
-  - Added link to analyzer from chat panel (under suggested prompts, already in M17.07)
-  - Navigation unchanged per PRD §8/§92 (decision D7)
+  - Added `trackJobFitAnalysis` in `src/lib/analytics/analytics.ts` and client wrapper in `src/lib/analytics/client.ts`
+  - Updated `app/api/job-fit/route.ts` to fire event with all properties
+  - Updated `JobFitResults` to track CTA clicks (resume, LinkedIn, email)
+  - Added homepage entry point in `app/page.tsx`
+  - Added chat panel link in `src/components/aiChat/ChatPanel.tsx`
+  - Navigation unchanged per PRD §8/§92
   - All 402 tests pass, lint clean, typecheck clean, build succeeds
 
 ## Completed (M17.09)
 
 - Test and Verify the Job Fit Analyzer End to End:
-  - Extended `test-plan.md` with job fit section (30 test cases across 5 categories):
-    - Functional Correctness (JFC 5): strong_match, partial_match, low_overlap, nice_to_have, live analysis duration
-    - Safety/Guardrails (JSC 3): injected_instruction refused, personal_data redacted, not_a_job_description refused
-    - Limits & Rate Limiting (JLC 4): 5/30min limit, 10/day limit, analyzer/chat isolation, headers on all responses
-    - Interface & Accessibility (JIC 13): page loads, field works, button states, loading/error/result states, mobile/desktop, keyboard, light/dark themes, reduced motion, no percentages
-    - Privacy & Analytics (JPA 5): JD not in logs/analytics/model input, PII redacted, browser storage clean, analytics event structure
-  - Created opt-in live test `src/lib/jobFit/analysisLive.test.mts`:
-    - Runs only when `LIVE_LLM_TESTS=1`, skips with clear message
-    - Spends one generation, asserts six sections, valid classifications, no rejection phrases, no unsupported durations, LEARNABLE has PRD §88 wording
-  - Created fixtures `src/lib/jobFit/fixtures/jobDescriptions.ts` with 7 fixtures:
-    - strong_match, partial_match, low_overlap, nice_to_have, injected_instruction, personal_data, not_a_job_description
-    - No real companies, persons, or contact details
-  - Created verification script `scripts/verifyJobFit.mts`:
-    - Runs all fixtures against live knowledge base
-    - Checks 6 narrative rules: six sections, valid classifications, no rejection phrases, no unsupported durations, LEARNABLE has PRD §88 wording
-    - Checks category-specific rules: injected refused, PII redacted, non-JD refused, nice-to-have told apart
-    - Exits non-zero on failure, writes detailed report
-    - Added `verify:job-fit` script to `package.json`
-  - Narrative rules shared by live test, script, and unit tests (in analysis.ts test file)
-  - All 30 M17 test cases verified:
-    - JFC: 5/5 pass (strong_match, partial_match, low_overlap, nice_to_have, live duration)
-    - JSC: 3/3 pass (injected refused, PII redacted, non-JD refused)
-    - JLC: 4/4 pass (rate limits, isolation, headers)
-    - JIC: 13/13 pass (page, field, button, loading, error, result, no %, mobile, desktop, keyboard, light, dark, reduced motion)
-    - JPA: 5/5 pass (JD not in logs/analytics/model, PII redacted, storage clean, event structure)
-  - Privacy verified: JD never in logs, never in analytics, PII redacted before model, browser storage clean
-  - Limits verified: analyzer 5/30min & 10/day, isolated from chat 20/30min, headers on all responses
-  - Interface verified: phone/desktop, keyboard accessible, light/dark themes, reduced motion, no percentages
+  - Extended `test-plan.md` with job fit section (30 cases across JFC, JSC, JLC, JIC, JPA)
+  - Created opt-in live test `src/lib/jobFit/analysisLive.test.mts` (skips unless LIVE_LLM_TESTS=1, one generation, asserts six sections, valid classifications, no rejection phrases, no unsupported durations, PRD §88 wording)
+  - Created fixtures `src/lib/jobFit/fixtures/jobDescriptions.ts` (7 fixtures: strong_match, partial_match, low_overlap, nice_to_have, injected_instruction, personal_data, not_a_job_description)
+  - Created verification script `scripts/verifyJobFit.mts` with 6 narrative rules + category-specific rules, exits non-zero on failure
+  - Added `verify:job-fit` script to `package.json`
+  - Narrative rules shared by live test, script, and unit tests
+  - All 30 M17 test cases verified (JFC 5, JSC 3, JLC 4, JIC 13, JPA 5)
+  - Privacy verified (JD not in logs/analytics/model, PII redacted, storage clean)
+  - Limits verified (5/30min, 10/day, isolated from chat 20/30min, headers on all responses)
+  - Interface verified (phone/desktop, keyboard, themes, reduced motion, no percentages)
   - All 403 tests pass (397 pass, 6 opt-in skipped), lint clean, typecheck clean, build succeeds
+
+## Planned (M18 – Contact Form)
+
+Task specifications created in `tasks/M18/`:
+
+- M18.01 – Define contact form data model and validation
+- M18.02 – Create contact form UI components (Input, Textarea, ContactForm)
+- M18.03 – Implement contact form API route with validation
+- M18.04 – Add spam protection/rate limiting for contact form
+- M18.05 – Implement email delivery via transactional provider
+- M18.06 – Create success/failure UI states
+- M18.07 – Add contact form to site (homepage/footer)
+- M18.08 – Test and verify contact form end to end
+
+**Decisions needed before implementation:**
+1. Transactional email provider (Resend recommended – 3,000/month free, modern API)
+2. Contact form rate limit thresholds (suggested: 3/30min, 5/day)
+3. Contact form placement: dedicated `/contact` page linked from footer and homepage

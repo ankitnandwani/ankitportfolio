@@ -1,3 +1,16 @@
+## [0.1.130] - 2026-10-28
+- Created task specifications for M18 – Contact Form (ROADMAP Milestone 18):
+  - M18.01 – Define contact form data model and validation (4 fields: Name, Email, Company, Message; Zod schema; field-specific validation)
+  - M18.02 – Create contact form UI components (Input, Textarea, ContactForm, ContactFormField; NeoPOP styling; dark/light themes; accessibility)
+  - M18.03 – Implement contact form API route with validation (POST /api/contact; server-side validation; rate limiting; email delivery; analytics)
+  - M18.04 – Add spam protection/rate limiting for contact form (stricter: 3/30min, 5/day; namespaced keys; env config)
+  - M18.05 – Implement email delivery via transactional provider (Resend recommended; HTML/text templates; env config)
+  - M18.06 – Create success/failure UI states (loading, success, error, validation; retry/dismiss; accessibility)
+  - M18.07 – Add contact form to site (homepage/footer; dedicated /contact page; no nav changes per PRD §8/§92)
+  - M18.08 – Test and verify contact form end to end (test-plan.md extension; verifyContact.mts script; verify:contact script)
+  - Decisions needed: email provider (Resend recommended), rate limit thresholds (3/30min, 5/day), form placement (/contact page)
+  - All task specifications in tasks/M18/ with README, execution order, traceability table
+
 ## [0.1.129] - 2026-10-28
 - Implemented M17.09 – Test and Verify the Job Fit Analyzer End to End:
   - Extended `test-plan.md` with a job fit section (30 test cases across 5 categories: JFC, JSC, JLC, JIC, JPA)
