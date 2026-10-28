@@ -12,6 +12,7 @@ export {
   trackResponseReceived,
   trackFeedbackGiven,
   trackJobFitAnalysis,
+  trackContactFormSubmission,
   shutdownAnalytics,
 } from './analytics.ts';
 
@@ -33,6 +34,8 @@ export {
   type CtaClickedEvent,
   type JobFitAnalysisEvent,
   type JobFitAnalysisProperties,
+  type ContactFormSubmissionEvent,
+  type ContactFormSubmissionProperties,
   type QuestionCategory,
   type GuardrailAction,
   type OutputGuardrailAction,

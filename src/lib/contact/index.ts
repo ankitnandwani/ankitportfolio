@@ -1,7 +1,8 @@
 /**
  * Contact form module.
  *
- * Provides data models, validation, and utilities for the contact form.
+ * Provides data models, validation, rate limiting, email delivery,
+ * and utilities for the contact form.
  */
 
 // Data model exports
@@ -29,3 +30,25 @@ export {
   isErrorResponse,
   type ValidationResult,
 } from './validation.ts';
+
+// Rate limiter exports
+export {
+  createContactRateLimiter,
+  getContactRateLimiter,
+  setContactRateLimiter,
+  type RateLimitStore,
+  type RateLimiter,
+  type RateLimiterOptions,
+  DEFAULT_CONTACT_WINDOW_SECONDS,
+  DEFAULT_CONTACT_MAX_REQUESTS,
+  DEFAULT_CONTACT_DAILY_WINDOW_SECONDS,
+  DEFAULT_CONTACT_DAILY_MAX_REQUESTS,
+} from './rateLimiter.ts';
+
+// Email delivery exports
+export {
+  sendContactEmail,
+  validateEmailConfig,
+  type EmailResult,
+  type EmailConfig,
+} from './email.ts';

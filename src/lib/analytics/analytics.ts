@@ -18,6 +18,8 @@ import {
   type CtaClickedEvent,
   type JobFitAnalysisEvent,
   type JobFitAnalysisProperties,
+  type ContactFormSubmissionEvent,
+  type ContactFormSubmissionProperties,
   type QuestionCategory,
   type GuardrailAction,
   type OutputGuardrailAction,
@@ -292,6 +294,23 @@ export async function trackJobFitAnalysis(
 ): Promise<void> {
   const event: JobFitAnalysisEvent = {
     ...createBaseEvent(sessionId, 'job_fit_analysis'),
+    queryId,
+    properties,
+  };
+  await sendEvent(event, config);
+}
+
+/**
+ * Tracks a contact form submission.
+ */
+export async function trackContactFormSubmission(
+  sessionId: string,
+  queryId: string,
+  properties: ContactFormSubmissionProperties,
+  config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
+): Promise<void> {
+  const event: ContactFormSubmissionEvent = {
+    ...createBaseEvent(sessionId, 'contact_form_submission'),
     queryId,
     properties,
   };

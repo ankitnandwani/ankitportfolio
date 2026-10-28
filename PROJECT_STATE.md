@@ -66,12 +66,27 @@
 
 ## Next Task
 
-- M18.03 – Implement contact form API route with validation (the next action: begin Milestone 18 – Contact Form)
+- M18.04 – Add spam protection/rate limiting for contact form (the next action: continue Milestone 18 – Contact Form)
 - A decision is needed on the transactional email provider before M18.05 (Resend recommended – 3,000/month free, modern API)
 - Contact form rate limit thresholds need confirmation (suggested: 3/30min, 5/day, stricter than job-fit)
 - Contact form placement: dedicated `/contact` page linked from footer and homepage
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - The standing items are listed in TODO.md
+
+## Completed (M18.03)
+
+- Implemented contact form API route at `app/api/contact/route.ts`:
+  - POST handler with request validation using M18.01 validation
+  - Server-side validation with field-specific errors (400)
+  - Contact-specific rate limiting (3/30min, 5/day) via `src/lib/contact/rateLimiter.ts` (17 unit tests)
+  - Email delivery via `src/lib/contact/email.ts` with Resend provider support and console fallback
+  - Rate limit headers on all responses: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After` (on 429)
+  - `Cache-Control: no-store` on all responses
+  - Analytics event `contact_form_submission` fired fire-and-forget with no PII
+  - Error mapping: validation → 400, rate limit → 429, email failure → 500, unexpected → 500
+- Added analytics event type `ContactFormSubmissionEvent` and tracking function `trackContactFormSubmission`
+- Added environment variables: `CONTACT_WINDOW_SECONDS`, `CONTACT_MAX_REQUESTS`, `CONTACT_DAILY_WINDOW_SECONDS`, `CONTACT_DAILY_MAX_REQUESTS`, `CONTACT_EMAIL_PROVIDER`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_FROM_NAME`
+- All 450 tests pass (444 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (Milestone 01)
 

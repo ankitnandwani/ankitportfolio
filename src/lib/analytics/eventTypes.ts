@@ -209,6 +209,37 @@ export interface JobFitAnalysisEvent extends BaseAnalyticsEvent {
 }
 
 /**
+ * Properties for the contact form submission event.
+ * No PII - only field presence and success status.
+ */
+export interface ContactFormSubmissionProperties {
+  /** The query ID from the submission */
+  queryId: string;
+  /** Whether the submission succeeded */
+  success: boolean;
+  /** Which fields were present in the request */
+  fieldsPresent: {
+    name: boolean;
+    email: boolean;
+    company: boolean;
+    message: boolean;
+  };
+  /** Rate limit scope if blocked */
+  rateLimitScope: 'window' | 'daily' | null;
+}
+
+/**
+ * Event fired when a contact form is submitted.
+ */
+export interface ContactFormSubmissionEvent extends BaseAnalyticsEvent {
+  eventType: 'contact_form_submission';
+  /** The query ID from the submission */
+  queryId: string;
+  /** Properties for the contact form submission */
+  properties: ContactFormSubmissionProperties;
+}
+
+/**
  * Union of all analytics event types.
  */
 export type AnalyticsEvent =
@@ -217,7 +248,8 @@ export type AnalyticsEvent =
   | ResponseReceivedEvent
   | FeedbackGivenEvent
   | CtaClickedEvent
-  | JobFitAnalysisEvent;
+  | JobFitAnalysisEvent
+  | ContactFormSubmissionEvent;
 
 /**
  * Configuration for the analytics system.

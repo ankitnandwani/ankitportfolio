@@ -1,3 +1,19 @@
+## [0.1.133] - 2026-10-28
+- Implemented M18.03 – Implement Contact Form API Route with Validation:
+  - Created `app/api/contact/route.ts` with POST handler:
+    - Request validation using M18.01 Zod schemas (server-side)
+    - Contact-specific rate limiting (3/30min, 5/day) via `src/lib/contact/rateLimiter.ts`
+    - Email delivery via `src/lib/contact/email.ts` with Resend provider and console fallback
+    - Rate limit headers on all responses (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After` on 429)
+    - `Cache-Control: no-store` on all responses
+    - Analytics event `contact_form_submission` fired fire-and-forget (no PII)
+    - Error mapping: validation → 400, rate limit → 429, email failure → 500, unexpected → 500
+  - Created `src/lib/contact/rateLimiter.ts` with contact-specific rate limiter (17 unit tests)
+  - Created `src/lib/contact/email.ts` with Resend provider support and HTML/text templates
+  - Added `ContactFormSubmissionEvent` to `src/lib/analytics/eventTypes.ts` with `trackContactFormSubmission` in `analytics.ts`
+  - Added environment variables: `CONTACT_WINDOW_SECONDS`, `CONTACT_MAX_REQUESTS`, `CONTACT_DAILY_WINDOW_SECONDS`, `CONTACT_DAILY_MAX_REQUESTS`, `CONTACT_EMAIL_PROVIDER`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_FROM_NAME`
+  - All 450 tests pass (444 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
+
 ## [0.1.132] - 2026-10-28
 - Implemented M18.02 – Create Contact Form UI Components:
   - Created `src/components/ui/Input.tsx` – Single-line input with label, error state, character counter, helper text, accessibility features

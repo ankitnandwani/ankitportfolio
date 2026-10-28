@@ -34,6 +34,19 @@ const serverEnvSchema = publicEnvSchema.extend({
   JOB_FIT_DAILY_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
   JOB_FIT_DAILY_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
   JOB_FIT_MAX_TOKENS: z.coerce.number().int().positive().optional(),
+  // The limits of the contact form. They are optional, because the
+  // code has the defaults and a missing variable only means the default
+  // is used.
+  CONTACT_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
+  CONTACT_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
+  CONTACT_DAILY_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
+  CONTACT_DAILY_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
+  // Email delivery configuration
+  CONTACT_EMAIL_PROVIDER: z.enum(['resend', 'console']).optional(),
+  RESEND_API_KEY: z.string().nonempty().optional(),
+  CONTACT_TO_EMAIL: z.string().email().optional(),
+  CONTACT_FROM_EMAIL: z.string().email().optional(),
+  CONTACT_FROM_NAME: z.string().nonempty().optional(),
 });
 
 export type Env = z.infer<typeof serverEnvSchema>;
