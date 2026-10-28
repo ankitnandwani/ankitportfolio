@@ -25,35 +25,35 @@ export interface EmailResult {
 export interface EmailConfig {
   /** The email provider to use. */
   provider: 'resend' | 'console';
-  /** Resend API key (required when provider is 'resend'). */
-  resendApiKey?: string;
+  /** API key for the provider (required when provider is 'resend'). */
+  apiKey?: string;
   /** The email address to send contact form submissions to. */
   toEmail: string;
-  /** The from email address. */
+  /** The from email address (with optional name). */
   fromEmail: string;
-  /** The from name. */
-  fromName?: string;
+  /** The reply-to email address (defaults to user's email). */
+  replyTo?: string;
 }
 
 /**
  * Gets the email configuration from environment variables.
  */
 function getEmailConfig(): EmailConfig {
-  const provider = (process.env.CONTACT_EMAIL_PROVIDER as 'resend' | 'console') ?? 'console';
+  const provider = (process.env.EMAIL_PROVIDER as 'resend' | 'console') ?? 'console';
 
   return {
     provider,
-    resendApiKey: process.env.RESEND_API_KEY,
-    toEmail: process.env.CONTACT_TO_EMAIL ?? 'contact@ankitnandwani.com',
-    fromEmail: process.env.CONTACT_FROM_EMAIL ?? 'noreply@ankitnandwani.com',
-    fromName: process.env.CONTACT_FROM_NAME ?? 'Portfolio Contact Form',
+    apiKey: process.env.EMAIL_API_KEY,
+    toEmail: process.env.EMAIL_TO ?? 'contact@ankitnandwani.com',
+    fromEmail: process.env.EMAIL_FROM ?? 'Contact Form <noreply@ankitnandwani.com>',
+    replyTo: process.env.EMAIL_REPLY_TO,
   };
 }
 
 /**
  * Builds the HTML email content.
  */
-function buildHtmlEmail(data: ContactFormData): string {
+export function buildHtmlEmail(data: ContactFormData): string {
   const escapedName = escapeHtml(data.name);
   const escapedEmail = escapeHtml(data.email);
   const escapedCompany = escapeHtml(data.company);
@@ -102,7 +102,7 @@ function buildHtmlEmail(data: ContactFormData): string {
 /**
  * Builds the plain text email content.
  */
-function buildTextEmail(data: ContactFormData): string {
+export function buildTextEmail(data: ContactFormData): string {
   return `
 New Contact Form Submission
 
@@ -123,12 +123,16 @@ This message was sent from the contact form on https://ankitnandwani.com.
  */
 function escapeHtml(text: string): string {
   return text
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+
+
+
 
 /**
  * Sends an email using Resend.
@@ -137,21 +141,21 @@ async function sendWithResend(
   data: ContactFormData,
   config: EmailConfig
 ): Promise<EmailResult> {
-  if (!config.resendApiKey) {
-    return { ok: false, error: 'Resend API key not configured' };
+  if (!config.apiKey) {
+    return { ok: false, error: 'EMAIL_API_KEY is required when using Resend provider' };
   }
 
   try {
     const { Resend } = await import('resend');
-    const resend = new Resend(config.resendApiKey);
+    const resend = new Resend(config.apiKey);
 
     const { data: result, error } = await resend.emails.send({
-      from: `${config.fromName} <${config.fromEmail}>`,
+      from: config.fromEmail,
       to: config.toEmail,
       subject: `Portfolio Contact: ${data.name}`,
       html: buildHtmlEmail(data),
       text: buildTextEmail(data),
-      replyTo: data.email,
+      replyTo: config.replyTo ?? data.email,
     });
 
     if (error) {
@@ -199,8 +203,8 @@ export async function sendContactEmail(data: ContactFormData): Promise<EmailResu
 export function validateEmailConfig(): { ok: boolean; error?: string } {
   const config = getEmailConfig();
 
-  if (config.provider === 'resend' && !config.resendApiKey) {
-    return { ok: false, error: 'RESEND_API_KEY is required when using Resend provider' };
+  if (config.provider === 'resend' && !config.apiKey) {
+    return { ok: false, error: 'EMAIL_API_KEY is required when using Resend provider' };
   }
 
   return { ok: true };

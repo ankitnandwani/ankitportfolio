@@ -42,11 +42,11 @@ const envSchema = z.object({
   CONTACT_FORM_DAILY_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
   CONTACT_FORM_DAILY_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
   // Email delivery configuration
-  CONTACT_EMAIL_PROVIDER: z.enum(['resend', 'console']).optional(),
-  RESEND_API_KEY: z.string().nonempty().optional(),
-  CONTACT_TO_EMAIL: z.string().email().optional(),
-  CONTACT_FROM_EMAIL: z.string().email().optional(),
-  CONTACT_FROM_NAME: z.string().nonempty().optional(),
+  EMAIL_PROVIDER: z.enum(['resend', 'console']).optional(),
+  EMAIL_API_KEY: z.string().nonempty().optional(),
+  EMAIL_TO: z.string().email().optional(),
+  EMAIL_FROM: z.string().nonempty().optional(),
+  EMAIL_REPLY_TO: z.string().email().optional(),
 });
 
 // Validate process.env against the schema

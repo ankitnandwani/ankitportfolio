@@ -1,8 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M18.05.
-- A decision is needed on the transactional email provider before M18.05 (Resend recommended – 3,000/month free, modern API).
-- Contact form rate limit thresholds need confirmation (suggested: 3/30min, 5/day, stricter than job-fit's 5/30min).
+- Begin implementation of M18.06.
 - Contact form placement: dedicated `/contact` page linked from footer and homepage.
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch.
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch.
@@ -13,6 +11,18 @@
 - The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow.
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
+
+## Completed (M18.05)
+
+- Implemented email delivery in `src/lib/contact/email.ts`:
+  - Resend provider support with professional HTML/text email templates
+  - Console fallback for development/testing
+  - HTML escaping for security (prevents XSS in email content)
+  - Configurable via environment variables: `EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_TO`, `EMAIL_FROM`, `EMAIL_REPLY_TO`
+  - 15 unit tests covering HTML/text generation, escaping, config validation, console/resend providers
+  - Exported from `src/lib/contact/index.ts`
+- Updated environment variables in `src/lib/env.ts`, `src/lib/env.js`, `.env.example` (using `EMAIL_*` prefix)
+- All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M18.04)
 
@@ -205,12 +215,10 @@ Task specifications created in `tasks/M18/`:
 - M18.02 – Create contact form UI components (Input, Textarea, ContactForm) (completed)
 - M18.03 – Implement contact form API route with validation (completed)
 - M18.04 – Add spam protection/rate limiting for contact form (completed)
-- M18.05 – Implement email delivery via transactional provider
+- M18.05 – Implement email delivery via transactional provider (completed)
 - M18.06 – Create success/failure UI states
 - M18.07 – Add contact form to site (homepage/footer)
 - M18.08 – Test and verify contact form end to end
 
 **Decisions needed before implementation:**
-1. Transactional email provider (Resend recommended – 3,000/month free, modern API)
-2. Contact form rate limit thresholds (suggested: 3/30min, 5/day)
-3. Contact form placement: dedicated `/contact` page linked from footer and homepage
+1. Contact form placement: dedicated `/contact` page linked from footer and homepage

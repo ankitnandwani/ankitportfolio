@@ -1,3 +1,22 @@
+## [0.1.135] - 2026-10-28
+- Implemented M18.05 – Implement Email Delivery via Transactional Provider:
+  - Created `src/lib/contact/email.ts` with Resend provider support:
+    - Professional HTML and plain text email templates with all form fields
+    - Console fallback for development/testing (logs email to stdout)
+    - HTML escaping for security (prevents XSS in email content)
+    - Configurable via environment variables: `EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_TO`, `EMAIL_FROM`, `EMAIL_REPLY_TO`
+    - User's email used as `reply-to` header (prevents spoofing)
+  - Added `src/lib/contact/email.test.mts` with 15 unit tests:
+    - HTML/text email generation with all fields
+    - HTML special character escaping (`<script>`, `&`, quotes)
+    - Newline to `<br>` conversion
+    - Config validation (console provider ok, resend requires API key)
+    - Console provider returns success with messageId
+    - Resend provider without API key returns descriptive error
+  - Updated environment variables in `src/lib/env.ts`, `src/lib/env.js`, `.env.example` with `EMAIL_*` prefix
+  - Exported from `src/lib/contact/index.ts`
+  - All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
+
 ## [0.1.134] - 2026-10-28
 - Implemented M18.04 – Add Spam Protection/Rate Limiting for Contact Form:
   - Created `src/lib/contact/rateLimiter.ts` with contact-specific rate limiter:

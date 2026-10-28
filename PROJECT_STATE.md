@@ -66,12 +66,22 @@
 
 ## Next Task
 
-- M18.05 – Implement email delivery via transactional provider (the next action: continue Milestone 18 – Contact Form)
-- A decision is needed on the transactional email provider before M18.05 (Resend recommended – 3,000/month free, modern API)
-- Contact form rate limit thresholds need confirmation (suggested: 3/30min, 5/day, stricter than job-fit)
+- M18.06 – Create success/failure UI states (the next action: continue Milestone 18 – Contact Form)
 - Contact form placement: dedicated `/contact` page linked from footer and homepage
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - The standing items are listed in TODO.md
+
+## Completed (M18.05)
+
+- Implemented email delivery in `src/lib/contact/email.ts`:
+  - Resend provider support with professional HTML/text email templates
+  - Console fallback for development/testing
+  - HTML escaping for security (prevents XSS in email content)
+  - Configurable via environment variables: `EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_TO`, `EMAIL_FROM`, `EMAIL_REPLY_TO`
+  - 15 unit tests covering HTML/text generation, escaping, config validation, console/resend providers
+  - Exported from `src/lib/contact/index.ts`
+- Updated environment variables in `src/lib/env.ts`, `src/lib/env.js`, `.env.example` (using `EMAIL_*` prefix)
+- All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M18.04)
 
