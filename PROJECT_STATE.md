@@ -12,6 +12,7 @@
 
 - Task specifications created for M17 – Job Description Analyzer (see tasks/M17/). M17.01 through M17.09 implemented and verified.
 - Task specifications created for M18 – Contact Form (see tasks/M18/). M18.01 through M18.08 specified, ready for implementation.
+- M18.01 – Define Contact Form Data Model and Validation (completed – `src/data/contact.ts` with ContactFormData, ContactFormRequest, ContactFormResponse, FieldErrors, CONTACT_FORM_LIMITS; `src/lib/contact/validation.ts` with Zod schemas, validateContactForm, validateField, createSuccessResponse, createErrorResponse, isSuccessResponse, isErrorResponse; `src/lib/contact/validation.test.mts` with 30 unit tests covering all validation rules; all tests pass, lint clean, typecheck clean, build succeeds)
 - M17.01 through M17.09 completed and verified (see previous entries).
 - M17.01 – Define the Job Fit Analysis Contract (completed – types, zod schema, limits and fixed wording of PRD §88 in `src/lib/jobFit/`, 15 unit tests pass)
 - M17.02 – Parse a Job Description into Requirements (completed – deterministic parser in `src/lib/jobFit/jdParser.ts` with 101 unit tests covering bullet points, numbered lists, checkboxes, heading recognition, noise filtering, title/company extraction, length limits, requirement limit with required-first ordering; all tests pass, lint clean, typecheck clean)
@@ -64,7 +65,7 @@
 
 ## Next Task
 
-- M18.01 – Define contact form data model and validation (the next action: begin Milestone 18 – Contact Form)
+- M18.02 – Create contact form UI components (the next action: begin Milestone 18 – Contact Form)
 - A decision is needed on the transactional email provider before M18.05 (Resend recommended – 3,000/month free, modern API)
 - Contact form rate limit thresholds need confirmation (suggested: 3/30min, 5/day, stricter than job-fit)
 - Contact form placement: dedicated `/contact` page linked from footer and homepage

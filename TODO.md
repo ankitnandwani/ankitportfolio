@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M18.01.
+- Begin implementation of M18.02.
 - A decision is needed on the transactional email provider before M18.05 (Resend recommended – 3,000/month free, modern API).
 - Contact form rate limit thresholds need confirmation (suggested: 3/30min, 5/day, stricter than job-fit's 5/30min).
 - Contact form placement: dedicated `/contact` page linked from footer and homepage.
@@ -138,11 +138,20 @@
   - Interface verified (phone/desktop, keyboard, themes, reduced motion, no percentages)
   - All 403 tests pass (397 pass, 6 opt-in skipped), lint clean, typecheck clean, build succeeds
 
+## Completed (M18.01)
+
+- Defined the Contact Form Data Model and Validation in `src/data/contact.ts` and `src/lib/contact/`:
+  - `src/data/contact.ts` – ContactFormData, ContactFormRequest, ContactFormResponse, FieldErrors, CONTACT_FORM_LIMITS constants
+  - `src/lib/contact/validation.ts` – Zod schemas for all fields, validateContactForm, validateField, createSuccessResponse, createErrorResponse, isSuccessResponse, isErrorResponse
+  - `src/lib/contact/validation.test.mts` – 30 unit tests covering all validation rules (valid inputs, empty fields, length limits, invalid characters, Unicode names, email formats, boundary lengths, multiple errors, field-level validation, pure validation)
+  - `src/lib/contact/index.ts` – public exports
+  - All 433 tests pass (427 pass, 0 fail, 6 opt-in skipped), lint clean (0 errors), typecheck clean, build succeeds
+
 ## Planned (M18 – Contact Form)
 
 Task specifications created in `tasks/M18/`:
 
-- M18.01 – Define contact form data model and validation
+- M18.01 – Define contact form data model and validation (completed)
 - M18.02 – Create contact form UI components (Input, Textarea, ContactForm)
 - M18.03 – Implement contact form API route with validation
 - M18.04 – Add spam protection/rate limiting for contact form

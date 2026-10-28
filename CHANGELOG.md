@@ -1,3 +1,11 @@
+## [0.1.131] - 2026-10-28
+- Implemented M18.01 – Define Contact Form Data Model and Validation:
+  - Created `src/data/contact.ts` with ContactFormData, ContactFormRequest, ContactFormResponse, FieldErrors, CONTACT_FORM_LIMITS constants
+  - Created `src/lib/contact/validation.ts` with Zod schemas for all fields, validateContactForm, validateField, createSuccessResponse, createErrorResponse, isSuccessResponse, isErrorResponse
+  - Created `src/lib/contact/validation.test.mts` with 30 unit tests covering all validation rules (valid inputs, empty fields, length limits, invalid characters, Unicode names, email formats, boundary lengths, multiple errors, field-level validation, pure validation)
+  - Created `src/lib/contact/index.ts` with public exports
+  - All 433 tests pass (427 pass, 0 fail, 6 opt-in skipped), lint clean (0 errors), typecheck clean, build succeeds
+
 ## [0.1.130] - 2026-10-28
 - Created task specifications for M18 – Contact Form (ROADMAP Milestone 18):
   - M18.01 – Define contact form data model and validation (4 fields: Name, Email, Company, Message; Zod schema; field-specific validation)
