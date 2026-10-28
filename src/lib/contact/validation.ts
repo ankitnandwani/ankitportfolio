@@ -169,3 +169,5 @@ export function isSuccessResponse(response: ContactFormResponse): response is Co
 export function isErrorResponse(response: ContactFormResponse): response is ContactFormErrorResponse {
   return response.ok === false;
 }
+
+export type { ContactFormRequest, FieldErrors } from '../../data/contact.ts';

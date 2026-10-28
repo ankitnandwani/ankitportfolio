@@ -1,3 +1,12 @@
+## [0.1.132] - 2026-10-28
+- Implemented M18.02 – Create Contact Form UI Components:
+  - Created `src/components/ui/Input.tsx` – Single-line input with label, error state, character counter, helper text, accessibility features
+  - Created `src/components/ui/Textarea.tsx` – Multi-line textarea with auto-resize, label, error state, character counter, helper text
+  - Created `src/components/contact/ContactFormField.tsx` – Wrapper combining label, input/textarea, error message, character counter
+  - Created `src/components/contact/ContactForm.tsx` – Main form with four fields (Name, Email, Company, Message), client-side validation, loading/success/error states, retry/dismiss, accessibility
+  - Updated `src/components/ui/index.ts` and `src/components/contact/index.ts` with exports
+  - All 433 tests pass (427 pass, 0 fail, 6 opt-in skipped), lint clean, typecheck clean, build succeeds
+
 ## [0.1.131] - 2026-10-28
 - Implemented M18.01 – Define Contact Form Data Model and Validation:
   - Created `src/data/contact.ts` with ContactFormData, ContactFormRequest, ContactFormResponse, FieldErrors, CONTACT_FORM_LIMITS constants

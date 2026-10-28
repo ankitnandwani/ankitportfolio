@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M18.02.
+- Begin implementation of M18.03.
 - A decision is needed on the transactional email provider before M18.05 (Resend recommended – 3,000/month free, modern API).
 - Contact form rate limit thresholds need confirmation (suggested: 3/30min, 5/day, stricter than job-fit's 5/30min).
 - Contact form placement: dedicated `/contact` page linked from footer and homepage.
@@ -147,12 +147,35 @@
   - `src/lib/contact/index.ts` – public exports
   - All 433 tests pass (427 pass, 0 fail, 6 opt-in skipped), lint clean (0 errors), typecheck clean, build succeeds
 
+## Completed (M18.02)
+
+- Created contact form UI components:
+  - `src/components/ui/Input.tsx` – Single-line input with label, error state, character counter, helper text, accessibility features
+  - `src/components/ui/Textarea.tsx` – Multi-line textarea with auto-resize, label, error state, character counter, helper text
+  - `src/components/contact/ContactFormField.tsx` – Wrapper combining label, input/textarea, error message, character counter
+  - `src/components/contact/ContactForm.tsx` – Main form component with:
+    - Four fields: Name (Input), Email (Input), Company (Input), Message (Textarea)
+    - Client-side validation on blur and submit using M18.01 validation
+    - Submit handler calls `/api/contact` via fetch
+    - Loading state with spinner
+    - Success state with confirmation message and "Send Another Message" button
+    - Error state with message and retry/dismiss buttons
+    - Character counters for all fields
+    - Reset form on success
+    - Fully keyboard navigable
+    - Dark/light theme support
+    - Reduced motion support
+    - ARIA labels and live regions for accessibility
+  - `src/components/contact/index.ts` – exports
+  - Updated `src/components/ui/index.ts` with Input and Textarea exports
+  - All 433 tests pass (427 pass, 0 fail, 6 opt-in skipped), lint clean (0 errors), typecheck clean, build succeeds
+
 ## Planned (M18 – Contact Form)
 
 Task specifications created in `tasks/M18/`:
 
 - M18.01 – Define contact form data model and validation (completed)
-- M18.02 – Create contact form UI components (Input, Textarea, ContactForm)
+- M18.02 – Create contact form UI components (Input, Textarea, ContactForm) (completed)
 - M18.03 – Implement contact form API route with validation
 - M18.04 – Add spam protection/rate limiting for contact form
 - M18.05 – Implement email delivery via transactional provider
