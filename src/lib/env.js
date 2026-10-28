@@ -37,10 +37,10 @@ const envSchema = z.object({
   // The limits of the contact form. They are optional, because the
   // code has the defaults and a missing variable only means the default
   // is used.
-  CONTACT_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
-  CONTACT_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
-  CONTACT_DAILY_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
-  CONTACT_DAILY_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
+  CONTACT_FORM_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
+  CONTACT_FORM_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
+  CONTACT_FORM_DAILY_WINDOW_SECONDS: z.coerce.number().int().positive().optional(),
+  CONTACT_FORM_DAILY_MAX_REQUESTS: z.coerce.number().int().positive().optional(),
   // Email delivery configuration
   CONTACT_EMAIL_PROVIDER: z.enum(['resend', 'console']).optional(),
   RESEND_API_KEY: z.string().nonempty().optional(),

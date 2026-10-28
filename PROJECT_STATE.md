@@ -66,12 +66,24 @@
 
 ## Next Task
 
-- M18.04 – Add spam protection/rate limiting for contact form (the next action: continue Milestone 18 – Contact Form)
+- M18.05 – Implement email delivery via transactional provider (the next action: continue Milestone 18 – Contact Form)
 - A decision is needed on the transactional email provider before M18.05 (Resend recommended – 3,000/month free, modern API)
 - Contact form rate limit thresholds need confirmation (suggested: 3/30min, 5/day, stricter than job-fit)
 - Contact form placement: dedicated `/contact` page linked from footer and homepage
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - The standing items are listed in TODO.md
+
+## Completed (M18.04)
+
+- Implemented contact form rate limiter in `src/lib/contact/rateLimiter.ts`:
+  - Contact-specific rate limiter with stricter defaults (3 requests/30min, 5/day)
+  - Reuses `createRateLimiter` and `RateLimitStore` from `src/lib/ai/rateLimiter.ts`
+  - Namespaced keys (`contact:window:`, `contact:daily:`) separate from chat/job-fit
+  - Configurable via environment variables: `CONTACT_FORM_WINDOW_SECONDS`, `CONTACT_FORM_MAX_REQUESTS`, `CONTACT_FORM_DAILY_WINDOW_SECONDS`, `CONTACT_FORM_DAILY_MAX_REQUESTS`
+  - 17 unit tests covering limit enforcement, window/daily reset, separate buckets, headers
+  - Exported from `src/lib/contact/index.ts`
+- Updated environment variables in `src/lib/env.ts`, `src/lib/env.js`, `.env.example`
+- All 450 tests pass (444 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M18.03)
 
@@ -85,7 +97,7 @@
   - Analytics event `contact_form_submission` fired fire-and-forget with no PII
   - Error mapping: validation → 400, rate limit → 429, email failure → 500, unexpected → 500
 - Added analytics event type `ContactFormSubmissionEvent` and tracking function `trackContactFormSubmission`
-- Added environment variables: `CONTACT_WINDOW_SECONDS`, `CONTACT_MAX_REQUESTS`, `CONTACT_DAILY_WINDOW_SECONDS`, `CONTACT_DAILY_MAX_REQUESTS`, `CONTACT_EMAIL_PROVIDER`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_FROM_NAME`
+- Added environment variables: `CONTACT_FORM_WINDOW_SECONDS`, `CONTACT_FORM_MAX_REQUESTS`, `CONTACT_FORM_DAILY_WINDOW_SECONDS`, `CONTACT_FORM_DAILY_MAX_REQUESTS`, `CONTACT_EMAIL_PROVIDER`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_FROM_NAME`
 - All 450 tests pass (444 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (Milestone 01)

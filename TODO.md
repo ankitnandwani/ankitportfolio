@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M18.04.
+- Begin implementation of M18.05.
 - A decision is needed on the transactional email provider before M18.05 (Resend recommended – 3,000/month free, modern API).
 - Contact form rate limit thresholds need confirmation (suggested: 3/30min, 5/day, stricter than job-fit's 5/30min).
 - Contact form placement: dedicated `/contact` page linked from footer and homepage.
@@ -14,6 +14,18 @@
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
 
+## Completed (M18.04)
+
+- Implemented contact form rate limiter in `src/lib/contact/rateLimiter.ts`:
+  - Contact-specific rate limiter with stricter defaults (3 requests/30min, 5/day)
+  - Reuses `createRateLimiter` and `RateLimitStore` from `src/lib/ai/rateLimiter.ts`
+  - Namespaced keys (`contact:window:`, `contact:daily:`) separate from chat/job-fit
+  - Configurable via environment variables: `CONTACT_FORM_WINDOW_SECONDS`, `CONTACT_FORM_MAX_REQUESTS`, `CONTACT_FORM_DAILY_WINDOW_SECONDS`, `CONTACT_FORM_DAILY_MAX_REQUESTS`
+  - 17 unit tests covering limit enforcement, window/daily reset, separate buckets, headers
+  - Exported from `src/lib/contact/index.ts`
+- Updated environment variables in `src/lib/env.ts`, `src/lib/env.js`, `.env.example`
+- All 450 tests pass (444 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
+
 ## Completed (M18.03)
 
 - Implemented contact form API route at `app/api/contact/route.ts`:
@@ -26,7 +38,7 @@
   - Analytics event `contact_form_submission` fired fire-and-forget with no PII
   - Error mapping: validation → 400, rate limit → 429, email failure → 500, unexpected → 500
 - Added analytics event type `ContactFormSubmissionEvent` and tracking function `trackContactFormSubmission`
-- Added environment variables: `CONTACT_WINDOW_SECONDS`, `CONTACT_MAX_REQUESTS`, `CONTACT_DAILY_WINDOW_SECONDS`, `CONTACT_DAILY_MAX_REQUESTS`, `CONTACT_EMAIL_PROVIDER`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_FROM_NAME`
+- Added environment variables: `CONTACT_FORM_WINDOW_SECONDS`, `CONTACT_FORM_MAX_REQUESTS`, `CONTACT_FORM_DAILY_WINDOW_SECONDS`, `CONTACT_FORM_DAILY_MAX_REQUESTS`, `CONTACT_EMAIL_PROVIDER`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_FROM_NAME`
 - All 450 tests pass (444 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M17.01)
@@ -192,7 +204,7 @@ Task specifications created in `tasks/M18/`:
 - M18.01 – Define contact form data model and validation (completed)
 - M18.02 – Create contact form UI components (Input, Textarea, ContactForm) (completed)
 - M18.03 – Implement contact form API route with validation (completed)
-- M18.04 – Add spam protection/rate limiting for contact form
+- M18.04 – Add spam protection/rate limiting for contact form (completed)
 - M18.05 – Implement email delivery via transactional provider
 - M18.06 – Create success/failure UI states
 - M18.07 – Add contact form to site (homepage/footer)

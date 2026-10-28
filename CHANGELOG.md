@@ -1,3 +1,15 @@
+## [0.1.134] - 2026-10-28
+- Implemented M18.04 – Add Spam Protection/Rate Limiting for Contact Form:
+  - Created `src/lib/contact/rateLimiter.ts` with contact-specific rate limiter:
+    - Stricter defaults: 3 requests per 30 minutes, 5 per day
+    - Reuses `createRateLimiter` and `RateLimitStore` from `src/lib/ai/rateLimiter.ts`
+    - Namespaced keys (`contact:window:`, `contact:daily:`) separate from chat/job-fit limits
+    - Configurable via environment variables: `CONTACT_FORM_WINDOW_SECONDS`, `CONTACT_FORM_MAX_REQUESTS`, `CONTACT_FORM_DAILY_WINDOW_SECONDS`, `CONTACT_FORM_DAILY_MAX_REQUESTS`
+    - 17 unit tests covering limit enforcement, window/daily reset, separate buckets, headers
+  - Updated environment variables in `src/lib/env.ts`, `src/lib/env.js`, `.env.example` with `CONTACT_FORM_` prefix
+  - Exported from `src/lib/contact/index.ts`
+  - All 450 tests pass (444 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
+
 ## [0.1.133] - 2026-10-28
 - Implemented M18.03 – Implement Contact Form API Route with Validation:
   - Created `app/api/contact/route.ts` with POST handler:

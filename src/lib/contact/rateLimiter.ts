@@ -72,9 +72,9 @@ let contactRateLimiter: RateLimiter | null = null;
 export function getContactRateLimiter(): RateLimiter {
   if (contactRateLimiter) return contactRateLimiter;
 
-  const windowSeconds = readNumber('CONTACT_WINDOW_SECONDS');
-  const maxRequests = readNumber('CONTACT_MAX_REQUESTS');
-  const dailyMaxRequests = readNumber('CONTACT_DAILY_MAX_REQUESTS');
+  const windowSeconds = readNumber('CONTACT_FORM_WINDOW_SECONDS');
+  const maxRequests = readNumber('CONTACT_FORM_MAX_REQUESTS');
+  const dailyMaxRequests = readNumber('CONTACT_FORM_DAILY_MAX_REQUESTS');
 
   contactRateLimiter = createContactRateLimiter({
     windowSeconds: windowSeconds ?? DEFAULT_CONTACT_WINDOW_SECONDS,
