@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { AlignmentBars } from './AlignmentBars';
 import { Card } from '@/src/components/ui/Card';
 import { PRIVACY_NOTICE, AI_DISCLAIMER } from './notices';
-import { siteConfig } from '@/src/siteConfig';
+import { getSiteHost } from '@/src/siteConfig';
 import type { JobFitAnalysis, FitEvidence } from '@/src/lib/jobFit/types';
 
 interface JobFitResultsProps {
@@ -56,16 +56,19 @@ export function JobFitResults({
     }
   };
 
-  const handleDownloadResume = async () => {
-    await trackCtaClick('resume', new URL(siteConfig.url).hostname);
+  // The tracking is not awaited. A click on a link should open the link,
+  // and the request is kept alive by the browser, so it goes out even when
+  // the page goes away.
+  const handleDownloadResume = () => {
+    void trackCtaClick('resume', getSiteHost());
   };
 
-  const handleConnectLinkedIn = async () => {
-    await trackCtaClick('linkedin', 'linkedin.com');
+  const handleConnectLinkedIn = () => {
+    void trackCtaClick('linkedin', 'linkedin.com');
   };
 
-  const handleEmailAnkit = async () => {
-    await trackCtaClick('email', new URL(siteConfig.url).hostname);
+  const handleEmailAnkit = () => {
+    void trackCtaClick('email', getSiteHost());
   };
 
   const containerStyle: React.CSSProperties = {

@@ -107,10 +107,15 @@ export function readAnalyticsConfig(
   const logToConsole = source.nodeEnv !== 'production';
 
   if (options.isBrowser) {
-    // The browser never talks to PostHog directly. The key would have to be
-    // exposed to the page, so the browser only reports what it sees to the
-    // server. The proxy endpoint of M19.02 does the sending.
-    return { enabled: false, logToConsole };
+    // The browser never talks to PostHog directly. The key would have to
+    // be exposed to the page, so the browser only reports what it sees to
+    // the server. The proxy endpoint of M19.02 does the sending.
+    //
+    // The browser cannot know whether the server has the credentials, so
+    // `enabled` here means "the events are sent to the server of the site".
+    // Whether the server forwards them is decided there, and a server
+    // without credentials simply forwards nothing.
+    return { enabled: true, logToConsole };
   }
 
   const key = source.posthogKey?.trim();

@@ -128,7 +128,7 @@ test('readAnalyticsConfig treats a key that is a placeholder as no credentials',
   assert.equal(config.posthogHost, undefined);
 });
 
-test('readAnalyticsConfig turns the analytics off in the browser', () => {
+test('readAnalyticsConfig sends the events of the browser to the server of the site', () => {
   const config = readAnalyticsConfig(
     {
       posthogKey: 'phc_abc123DEF456',
@@ -137,7 +137,10 @@ test('readAnalyticsConfig turns the analytics off in the browser', () => {
     { isBrowser: true }
   );
 
-  assert.equal(config.enabled, false);
+  // The browser cannot see the credentials of the server, so it cannot
+  // know whether the events will be forwarded. It sends them to the server
+  // and the server decides. The credentials are never carried there.
+  assert.equal(config.enabled, true);
   assert.equal(config.posthogKey, undefined);
   assert.equal(config.posthogHost, undefined);
 });

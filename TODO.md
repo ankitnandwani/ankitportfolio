@@ -1,6 +1,8 @@
 # Immediate Next Actions
 
-- Begin implementation of M19.03 (the client side calls to action tracking through the proxy of M19.02).
+- Begin implementation of M19.04 (the missing events of the PRD and the check that every event of the catalogue really fires).
+- The click of a call to action is counted from the browser through the proxy of M19.02, and was verified in a real browser on 2026-10-29. The browser reports the events to the server of the site, because it cannot see the credentials and therefore cannot know whether the server forwards them. The server decides, and a server without the credentials forwards nothing
+- Two faults of the milestone M17 were found and fixed while the manual test of M19.03 was carried out. The route of the job fit answered with `meta` while the contract and the interface read `metadata`, so every successful analysis showed an error instead of the results, and the calls to action that point at the site threw on a placeholder address of the site. The route files cannot be loaded by the test runner, so neither fault could be caught by a unit test. M19.06 is the task that tests the whole flow end to end, and a test that reaches the route over http would catch this class of fault
 - The proxy of M19.02 flushes the event before the answer goes out, so it is not lost when the instance is put to sleep. The other routes still leave their events in the queue of the PostHog client, which is safe on a process that stays alive but not on a serverless function that is frozen. This matters from M24, the production deployment, and M19.04 is the task that looks at the whole event catalogue
 - The PostHog project is set up and the credentials are in `.env.local`, so the events reach a real PostHog. The value that is still the placeholder of `.env.example` is treated as no credentials, so a deployment without the credentials stays in the console only mode instead of sending to a host that does not exist
 - The PostHog browser snippet and the session recording are deliberately not used. The events are sent from the server, and the client side events go through the proxy endpoint of M19.02, so nothing a visitor types is ever captured automatically
@@ -15,6 +17,23 @@
 - The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow.
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
+
+## Completed (M19.03)
+
+- Changed `src/lib/analytics/client.ts` so the click of a call to action is really counted:
+  - `trackCtaClicked` sends a POST to `/api/analytics` with the session, the query, the kind of the call to action and the host it points at
+  - The request is sent and not awaited, so the visitor never waits for the analytics before a link opens, and it is marked to stay alive, so the event still goes out when the page goes away
+  - Nothing in the path of the visitor throws. A failed answer is a line in the console of the developer and nothing else
+  - The session of the browser is kept in the storage of the tab, so a visitor who reloads the page is still in the same session. The storage can be refused, and then the session is kept in memory for as long as the page is open
+- Changed the browser branch of `src/lib/analytics/config.ts`: the browser reports the events to the server of the site, because it cannot see the credentials and therefore cannot know whether the server forwards them. The server decides. The old behaviour turned the analytics off in the browser, so no click of a call to action was ever counted
+- The browser does not send a timestamp. The proxy refuses a field that is not part of the event, so a timestamp in the body would be answered with a refusal. The server puts the moment on the event, with the clock that counts
+- Updated `src/components/jobFit/JobFitResults.tsx`: the three handlers of the calls to action no longer wait for the tracking, so a click opens the link straight away
+- Fixed two faults of the milestone M17 that the manual test brought up:
+  - `app/api/job-fit/route.ts` answered with a `meta` object while the contract of `JobFitResponse`, the check of the interface and the component itself all read the metadata under `metadata`. Every successful analysis showed "Received an unexpected response" and the results never appeared. The route now answers with the `metadata` the contract declares, and the identifier of the query goes on it, so the analysis and the click on a call to action can be tied together
+  - The two calls to action that point at the site read the host with `new URL(siteConfig.url)`, which threw while the address of the site is still the placeholder of `.env.example`. The click did nothing and the event was never sent. Added `getSiteHost()` to `src/siteConfig.ts`, which reads the host when it can and falls back to the known address when it cannot
+- Added 23 tests: `src/lib/analytics/client.test.mts` (17) and `src/siteConfig.test.mts` (6)
+- Verified in a real browser on the running site: the click of "Connect on LinkedIn" was answered with 200 and went on to PostHog with no flush error, and the click of "Download Resume" navigated away while the request was still on its way and the answer came in after the page had gone. The identifier of the query on the event is the same one the analysis carries
+- All 566 tests pass (560 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M18.08)
 

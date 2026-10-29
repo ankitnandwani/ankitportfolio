@@ -273,17 +273,17 @@ export async function POST(request: NextRequest) {
     ).catch((err) => console.warn('[analytics] trackJobFitAnalysis failed:', err));
 
     // Return successful response
+    //
+    // The shape is the one the contract of `JobFitResponse` declares, so the
+    // interface reads the metadata under `metadata`. The identifier of the
+    // query belongs to this request and goes on it, so the events of the
+    // analysis and the click on a call to action can be tied together.
     return NextResponse.json(
       {
         analysis: result.analysis,
         evidence: result.evidence,
-        meta: {
-          latencyMs: result.metadata.latencyMs,
-          tokenUsage: result.metadata.tokenUsage,
-          model: result.metadata.model,
-          requirementCount: result.metadata.requirementCount,
-          chunksRetrieved: result.evidence.length,
-          usedFallback: result.metadata.usedFallback,
+        metadata: {
+          ...result.metadata,
           queryId,
         },
       },
