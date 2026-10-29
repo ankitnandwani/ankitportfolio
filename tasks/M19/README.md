@@ -25,6 +25,7 @@ This milestone captures product-relevant metrics by completing the PostHog integ
 | Session tracking | PRD §46 | M19.01 | Complete |
 | Rate limit metrics | PRD §48 | M19.04 | Planned |
 | Events fire correctly and respect privacy | ROADMAP M19 DoD | M19.06 | Planned |
+| Server-side proxy for the client events | PRD §78, PRD §80 | M19.02 | Complete |
 
 **Note on M19.01:** the server-side integration was broken and is now fixed. `posthog-node` v4 takes one message object, `capture({ distinctId, event, properties, timestamp })`, and the module was calling the version 3 shape `capture(name, properties)`, so every event was sent with no name and no identity and none of them ever arrived. The credentials are now optional, and a value that is still the placeholder of `.env.example` counts as no credentials, so the layer no longer builds a client that tries to reach a host that does not exist. The project is set up on the EU cloud, the credentials are in `.env.local`, and the sending was verified on 2026-10-29: the capture endpoint answered `{"status":"Ok"}`, a real event went out of the running app with no flush error, and the payload on the wire carries the `distinct_id`, the event name, the properties, an ISO timestamp and `$geoip_disable: true`. The PostHog browser snippet and the session recording are not used, so nothing a visitor types is captured automatically.
 

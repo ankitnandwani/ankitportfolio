@@ -16,6 +16,7 @@ export {
   shutdownAnalytics,
   initPostHog,
   setPostHogClientFactory,
+  flushAnalytics,
   getAnalyticsConfig,
   type PostHogClient,
   type PostHogClientFactory,
@@ -37,6 +38,22 @@ export {
   isPlaceholderValue,
   isValidPostHogHost,
 } from './config.ts';
+
+// The proxy for the events the browser sends
+export {
+  handleClientEvent,
+  validateClientEvent,
+  createAnalyticsRateLimiter,
+  getAnalyticsRateLimiter,
+  setAnalyticsRateLimiter,
+  isSameOrigin,
+  CLIENT_EVENT_TYPES,
+  type ClientEvent,
+  type ClientEventType,
+  type ClientEventValidation,
+  type HandleClientEventOptions,
+  type ProxyResult,
+} from './proxy.ts';
 
 export {
   type AnalyticsConfig,

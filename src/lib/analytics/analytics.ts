@@ -70,6 +70,15 @@ export interface PostHogEventMessage {
 export interface PostHogClient {
   capture: (message: PostHogEventMessage) => void;
   shutdown: () => Promise<void>;
+  /**
+   * Sends the events that are waiting in the queue.
+   *
+   * The client queues the events and sends them on its own interval. A
+   * request that ends before that interval is over can lose the events it
+   * queued, because a serverless function is put to sleep as soon as it has
+   * answered. Flushing before the answer goes out keeps the event.
+   */
+  flush?: () => Promise<void>;
 }
 
 /**
@@ -440,6 +449,30 @@ function redactPiiFromText(text: string): string {
   return mapOutsideDates(text, (segment) =>
     segment.replace(PHONE_NUMBER_PATTERN, '[REDACTED]')
   ).replace(/[a-z0-9._%+-]{1,64}@[a-z0-9.-]{1,255}\.[a-z]{2,63}/gi, '[REDACTED]');
+}
+
+/**
+ * Sends the events that are waiting in the queue.
+ *
+ * The client queues the events and sends them on its own interval, which is
+ * the right shape for a process that stays alive. A request that ends before
+ * that interval is over can lose the events it queued, because a serverless
+ * function is put to sleep as soon as it has answered. A route that sends a
+ * single event flushes it, so the event is not left in the queue.
+ *
+ * A failure of the flush is not reported. The event is still in the queue,
+ * and the client sends it on its own schedule.
+ */
+export async function flushAnalytics(): Promise<void> {
+  if (!posthogClient) {
+    return;
+  }
+
+  try {
+    await posthogClient.flush?.();
+  } catch (error) {
+    console.warn('[analytics] Failed to flush the events:', error);
+  }
 }
 
 /**

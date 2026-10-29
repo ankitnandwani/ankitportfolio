@@ -1,3 +1,16 @@
+## [0.1.141] - 2026-10-29
+- Implemented M19.02 – Create server-side analytics proxy endpoint for client-side events
+- Added `src/lib/analytics/proxy.ts` with the check of the event, the limiter of the proxy and the handler, and `app/api/analytics/route.ts` as a thin boundary:
+  - Only the event types on a list are accepted, and an unknown field is refused rather than dropped, so a client cannot put anything of its own into an event
+  - The session and the query have to be the anonymous identifiers the site uses, and the target has to be a bare host name, so a path, a port or an e-mail address cannot pass as one
+  - The proxy has its own limiter, with its own store and keys of its own, so the events of a visitor never use up the allowance of the chat
+  - A request whose origin is not the site is refused, so another site cannot fill the project with events that did not happen here
+  - The event is flushed before the answer goes out, because a serverless function is put to sleep as soon as it has answered and an event that is still queued can be lost
+- Added `flushAnalytics` to `src/lib/analytics/analytics.ts`, and the flush method to the client the module uses
+- Added 34 tests in `src/lib/analytics/proxy.test.mts`
+- Verified against the running site: a valid event is answered with 200 and the limit headers, an unknown event type and a missing field and a target that carries personal data are answered with 400, a request from another site is answered with 403, the hundred and first event of a visitor is answered with 429 and the retry header, and another visitor is not affected. The payload on the wire carries the `distinct_id`, the event name, only the checked fields, the host name in small letters and `$geoip_disable: true`
+- All 543 tests pass, lint clean (0 errors, 58 pre-existing warnings), typecheck clean, build succeeds
+
 ## [0.1.140] - 2026-10-29
 - Set up the PostHog project and verified the sending against it:
   - The project is on the EU cloud. The credentials are in `.env.local`, which is gitignored. The key is in no tracked file, which was checked with a search for the exact value

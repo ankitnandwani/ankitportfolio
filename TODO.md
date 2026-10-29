@@ -1,6 +1,7 @@
 # Immediate Next Actions
 
-- Begin implementation of M19.02 (the server-side analytics proxy endpoint for client-side events).
+- Begin implementation of M19.03 (the client side calls to action tracking through the proxy of M19.02).
+- The proxy of M19.02 flushes the event before the answer goes out, so it is not lost when the instance is put to sleep. The other routes still leave their events in the queue of the PostHog client, which is safe on a process that stays alive but not on a serverless function that is frozen. This matters from M24, the production deployment, and M19.04 is the task that looks at the whole event catalogue
 - The PostHog project is set up and the credentials are in `.env.local`, so the events reach a real PostHog. The value that is still the placeholder of `.env.example` is treated as no credentials, so a deployment without the credentials stays in the console only mode instead of sending to a host that does not exist
 - The PostHog browser snippet and the session recording are deliberately not used. The events are sent from the server, and the client side events go through the proxy endpoint of M19.02, so nothing a visitor types is ever captured automatically
 - The events that carry a group of properties put them in a `properties` object of their own, so they reach PostHog one level deeper than the other events. M19.04 is the task that looks at the whole event catalogue
