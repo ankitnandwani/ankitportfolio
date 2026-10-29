@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M18.08.
+- Begin implementation of M19.01 (PostHog analytics setup).
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch.
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch.
 - The rate limit of the chat is kept in memory, so it is lost when the instance restarts and it is per instance. That is what PRD §48 accepts for a site with low traffic, but a shared store (the Upstash Redis of PRD §53) would make it hold across instances. The store of the limiter is injected, so this is a change in one place.
@@ -10,6 +10,18 @@
 - The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow.
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
+
+## Completed (M18.08)
+
+- Extended `test-plan.md` with contact form section (35 test cases across CFC, CSC, CEC, CIA)
+- Created `scripts/verifyContact.mts` verification script:
+  - Tests 13 validation fixtures with unique IPs to avoid rate limit pollution
+  - Tests rate limit enforcement (3 allowed, 4th blocked with 429)
+  - Tests rate limit isolation (contact limits don't affect chat/job-fit)
+  - Uses dedicated IPs for each test group to avoid cross-pollution
+  - All 70 rules pass
+- Added `verify:contact` script to `package.json`
+- All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M18.07)
 
@@ -260,7 +272,7 @@ Task specifications created in `tasks/M18/`:
 - M18.05 – Implement email delivery via transactional provider (completed)
 - M18.06 – Create success/failure UI states (completed)
 - M18.07 – Add contact form to site (homepage/footer) (completed)
-- M18.08 – Test and verify contact form end to end
+- M18.08 – Test and verify contact form end to end (completed)
 
 **Decisions needed before implementation:**
 1. Contact form placement: dedicated `/contact` page linked from footer and homepage

@@ -1,3 +1,19 @@
+## [0.1.138] - 2026-10-28
+- Implemented M18.08 – Test and Verify Contact Form End to End:
+  - Extended `test-plan.md` with contact form section (35 test cases across CFC, CSC, CEC, CIA):
+    - Functional Correctness (13): valid submission, field validation, boundary lengths, Unicode, injection
+    - Safety/Guardrails (5): rate limit enforcement, rate limit headers, Cache-Control, injection handling, rate limit isolation
+    - Edge Cases (10): Unicode, boundary values (100/101, 254/255, 10/9, 5000/5001), special chars
+    - Integration (7): email delivery, analytics event, no PII in analytics, rate limit isolation, form reset, retry preserves input, dismiss clears error
+  - Created `scripts/verifyContact.mts` with comprehensive verification:
+    - Tests 13 validation fixtures using unique IPs per fixture to avoid rate limit cross-pollution
+    - Tests rate limit enforcement (3 requests allowed, 4th blocked with 429 + Retry-After)
+    - Tests rate limit isolation (contact form limits don't affect chat 20/30min or job-fit 5/30min)
+    - Runs rate limit test FIRST to avoid pollution from other tests
+    - All 70 rules pass
+  - Added `verify:contact` script to `package.json`
+  - All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
+
 ## [0.1.137] - 2026-10-28
 - Implemented M18.07 – Add Contact Form to Site (Homepage/Footer):
   - Created `app/contact/page.tsx`:

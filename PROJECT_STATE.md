@@ -66,9 +66,21 @@
 
 ## Next Task
 
-- M18.08 – Test and verify contact form end to end (the next action: continue Milestone 18 – Contact Form)
+- M19.01 – Set up PostHog analytics (the next action: begin Milestone 19 – Analytics)
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - The standing items are listed in TODO.md
+
+## Completed (M18.08)
+
+- Extended `test-plan.md` with contact form section (35 test cases across CFC, CSC, CEC, CIA)
+- Created `scripts/verifyContact.mts` verification script:
+  - Tests 13 validation fixtures with unique IPs to avoid rate limit pollution
+  - Tests rate limit enforcement (3 allowed, 4th blocked with 429)
+  - Tests rate limit isolation (contact limits don't affect chat/job-fit)
+  - Uses dedicated IPs for each test group to avoid cross-pollution
+  - All 70 rules pass
+- Added `verify:contact` script to `package.json`
+- All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M18.07)
 

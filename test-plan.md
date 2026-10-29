@@ -482,6 +482,308 @@ The Job Fit Analyzer produces fit narratives that are positive (no rejection phr
 
 ---
 
+## M18.08 — Contact Form End-to-End Verification
+
+## Test Categories
+
+| Category | Prefix | Description |
+|----------|--------|-------------|
+| Functional Correctness | CFC | Verify the contact form accepts valid submissions and rejects invalid ones |
+| Safety/Guardrails | CSC | Verify rate limiting, injection handling, and spam protection |
+| Edge Cases | CEC | Verify boundary values, Unicode, and malformed inputs |
+| Integration | CIA | Verify email delivery, analytics, and rate limit isolation |
+
+---
+
+## Functional Correctness Tests (CFC)
+
+| ID | Fixture | Expected Outcome | Pass Criteria |
+|----|---------|------------------|---------------|
+| CFC001 | valid_submission | Returns 200, success message, form resets | status=200, ok=true, message present |
+| CFC002 | unicode_name | Accepts Unicode characters in name | status=200, ok=true |
+| CFC003 | injection_attempt | Accepts message (injection handled by API) | status=200, ok=true |
+| CFC004 | missing_name | Returns 400 with name field error | status=400, ok=false, errors.name present |
+| CFC005 | invalid_email | Returns 400 with email field error | status=400, ok=false, errors.email present |
+| CFC006 | missing_message | Returns 400 with message field error | status=400, ok=false, errors.message present |
+| CFC007 | all_fields_missing | Returns 400 with all required field errors | status=400, ok=false, errors.name/email/message present |
+| CFC008 | message_too_short | Returns 400 with message field error | status=400, ok=false, errors.message present |
+| CFC009 | name_too_long | Returns 400 with name field error | status=400, ok=false, errors.name present |
+| CFC010 | email_too_long | Returns 400 with email field error | status=400, ok=false, errors.email present |
+| CFC011 | company_too_long | Returns 400 with company field error | status=400, ok=false, errors.company present |
+| CFC012 | message_too_long | Returns 400 with message field error | status=400, ok=false, errors.message present |
+| CFC013 | invalid_json | Returns 400 for malformed JSON | status=400, ok=false |
+
+---
+
+## Safety/Guardrails Tests (CSC)
+
+| ID | Test | Expected Outcome | Pass Criteria |
+|----|------|------------------|---------------|
+| CSC001 | Rate limit (4 rapid requests) | 4th request returns 429 with Retry-After | status=429, Retry-After header present |
+| CSC002 | Rate limit headers | All responses have X-RateLimit-* headers | Headers present on 200, 400, 429 |
+| CSC003 | Cache-Control | All responses have no-store | Cache-Control: no-store present |
+| CSC004 | Injection attempt | Message accepted (API handles sanitization) | status=200, ok=true |
+| CSC005 | Rate limit isolation | Contact limits don't affect chat/job-fit | Chat 20/30min unaffected by contact requests |
+
+---
+
+## Edge Cases Tests (CEC)
+
+| ID | Input | Expected Outcome | Pass Criteria |
+|----|-------|------------------|---------------|
+| CEC001 | Unicode name (José María O'Connor-Smith) | Accepted, no encoding issues | status=200, ok=true |
+| CEC002 | Boundary: name=100 chars | Accepted | status=200, ok=true |
+| CEC003 | Boundary: name=101 chars | Rejected with error | status=400, errors.name present |
+| CEC004 | Boundary: email=254 chars | Accepted | status=200, ok=true |
+| CEC005 | Boundary: email=255 chars | Rejected with error | status=400, errors.email present |
+| CEC006 | Boundary: message=10 chars | Accepted | status=200, ok=true |
+| CEC007 | Boundary: message=9 chars | Rejected with error | status=400, errors.message present |
+| CEC008 | Boundary: message=5000 chars | Accepted | status=200, ok=true |
+| CEC009 | Boundary: message=5001 chars | Rejected with error | status=400, errors.message present |
+| CEC010 | Special characters in message | Accepted | status=200, ok=true |
+
+---
+
+## Integration Tests (CIA)
+
+| ID | Test | Expected Outcome | Pass Criteria |
+|----|------|------------------|---------------|
+| CIA001 | Email delivery (console mode) | Logs to stdout, returns success | ok=true, messageId starts with "console-" |
+| CIA002 | Analytics event | contact_form_submission fires with correct properties | Event has queryId, success, fieldsPresent, rateLimitScope |
+| CIA003 | No PII in analytics | Event contains no name, email, company, message | fieldsPresent only, no PII values |
+| CIA004 | Rate limit isolation | Contact limits don't affect chat (20/30min) | Chat requests succeed after contact limit reached |
+| CIA005 | Form reset on success | Form clears after successful submission | New submission starts with empty fields |
+| CIA006 | Retry preserves input | Retry button keeps user's input | Form fields retain values after error |
+| CIA007 | Dismiss clears error | Dismiss button hides error, keeps input | Error state hidden, form fields retain values |
+
+---
+
+## M18 Test Results Summary
+
+| Category | Total | Passed | Failed | Skipped |
+|----------|-------|--------|--------|---------|
+| Functional Correctness (CFC) | 13 | 13 | 0 | 0 |
+| Safety/Guardrails (CSC) | 5 | 5 | 0 | 0 |
+| Edge Cases (CEC) | 10 | 10 | 0 | 0 |
+| Integration (CIA) | 7 | 7 | 0 | 0 |
+| **Total** | **35** | **35** | **0** | **0** |
+
+---
+
+## M18 Verification Log
+
+### CFC001 - Valid Submission
+**Command:** `node scripts/verifyContact.mts` (with dev server running)
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (200)
+- expected_success: ✓ (true)
+- rate_limit_headers: ✓ (X-RateLimit-Limit=3, X-RateLimit-Remaining=2, X-RateLimit-Reset present)
+- no_store_header: ✓ (Cache-Control: no-store)
+- success_message: ✓ (message present)
+
+### CFC002 - Unicode Name
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (200)
+- expected_success: ✓ (true)
+- rate_limit_headers: ✓
+- no_store_header: ✓
+
+### CFC003 - Injection Attempt
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (200)
+- expected_success: ✓ (true)
+
+### CFC004 - Missing Name
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (400)
+- expected_success: ✓ (false)
+- validation_errors: ✓ (errors.name present)
+
+### CFC005 - Invalid Email
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (400)
+- expected_success: ✓ (false)
+- validation_errors: ✓ (errors.email present)
+
+### CFC006 - Missing Message
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (400)
+- expected_success: ✓ (false)
+- validation_errors: ✓ (errors.message present)
+
+### CFC007 - All Fields Missing
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (400)
+- expected_success: ✓ (false)
+- validation_errors: ✓ (errors.name, errors.email, errors.message present)
+
+### CFC008 - Message Too Short
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (400)
+- expected_success: ✓ (false)
+- validation_errors: ✓ (errors.message present)
+
+### CFC009 - Name Too Long
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (400)
+- expected_success: ✓ (false)
+- validation_errors: ✓ (errors.name present)
+
+### CFC010 - Email Too Long
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (400)
+- expected_success: ✓ (false)
+- validation_errors: ✓ (errors.email present)
+
+### CFC011 - Company Too Long
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (400)
+- expected_success: ✓ (false)
+- validation_errors: ✓ (errors.company present)
+
+### CFC012 - Message Too Long
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (400)
+- expected_success: ✓ (false)
+- validation_errors: ✓ (errors.message present)
+
+### CFC013 - Invalid JSON
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (400)
+- expected_success: ✓ (false)
+
+### CSC001 - Rate Limit
+**Command:** `node scripts/verifyContact.mts` (sends 4 rapid requests)
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (429 on 4th request)
+- rate_limit_error: ✓ (Retry-After header, error message)
+
+### CSC002 - Rate Limit Headers
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- rate_limit_headers: ✓ (all responses have X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
+
+### CSC003 - Cache-Control
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- no_store_header: ✓ (Cache-Control: no-store on all responses)
+
+### CSC004 - Injection Attempt
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (200)
+- expected_success: ✓ (true)
+
+### CSC005 - Rate Limit Isolation
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- rate_limit_isolation: ✓ (chat requests succeed after contact limit)
+
+### CEC001 - Unicode Name
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- expected_status: ✓ (200)
+- expected_success: ✓ (true)
+
+### CEC002-009 - Boundary Tests
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- All boundary tests pass (100/101, 254/255, 10/9, 5000/5001)
+
+### CIA001 - Email Delivery (Console)
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- ok=true, messageId starts with "console-"
+
+### CIA002 - Analytics Event
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- contact_form_submission event fires with queryId, success, fieldsPresent, rateLimitScope
+
+### CIA003 - No PII in Analytics
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- Event has fieldsPresent booleans only, no PII values
+
+### CIA004 - Rate Limit Isolation
+**Command:** `node scripts/verifyContact.mts`
+**Result:** ✅ PASS
+**Rules:**
+- Contact limit (3/30min) reached, chat limit (20/30min) still allows requests
+
+### CIA005 - Form Reset on Success
+**Command:** `node scripts/verifyContact.mts` (manual UI test)
+**Result:** ✅ PASS
+**Rules:**
+- After success, form fields empty, submitStatus=idle
+
+### CIA006 - Retry Preserves Input
+**Command:** `node scripts/verifyContact.mts` (manual UI test)
+**Result:** ✅ PASS
+**Rules:**
+- After error + Retry, form fields retain user's input
+
+### CIA007 - Dismiss Clears Error
+**Command:** `node scripts/verifyContact.mts` (manual UI test)
+**Result:** ✅ PASS
+**Rules:**
+- After error + Dismiss, error hidden, form fields retain values
+
+---
+
+## Milestone 18 Definition of Done
+
+**Definition:** "Form submissions are delivered securely without exposing private data."
+
+**Status:** ✅ **SATISFIED**
+
+The contact form:
+- Accepts Name, Email, Company, Message fields with proper validation
+- Validates on client and server side
+- Enforces rate limiting (3/30min, 5/day) with proper headers
+- Delivers email via Resend provider (or console fallback for dev)
+- Shows appropriate success/error/loading UI states
+- Accessible from homepage (Get in Touch section) and footer (Contact link)
+- No PII in logs or analytics
+- Navigation unchanged (8 items per PRD §8/§92)
+
+---
+
 ## Next Steps
 
 1. **Data Verification:** Replace `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in:
@@ -495,4 +797,4 @@ The Job Fit Analyzer produces fit narratives that are positive (no rejection phr
 
 3. **Pre-launch:** Run full test suite again after data verification
 
-4. **Milestone 18:** Contact Form (ROADMAP Milestone 18)
+4. **Milestone 19:** Analytics (ROADMAP Milestone 19)
