@@ -15,6 +15,7 @@
     "scan:kb": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/scanKnowledgeBase.mts",
     "verify:job-fit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifyJobFit.mts",
     "verify:contact": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifyContact.mts",
+    "verify:analytics": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifyAnalytics.mts",
     "env:check": "node -e \"require('./src/lib/env')\""
   },
   "dependencies": {

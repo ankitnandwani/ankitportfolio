@@ -1,6 +1,8 @@
 # Immediate Next Actions
 
-- Begin implementation of M19.05 (the verification script and the test plan for the analytics).
+- Begin implementation of M19.06 (the end-to-end run of the analytics).
+- The verification script of M19.05 runs the cases of the catalogue against the running site with `npm run verify:analytics`. It needs the server to be running, and it reads the file of the server when `SERVER_LOG` is given, so the events the server really counted can be seen in the report
+- The comment of `app/api/analytics/route.ts` says that every answer of the proxy carries the headers of the limit and that the request is counted before anything is parsed. The code does not do that for the two answers that are refused before the counting, the request from another site and the body that cannot be read. Counting a request from another site would let it use up the allowance of a visitor, so the code is right and the comment is wrong. The comment should be corrected, which is a change of its own
 - The event of a refused request is now sent per PRD §48, and the start of the chat is fired. The audit of every event of PRD §46, §47, §48 and §90 is recorded in `tasks/M19/README.md`. The event of a refusal carries only the scope, the endpoint and the wait, which the visitor already sees in the headers of the answer
 - **The limits of the job fit analyzer are not read from the environment.** `src/lib/jobFit/policy.ts` uses the constants of the code and never looks at `JOB_FIT_MAX_REQUESTS`, `JOB_FIT_WINDOW_SECONDS`, `JOB_FIT_DAILY_MAX_REQUESTS` or `JOB_FIT_DAILY_WINDOW_SECONDS`, although the variables are declared in `src/lib/env.ts` and written in `.env.example`. PRD §48 asks for the limits to be configurable through the environment, and the chat and the contact form already are. This was found while testing the refusal of the job fit in M19.04 and was left alone, because it belongs to the limits and not to the analytics. It should be a change of its own
 - The events of the browser and the events of the server carry two different sessions, so a click on a call to action cannot be joined with the conversation of the same visit in PostHog. This comes from M19.01 and M19.03 and was left alone in M19.04, because joining them means a change of the design of the proxy
@@ -21,6 +23,31 @@
 - The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow.
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
+
+## Completed (M19.05)
+
+- Added `scripts/verifyAnalytics.mts`, run with `npm run verify:analytics`. It runs the cases of the catalogue of events against the running site and writes a report with the result of every rule, and exits with a non-zero code when a rule fails
+- Added `src/lib/analytics/fixtures/analyticsFixtures.ts` with 24 cases:
+  - The events of the conversation: the start of the chat, the question, the answer, an answer that is a redirect and a question that is refused
+  - The events of the analysis of a job description: the analysis and a description that is refused
+  - The events of the contact form: the message and a form that is not filled in properly
+  - The events of the feedback: a thumb up and a thumb down with a comment
+  - The events of the calls to action: the resume, LinkedIn, the address, the code of a project and a project
+  - The events of the refusals: the chat, the analyzer and the contact form
+  - The edges of the proxy: an event of a kind that is not known, a field that is not known, a missing field, a request from another site and a body that is not a list of fields
+- What the script checks:
+  - The live request answers the way the case says it should, with the headers of its limit where the endpoint has one, and with `Cache-Control: no-store` on every answer of the proxy
+  - The event the request is expected to produce is built by the tracking function of the site and caught before it is sent, so the rules are checked against the very payload PostHog would receive and not against a copy of it
+  - The event carries the name, the identity, the moment and the fields the PRD asks for, and nothing that belongs to a person
+  - Every route calls the tracking function that belongs to it. This check reads the source of the route, because a route cannot be loaded by the test runner
+  - The event really left the running site, by reading the file of the server when `SERVER_LOG` is given
+  - The connection with PostHog, by sending one real event marked with `verification: true` when the credentials are configured
+- The cases carry no personal data of anyone. The addresses and the numbers are of the reserved ranges of the documentation
+- Every case has an address of its own from the range the documentation sets aside, and a new one is used for every run, so the limit of a day is never carried over from one run to the next
+- The refusals are reached with requests that are refused before anything is made, so no answer is paid for. The limits are read from the answer of the first request, so the number of requests follows the limit the site is configured with
+- Extended `test-plan.md` with the section of the milestone: 19 cases of correctness, 7 of privacy, 6 of integration and 5 of edges, with the result of the run
+- Added the script `verify:analytics` to `package.json`
+- The run on 2026-10-29 against the running site: 24 cases, 405 rules checked, 405 passed, 0 failed, exit code 0. A run with a rule broken on purpose answered with the exit code 1 and named the rule that failed
 
 ## Completed (M19.04)
 

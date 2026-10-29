@@ -1,3 +1,28 @@
+## [0.1.144] - 2026-10-29
+- Implemented M19.05 – Create analytics verification script and test plan
+- Added `scripts/verifyAnalytics.mts`, run with `npm run verify:analytics`. It runs the cases of the catalogue of events against the running site and writes a report with the result of every rule, and exits with a non-zero code when a rule fails
+- Added `src/lib/analytics/fixtures/analyticsFixtures.ts` with 24 cases:
+  - The events of the conversation: the start of the chat, the question, the answer, an answer that is a redirect and a question that is refused
+  - The events of the analysis of a job description: the analysis and a description that is refused
+  - The events of the contact form: the message and a form that is not filled in properly
+  - The events of the feedback: a thumb up and a thumb down with a comment
+  - The events of the calls to action: the resume, LinkedIn, the address, the code of a project and a project
+  - The events of the refusals: the chat, the analyzer and the contact form
+  - The edges of the proxy: an event of a kind that is not known, a field that is not known, a missing field, a request from another site and a body that is not a list of fields
+- What the script checks:
+  - The live request answers the way the case says it should, with the headers of its limit where the endpoint has one, and with `Cache-Control: no-store` on every answer of the proxy
+  - The event the request is expected to produce is built by the tracking function of the site and caught before it is sent, so the rules are checked against the very payload PostHog would receive and not against a copy of it
+  - The event carries the name, the identity, the moment and the fields the PRD asks for, and nothing that belongs to a person
+  - Every route calls the tracking function that belongs to it. This check reads the source of the route, because a route cannot be loaded by the test runner
+  - The event really left the running site, by reading the file of the server when `SERVER_LOG` is given
+  - The connection with PostHog, by sending one real event marked with `verification: true` when the credentials are configured
+- The cases carry no personal data of anyone. The addresses and the numbers are of the reserved ranges of the documentation
+- Every case has an address of its own from the range the documentation sets aside, and a new one is used for every run, so the limit of a day is never carried over from one run to the next
+- The refusals are reached with requests that are refused before anything is made, so no answer is paid for. The limits are read from the answer of the first request, so the number of requests follows the limit the site is configured with
+- Extended `test-plan.md` with the section of the milestone: 19 cases of correctness, 7 of privacy, 6 of integration and 5 of edges, with the result of the run
+- Added the script `verify:analytics` to `package.json`
+- The run on 2026-10-29 against the running site: 24 cases, 405 rules checked, 405 passed, 0 failed, exit code 0. A run against a rule that was broken on purpose answered with the exit code 1 and named the rule that failed
+
 ## [0.1.143] - 2026-10-29
 - Implemented M19.04 – Add missing PRD events and verify all events fire correctly
 - Added the event of a refused request, per PRD §48:

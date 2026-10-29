@@ -784,6 +784,133 @@ The contact form:
 
 ---
 
+## M19.05 — Analytics End-to-End Verification
+
+## Test Categories
+
+| Category | Prefix | Description |
+|----------|--------|-------------|
+| Functional Correctness | AFC | Verify each event type fires with the correct payload |
+| Privacy | APC | Verify no personal data reaches any event |
+| Integration | AIC | Verify the PostHog connection, the limits and the wiring |
+| Edge Cases | AEC | Verify invalid payloads, missing fields and refusals |
+
+---
+
+## Functional Correctness Tests (AFC)
+
+| ID | Fixture | Expected Outcome | Pass Criteria |
+|----|---------|------------------|---------------|
+| AFC001 | chat_session_start | The first message of the chat fires the event | Event has the name, an anonymous session, the moment and the agent of the browser; the server counted it |
+| AFC002 | message_sent | The question of the visitor is counted | Event has the identifier of the query, the category, the action of the guardrail and the length of the question |
+| AFC003 | response_received | The answer of the assistant is counted | Event has the retrieval, the latency, the tokens, the model, the guardrail of the answer and the confidence |
+| AFC004 | response_received_redirect | An answer that is a redirect is counted as one | Event has `isRedirect` on |
+| AFC005 | chat_request_refused | A question that is refused is not counted | The endpoint answers 400 and no event is left behind |
+| AFC006 | job_fit_analysis | An analysis of a job description is counted | Event has the counts of the classes, the retrieval, the latency and the model |
+| AFC007 | job_fit_analysis_refused | A description that is refused is counted as a failure | Event has `success` off |
+| AFC008 | contact_form_submission | A message of the contact form is counted | Event has `success` on and the fields that were filled in |
+| AFC009 | contact_form_validation_error | A form that is not filled in properly is counted as a failure | Event has `success` off |
+| AFC010 | feedback_given_up | A thumb up of the visitor is counted | Event has the rating and whether the answer was a redirect |
+| AFC011 | feedback_given_down | A thumb down with a comment is counted | Event has the rating and the comment with the personal data taken out |
+| AFC012 | cta_clicked_resume | A click on the resume is counted | Event has the kind of the call to action and the host it points at |
+| AFC013 | cta_clicked_linkedin | A click on LinkedIn is counted | Event has the kind of the call to action and the host it points at |
+| AFC014 | cta_clicked_email | A click on the address is counted | Event has the kind of the call to action and the host it points at |
+| AFC015 | cta_clicked_github | A click on the code of a project is counted | Event has the kind of the call to action and the host it points at |
+| AFC016 | cta_clicked_project | A click on a project is counted | Event has the kind of the call to action and the host it points at |
+| AFC017 | rate_limit_exceeded_chat | A visitor that asks too many questions is counted | Event has the scope, the part of the site and the wait |
+| AFC018 | rate_limit_exceeded_job_fit | A visitor that asks for too many analyses is counted | Event has the scope, the part of the site and the wait |
+| AFC019 | rate_limit_exceeded_contact | A visitor that sends too many messages is counted | Event has the scope, the part of the site and the wait |
+
+---
+
+## Privacy Tests (APC)
+
+| ID | Test | Expected Outcome | Pass Criteria |
+|----|------|------------------|---------------|
+| APC001 | No personal data in any event | No address of a mailbox, no number of a phone, no address of a computer | The patterns of the personal data are not found in any event |
+| APC002 | The sessions are anonymous | Every session is an identifier of the same shape as the site uses | The session of every event is a UUID |
+| APC003 | The question is never carried | The site counts the length of the question and never the question | The phrase that is only in the question is not in the event |
+| APC004 | The description of the job is never carried | The site counts the requirements and never the description | The phrase that is only in the description is not in the event |
+| APC005 | The form is never carried | The site counts which fields were filled in and never what was written | The name and the company of the form are not in the event |
+| APC006 | The comment of the feedback is taken apart | The personal data in the comment is taken out before the event | The comment holds `[REDACTED]` and no address or number |
+| APC007 | The address of the visitor is never carried | The address of the visitor is never put in an event | No address of a computer is found in any event |
+
+---
+
+## Integration Tests (AIC)
+
+| ID | Test | Expected Outcome | Pass Criteria |
+|----|------|------------------|---------------|
+| AIC001 | PostHog receives the events | One event leaves the site and reaches the project | The client of PostHog is built and the event is sent and flushed |
+| AIC002 | The headers of the limit | Every answer of an endpoint with a limit carries them | `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` are present |
+| AIC003 | The answers are kept out of any cache | Every answer of the proxy carries `Cache-Control: no-store` | The header is present and says `no-store` |
+| AIC004 | The wiring of the routes | Every route calls the tracking function that belongs to it | The source of the route holds the call of the function |
+| AIC005 | The events are counted by the running site | The server really counts the event | The file of the server shows the name of the event after the request |
+| AIC006 | The refusal is counted before the answer | The event of a refusal is sent before the answer goes out | The server counted the event of the refusal |
+
+---
+
+## Edge Cases Tests (AEC)
+
+| ID | Fixture | Expected Outcome | Pass Criteria |
+|----|---------|------------------|---------------|
+| AEC001 | proxy_unknown_event_type | An event of a kind that is not known is refused | status=400 and no event is left behind |
+| AEC002 | proxy_unknown_field | An event with a field that is not known is refused | status=400 and no event is left behind |
+| AEC003 | proxy_missing_field | An event without the identifier of the query is refused | status=400 and no event is left behind |
+| AEC004 | proxy_foreign_origin | An event from another site is refused | status=403 and no event is left behind |
+| AEC005 | proxy_body_that_is_not_json | A body that is not a list of fields is refused | status=400 and no event is left behind |
+
+---
+
+## M19 Test Results Summary
+
+| Category | Total | Passed | Failed | Skipped |
+|----------|-------|--------|--------|---------|
+| Functional Correctness (AFC) | 19 | 19 | 0 | 0 |
+| Privacy (APC) | 7 | 7 | 0 | 0 |
+| Integration (AIC) | 6 | 6 | 0 | 0 |
+| Edge Cases (AEC) | 5 | 5 | 0 | 0 |
+| **Total** | **37** | **37** | **0** | **0** |
+
+**Command:** `npm run verify:analytics`
+**Result:** ✅ PASS — 24 cases, 405 rules checked, 405 passed, 0 failed, exit code 0
+
+### Environment
+
+| Item | Value |
+|------|-------|
+| Server | `http://localhost:3000` (`next dev`) |
+| PostHog | EU cloud, real credentials in `.env.local` |
+| Date | 2026-10-29 |
+
+### Notes on the run
+
+- The cases are in `src/lib/analytics/fixtures/analyticsFixtures.ts`. Each one says which request is made, which event is expected and what the event has to look like.
+- The event is built by the tracking function of the site and caught before it is sent, so the rules are checked against the very payload PostHog would receive and not against a copy of it.
+- The live part is indirect: the request is made against the running site and the answer is checked. The event the server really counted is read from the file of the server when `SERVER_LOG` is given.
+- Every case has an address of its own from the range the documentation sets aside, and a new one is used for every run, so the limit of a day is never carried over from one run to the next.
+- The refusals are reached with requests that are refused before anything is made, so no answer is paid for. The limits of the chat, of the analyzer and of the contact form are read from the answer of the first request, so the number of requests follows the limit the site is configured with.
+- The check of the wiring reads the source of the routes, because a route cannot be loaded by the test runner: the routes import their modules with the path alias. It shows that the route calls the function that belongs to it, and not that the route counts the event.
+- The check of the connection with PostHog sends one real event, marked with `verification: true`, when the credentials are configured. It is skipped when there are none.
+
+---
+
+## Milestone 19 Definition of Done (so far)
+
+**Definition:** "Events fire correctly and respect privacy settings."
+
+**Status:** 🔶 IN PROGRESS — the events of PRD §46, §47, §48 and §90 fire and carry no personal data. The end-to-end run of the milestone is M19.06.
+
+The analytics:
+- Send the events of the conversation, of the analysis of a job description, of the contact form, of the feedback, of the calls to action and of the refusals
+- Reach PostHog through the server, with the key that never leaves it
+- Carry no personal data: no address of a mailbox, no number of a phone, no address of a computer, no question, no description of a job, no form
+- Keep the session anonymous
+- Are refused by the proxy when the kind of the event, the fields or the origin are not allowed
+- Are verified by `npm run verify:analytics`, which passes every rule
+
+---
+
 ## Next Steps
 
 1. **Data Verification:** Replace `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in:
