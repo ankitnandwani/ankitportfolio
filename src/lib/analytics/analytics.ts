@@ -20,6 +20,10 @@ import {
   type JobFitAnalysisProperties,
   type ContactFormSubmissionEvent,
   type ContactFormSubmissionProperties,
+  type RateLimitExceededEvent,
+  type RateLimitExceededProperties,
+  type RateLimitEndpoint,
+  type RateLimitScope,
   type QuestionCategory,
   type GuardrailAction,
   type OutputGuardrailAction,
@@ -423,6 +427,74 @@ export async function trackContactFormSubmission(
     properties,
   };
   await sendEvent(event, config);
+}
+
+/**
+ * Tracks that the limit of a visitor was reached.
+ *
+ * The event carries only what the visitor already sees in the headers of the
+ * answer, so it says nothing about the limits that the site keeps to itself.
+ *
+ * @param sessionId The session of the visitor.
+ * @param queryId The identifier of the request that was refused.
+ * @param scope Which of the two limits was reached.
+ * @param endpoint Which part of the site was asked for.
+ * @param retryAfterSeconds How long the visitor has to wait, in seconds.
+ * @param config The configuration to send the event with.
+ */
+export async function trackRateLimitExceeded(
+  sessionId: string,
+  queryId: string,
+  scope: RateLimitScope,
+  endpoint: RateLimitEndpoint,
+  retryAfterSeconds: number,
+  config: AnalyticsConfig = getAnalyticsConfig()
+): Promise<void> {
+  const properties: RateLimitExceededProperties = {
+    queryId,
+    scope,
+    endpoint,
+    retryAfterSeconds,
+  };
+
+  const event: RateLimitExceededEvent = {
+    ...createBaseEvent(sessionId, 'rate_limit_exceeded'),
+    queryId,
+    properties,
+  };
+  await sendEvent(event, config);
+}
+
+/**
+ * The sessions whose chat has already had its first message.
+ *
+ * The session of a visitor is shared by the whole site, so the session alone
+ * cannot tell whether the chat of the visitor has begun. The sessions that
+ * have started a chat are kept here instead.
+ *
+ * The store is in the memory of the process, as the store of the sessions
+ * is. A process that stays alive keeps it, and a process that is put to
+ * sleep forgets it. The shared store of the environment takes its place when
+ * the site is deployed.
+ */
+const startedChatSessions = new Set<string>();
+
+/**
+ * Says whether the chat of this session is starting now, and remembers it.
+ *
+ * The first message of a chat is where the session of the chat begins. The
+ * session of the visitor is shared with the rest of the site, so this is
+ * remembered on its own.
+ *
+ * @param sessionId The session of the visitor.
+ * @returns True when this is the first message of the chat.
+ */
+export function markChatSessionStarted(sessionId: string): boolean {
+  if (startedChatSessions.has(sessionId)) {
+    return false;
+  }
+  startedChatSessions.add(sessionId);
+  return true;
 }
 
 /**

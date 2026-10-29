@@ -48,6 +48,19 @@ export type FeedbackRating = 'up' | 'down';
 export type CtaType = 'resume' | 'project' | 'github' | 'linkedin' | 'email' | 'other';
 
 /**
+ * The part of the site whose limit was reached.
+ */
+export type RateLimitEndpoint = 'chat' | 'job-fit' | 'contact';
+
+/**
+ * The limit that was reached.
+ *
+ * The short window is the one that holds the most requests of an hour, and
+ * the long window is the one that holds the most requests of a day.
+ */
+export type RateLimitScope = 'window' | 'daily';
+
+/**
  * Base properties shared by all analytics events.
  */
 export interface BaseAnalyticsEvent {
@@ -240,6 +253,34 @@ export interface ContactFormSubmissionEvent extends BaseAnalyticsEvent {
 }
 
 /**
+ * Properties for the rate limit event.
+ *
+ * The event carries only what the visitor already sees in the headers of the
+ * answer, so it says nothing about the limits that the site keeps to itself.
+ */
+export interface RateLimitExceededProperties {
+  /** The query ID of the request that was refused */
+  queryId: string;
+  /** Which of the two limits was reached */
+  scope: RateLimitScope;
+  /** Which part of the site was asked for */
+  endpoint: RateLimitEndpoint;
+  /** How long the visitor has to wait, in seconds */
+  retryAfterSeconds: number;
+}
+
+/**
+ * Event fired when the limit of a visitor is reached.
+ */
+export interface RateLimitExceededEvent extends BaseAnalyticsEvent {
+  eventType: 'rate_limit_exceeded';
+  /** The query ID of the request that was refused */
+  queryId: string;
+  /** Properties for the rate limit event */
+  properties: RateLimitExceededProperties;
+}
+
+/**
  * Union of all analytics event types.
  */
 export type AnalyticsEvent =
@@ -249,7 +290,8 @@ export type AnalyticsEvent =
   | FeedbackGivenEvent
   | CtaClickedEvent
   | JobFitAnalysisEvent
-  | ContactFormSubmissionEvent;
+  | ContactFormSubmissionEvent
+  | RateLimitExceededEvent;
 
 /**
  * Configuration for the analytics system.

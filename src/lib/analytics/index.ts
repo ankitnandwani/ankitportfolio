@@ -13,6 +13,8 @@ export {
   trackFeedbackGiven,
   trackJobFitAnalysis,
   trackContactFormSubmission,
+  trackRateLimitExceeded,
+  markChatSessionStarted,
   shutdownAnalytics,
   initPostHog,
   setPostHogClientFactory,
@@ -55,6 +57,12 @@ export {
   type ProxyResult,
 } from './proxy.ts';
 
+// The analytics of the limits of the visitors
+export {
+  reportRateLimitExceeded,
+  type RateLimitOutcome,
+} from './rateLimit.ts';
+
 export {
   type AnalyticsConfig,
   type AnalyticsEvent,
@@ -67,6 +75,10 @@ export {
   type JobFitAnalysisProperties,
   type ContactFormSubmissionEvent,
   type ContactFormSubmissionProperties,
+  type RateLimitExceededEvent,
+  type RateLimitExceededProperties,
+  type RateLimitEndpoint,
+  type RateLimitScope,
   type QuestionCategory,
   type GuardrailAction,
   type OutputGuardrailAction,

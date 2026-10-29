@@ -1,3 +1,25 @@
+## [0.1.143] - 2026-10-29
+- Implemented M19.04 – Add missing PRD events and verify all events fire correctly
+- Added the event of a refused request, per PRD §48:
+  - New event type `rate_limit_exceeded` in `src/lib/analytics/eventTypes.ts`, with the scope that was reached, the part of the site that was asked for and the wait in seconds
+  - New `trackRateLimitExceeded()` in `src/lib/analytics/analytics.ts`, and `markChatSessionStarted()` beside it
+  - New module `src/lib/analytics/rateLimit.ts` with `reportRateLimitExceeded()`, which the three routes call when they refuse a request. The module lives in the library and not in the routes, because the routes import their modules with the path alias and the test runner cannot resolve it
+  - The event is put on the queue before the answer goes out, so it is not lost when the instance is put to sleep. It carries only the scope, the endpoint and the wait, which the visitor already sees in the headers of the answer, and never the limits themselves
+  - The session of the visitor is now worked out before the limit is checked in `/api/chat`, `/api/job-fit` and `/api/contact`, because the event of a refusal belongs to a session
+- Wired `chat_session_start`, which was defined and never fired:
+  - The first message of the chat now fires the event, from `/api/chat`
+  - The start of a chat is remembered on its own, because the session of a visitor is shared with the whole site. A visitor that filled in the contact form before asking a question is still counted as the beginning of a chat
+- Fixed `/api/feedback`, which gave every request a session of its own. The feedback belonged to the conversation it was given on and now carries the session of the visitor, so it can be found next to the answer it is about
+- Audited every event of PRD §46, §47, §48 and §90 against the code and recorded the result in `tasks/M19/README.md`
+- Added 10 tests: 4 in `src/lib/analytics/analytics.test.mts` and 6 in `src/lib/analytics/rateLimit.test.mts`
+- Verified against the running site on 2026-10-29:
+  - A message of the chat fires `chat_session_start`, `message_sent` and `response_received`, all with the session of the visitor
+  - The second message of the same session does not fire `chat_session_start` again
+  - A refusal of each of the three parts of the site answers with 429 and fires `rate_limit_exceeded` with the right endpoint (`chat`, `contact`, `job-fit`) and the wait that matches the `Retry-After` of the answer
+  - The feedback carries the same session as the question and the answer it is about
+  - The event was seen on the wire with the name, the identity, the scope, the endpoint and the wait, with `$geoip_disable` on and no personal data
+- All 576 tests pass (570 pass, 0 fail, 6 skipped), lint clean (0 errors, 58 pre-existing warnings), typecheck clean, build succeeds
+
 ## [0.1.142] - 2026-10-29
 - Implemented M19.03 – Enable client-side CTA click tracking via proxy endpoint
 - Changed `src/lib/analytics/client.ts` so the click of a call to action is really counted:

@@ -1,12 +1,16 @@
 # Immediate Next Actions
 
-- Begin implementation of M19.04 (the missing events of the PRD and the check that every event of the catalogue really fires).
+- Begin implementation of M19.05 (the verification script and the test plan for the analytics).
+- The event of a refused request is now sent per PRD §48, and the start of the chat is fired. The audit of every event of PRD §46, §47, §48 and §90 is recorded in `tasks/M19/README.md`. The event of a refusal carries only the scope, the endpoint and the wait, which the visitor already sees in the headers of the answer
+- **The limits of the job fit analyzer are not read from the environment.** `src/lib/jobFit/policy.ts` uses the constants of the code and never looks at `JOB_FIT_MAX_REQUESTS`, `JOB_FIT_WINDOW_SECONDS`, `JOB_FIT_DAILY_MAX_REQUESTS` or `JOB_FIT_DAILY_WINDOW_SECONDS`, although the variables are declared in `src/lib/env.ts` and written in `.env.example`. PRD §48 asks for the limits to be configurable through the environment, and the chat and the contact form already are. This was found while testing the refusal of the job fit in M19.04 and was left alone, because it belongs to the limits and not to the analytics. It should be a change of its own
+- The events of the browser and the events of the server carry two different sessions, so a click on a call to action cannot be joined with the conversation of the same visit in PostHog. This comes from M19.01 and M19.03 and was left alone in M19.04, because joining them means a change of the design of the proxy
+- PRD §78 also asks for the events of the pages themselves, `page_view` and `project_view`, and for the clicks on the links of the header, of the footer and of the projects. They are not implemented, because the browser can only send the events the proxy of M19.02 allows, and the proxy only allows the click on a call to action. They should be a change of their own, either in the proxy or in another milestone
 - The click of a call to action is counted from the browser through the proxy of M19.02, and was verified in a real browser on 2026-10-29. The browser reports the events to the server of the site, because it cannot see the credentials and therefore cannot know whether the server forwards them. The server decides, and a server without the credentials forwards nothing
 - Two faults of the milestone M17 were found and fixed while the manual test of M19.03 was carried out. The route of the job fit answered with `meta` while the contract and the interface read `metadata`, so every successful analysis showed an error instead of the results, and the calls to action that point at the site threw on a placeholder address of the site. The route files cannot be loaded by the test runner, so neither fault could be caught by a unit test. M19.06 is the task that tests the whole flow end to end, and a test that reaches the route over http would catch this class of fault
-- The proxy of M19.02 flushes the event before the answer goes out, so it is not lost when the instance is put to sleep. The other routes still leave their events in the queue of the PostHog client, which is safe on a process that stays alive but not on a serverless function that is frozen. This matters from M24, the production deployment, and M19.04 is the task that looks at the whole event catalogue
+- The proxy of M19.02 flushes the event before the answer goes out, so it is not lost when the instance is put to sleep. The other routes still leave their events in the queue of the PostHog client, which is safe on a process that stays alive but not on a serverless function that is frozen. This matters from M24, the production deployment
 - The PostHog project is set up and the credentials are in `.env.local`, so the events reach a real PostHog. The value that is still the placeholder of `.env.example` is treated as no credentials, so a deployment without the credentials stays in the console only mode instead of sending to a host that does not exist
 - The PostHog browser snippet and the session recording are deliberately not used. The events are sent from the server, and the client side events go through the proxy endpoint of M19.02, so nothing a visitor types is ever captured automatically
-- The events that carry a group of properties put them in a `properties` object of their own, so they reach PostHog one level deeper than the other events. M19.04 is the task that looks at the whole event catalogue
+- The events that carry a group of properties put them in a `properties` object of their own, so they reach PostHog one level deeper than the other events
 - `SENTRY_DSN` and the two `UPSTASH_REDIS` variables are still required by the environment validation, although they are only placeholders and the milestones that use them have not been reached. M20 is the task that changes that
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch.
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch.
@@ -17,6 +21,21 @@
 - The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow.
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
+
+## Completed (M19.04)
+
+- Audited every event of PRD §46, §47, §48 and §90 against the code. The result is recorded in `tasks/M19/README.md`
+- Added the event of a refused request, per PRD §48:
+  - New event type `rate_limit_exceeded` in `src/lib/analytics/eventTypes.ts`, with the scope that was reached, the part of the site that was asked for and the wait in seconds
+  - New `trackRateLimitExceeded()` in `src/lib/analytics/analytics.ts`, and `markChatSessionStarted()` beside it
+  - New module `src/lib/analytics/rateLimit.ts` with `reportRateLimitExceeded()`, which the three routes call when they refuse a request. The module lives in the library and not in the routes, because the routes import their modules with the path alias and the test runner cannot resolve it
+  - The event is put on the queue before the answer goes out, so it is not lost when the instance is put to sleep. It carries only the scope, the endpoint and the wait, which the visitor already sees in the headers of the answer, and never the limits themselves
+  - The session of the visitor is now worked out before the limit is checked in `/api/chat`, `/api/job-fit` and `/api/contact`, because the event of a refusal belongs to a session
+- Wired `chat_session_start`, which was defined and never fired. It now fires on the first message of the chat. The start of a chat is remembered on its own, because the session of a visitor is shared with the whole site
+- Fixed `/api/feedback`, which gave every request a session of its own. The feedback now carries the session of the visitor, so it can be found next to the answer it is about
+- Added 10 tests: 4 in `src/lib/analytics/analytics.test.mts`, 6 in `src/lib/analytics/rateLimit.test.mts`
+- Verified against the running site on 2026-10-29: a message of the chat fires the three events of the conversation with one session, a second message does not fire the start of the chat again, each of the three parts of the site answers with 429 and fires the event with the right endpoint and the wait that matches the answer, the feedback carries the same session as the conversation, and the event was seen on the wire with no personal data
+- All 576 tests pass (570 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M19.03)
 

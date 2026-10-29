@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { trackFeedbackGiven, getAnalyticsConfig } from '@/src/lib/analytics';
+import {
+  trackFeedbackGiven,
+  getAnalyticsConfig,
+  generateClientKey,
+  getSessionId,
+} from '@/src/lib/analytics';
 
 /**
  * POST /api/feedback
@@ -10,7 +15,14 @@ import { trackFeedbackGiven, getAnalyticsConfig } from '@/src/lib/analytics';
 export async function POST(request: NextRequest) {
   const config = getAnalyticsConfig();
 
-  const sessionId = crypto.randomUUID(); // In production, use consistent session ID
+  // The feedback belongs to the conversation it was given on, so it carries
+  // the session of the visitor. A session of its own would put the feedback
+  // apart from the questions and the answers it is about.
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+  const userAgent = request.headers.get('user-agent');
+  const analyticsClientKey = generateClientKey(forwardedFor, realIp, userAgent);
+  const sessionId = getSessionId(analyticsClientKey);
 
   try {
     const body = await request.json();

@@ -12,6 +12,7 @@ import {
   generateClientKey,
   getSessionId,
   trackContactFormSubmission,
+  reportRateLimitExceeded,
   type ContactFormSubmissionProperties,
 } from '@/src/lib/analytics';
 
@@ -57,6 +58,17 @@ function getClientKey(request: NextRequest): string {
  * all validation.
  */
 export async function POST(request: NextRequest) {
+  // The configuration and the session of the visitor are worked out before
+  // the limit is checked, because a request that is refused still has to be
+  // counted, and the event of the refusal belongs to the session of the
+  // visitor.
+  const analyticsConfig = getAnalyticsConfig();
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+  const userAgent = request.headers.get('user-agent');
+  const analyticsClientKey = generateClientKey(forwardedFor, realIp, userAgent);
+  const sessionId = getSessionId(analyticsClientKey);
+
   const rateLimiter = getContactRateLimiter();
   const clientKey = getClientKey(request);
   const limit = rateLimiter.check(`contact:${clientKey}`);
@@ -71,6 +83,12 @@ export async function POST(request: NextRequest) {
     console.log(
       `[rate-limit] key=${clientKey} scope=${limit.scope} ` +
         `retryAfter=${limit.retryAfterSeconds}s action=blocked`
+    );
+
+    // The event is sent before the answer goes out, so it is not lost when
+    // the instance is put to sleep.
+    await reportRateLimitExceeded(sessionId, 'contact', limit, analyticsConfig).catch((err) =>
+      console.warn('[analytics] reportRateLimitExceeded failed:', err)
     );
 
     return NextResponse.json(
@@ -89,13 +107,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Analytics configuration
-  const analyticsConfig = getAnalyticsConfig();
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  const realIp = request.headers.get('x-real-ip');
-  const userAgent = request.headers.get('user-agent');
-  const analyticsClientKey = generateClientKey(forwardedFor, realIp, userAgent);
-  const sessionId = getSessionId(analyticsClientKey);
   const queryId = crypto.randomUUID();
 
   try {

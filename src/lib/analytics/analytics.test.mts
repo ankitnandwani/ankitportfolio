@@ -12,6 +12,8 @@ import {
   trackFeedbackGiven,
   trackJobFitAnalysis,
   trackContactFormSubmission,
+  trackRateLimitExceeded,
+  markChatSessionStarted,
   type PostHogClient,
   type PostHogClientOptions,
   type PostHogEventMessage,
@@ -314,12 +316,66 @@ test('the contact form event reaches PostHog', async () => {
   assert.equal(properties?.success, true);
 });
 
+test('the rate limit event reaches PostHog', async () => {
+  setCredentials('phc_abc123DEF456', 'https://eu.i.posthog.com');
+  const recorder = createRecordingClient();
+  setPostHogClientFactory(recorder.factory);
+
+  await trackRateLimitExceeded('session-6', 'query-5', 'window', 'chat', 42);
+
+  assert.equal(recorder.captured[0].event, 'rate_limit_exceeded');
+  assert.equal(recorder.captured[0].distinctId, 'session-6');
+  const properties = recorder.captured[0].properties?.properties as
+    | Record<string, unknown>
+    | undefined;
+  assert.equal(properties?.scope, 'window');
+  assert.equal(properties?.endpoint, 'chat');
+  assert.equal(properties?.retryAfterSeconds, 42);
+  assert.equal(properties?.queryId, 'query-5');
+});
+
+test('the rate limit event carries no personal data', async () => {
+  setCredentials('phc_abc123DEF456', 'https://eu.i.posthog.com');
+  const recorder = createRecordingClient();
+  setPostHogClientFactory(recorder.factory);
+
+  await trackRateLimitExceeded('session-7', 'query-6', 'daily', 'contact', 120);
+
+  const properties = recorder.captured[0].properties?.properties as
+    | Record<string, unknown>
+    | undefined;
+  // The event carries only the scope, the endpoint and the wait. The limits
+  // themselves are not part of it.
+  assert.deepEqual(Object.keys(properties ?? {}).sort(), [
+    'endpoint',
+    'queryId',
+    'retryAfterSeconds',
+    'scope',
+  ]);
+});
+
+test('the chat of a session starts only once', () => {
+  const sessionId = `session-chat-${Math.random()}`;
+
+  assert.equal(markChatSessionStarted(sessionId), true);
+  assert.equal(markChatSessionStarted(sessionId), false);
+  assert.equal(markChatSessionStarted(sessionId), false);
+});
+
+test('the chat of one session does not start the chat of another', () => {
+  const first = `session-chat-a-${Math.random()}`;
+  const second = `session-chat-b-${Math.random()}`;
+
+  assert.equal(markChatSessionStarted(first), true);
+  assert.equal(markChatSessionStarted(second), true);
+});
+
 test('nothing is sent when there are no credentials', async () => {
   setCredentials(undefined, undefined);
   const recorder = createRecordingClient();
   setPostHogClientFactory(recorder.factory);
 
-  await trackChatSessionStart('session-6');
+  await trackChatSessionStart('session-8');
 
   assert.equal(recorder.captured.length, 0);
   assert.equal(recorder.keys.length, 0);
@@ -329,7 +385,7 @@ test('the event is written to the console when the analytics are off', async () 
   setCredentials(undefined, undefined);
 
   const { lines } = await captureConsoleLog(async () => {
-    await trackChatSessionStart('session-7');
+    await trackChatSessionStart('session-9');
   });
 
   assert.equal(lines.length, 1);

@@ -9,9 +9,12 @@ import {
 import {
   trackMessageSent,
   trackResponseReceived,
+  trackChatSessionStart,
   getAnalyticsConfig,
   generateClientKey,
   getSessionId,
+  markChatSessionStarted,
+  reportRateLimitExceeded,
   type QuestionCategory,
   type GuardrailAction,
   type OutputGuardrailAction,
@@ -137,6 +140,17 @@ function calculateConfidence(
  * anything else happens, and the answer is checked before it is sent.
  */
 export async function POST(request: NextRequest) {
+  // The configuration and the session of the visitor are worked out before
+  // the limit is checked, because a request that is refused still has to be
+  // counted, and the event of the refusal belongs to the session of the
+  // visitor.
+  const analyticsConfig = getAnalyticsConfig();
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+  const userAgent = request.headers.get('user-agent');
+  const analyticsClientKey = generateClientKey(forwardedFor, realIp, userAgent);
+  const sessionId = getSessionId(analyticsClientKey);
+
   const limiter = getRateLimiter();
   const clientKey = getClientKey(request);
   const limit = limiter.check(clientKey);
@@ -153,6 +167,12 @@ export async function POST(request: NextRequest) {
         `retryAfter=${limit.retryAfterSeconds}s action=blocked`
     );
 
+    // The event is sent before the answer goes out, so it is not lost when
+    // the instance is put to sleep.
+    await reportRateLimitExceeded(sessionId, 'chat', limit, analyticsConfig).catch((err) =>
+      console.warn('[analytics] reportRateLimitExceeded failed:', err)
+    );
+
     return NextResponse.json(
       {
         error: RATE_LIMIT_MESSAGE,
@@ -167,14 +187,6 @@ export async function POST(request: NextRequest) {
       }
     );
   }
-
-  // Analytics configuration
-  const analyticsConfig = getAnalyticsConfig();
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  const realIp = request.headers.get('x-real-ip');
-  const userAgent = request.headers.get('user-agent');
-  const analyticsClientKey = generateClientKey(forwardedFor, realIp, userAgent);
-  const sessionId = getSessionId(analyticsClientKey);
 
   try {
     const body = await request.json();
@@ -196,6 +208,16 @@ export async function POST(request: NextRequest) {
     }
 
     const queryId = crypto.randomUUID();
+
+    // The first message of the chat is where the session of the chat
+    // begins. The session of the visitor is shared with the rest of the
+    // site, so this is remembered on its own.
+    if (markChatSessionStarted(sessionId)) {
+      trackChatSessionStart(sessionId, userAgent ?? undefined, analyticsConfig).catch((err) =>
+        console.warn('[analytics] trackChatSessionStart failed:', err)
+      );
+    }
+
     const options: ChatOrchestrationOptions = {
       history,
       stream,
