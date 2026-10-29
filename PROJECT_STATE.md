@@ -66,10 +66,35 @@
 
 ## Next Task
 
-- M18.06 – Create success/failure UI states (the next action: continue Milestone 18 – Contact Form)
+- M18.07 – Add contact form to site (homepage/footer) (the next action: continue Milestone 18 – Contact Form)
 - Contact form placement: dedicated `/contact` page linked from footer and homepage
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - The standing items are listed in TODO.md
+
+## Completed (M18.06)
+
+- Created `src/components/contact/ContactFormSuccess.tsx`:
+  - Success state with checkmark icon, heading, message, and "Send Another Message" button
+  - Framer Motion entrance animation (respects reduced motion)
+  - Accessible: `role="status"`, `aria-live="polite"`
+- Created `src/components/contact/ContactFormError.tsx`:
+  - Error state with alert icon, dynamic heading based on error type (validation, rate_limit, server, network)
+  - Retry and Dismiss buttons
+  - `getErrorType()` helper to classify errors from API response
+  - Framer Motion entrance animation (respects reduced motion)
+  - Accessible: `role="alert"`, `aria-live="assertive"`
+- Updated `src/components/contact/ContactForm.tsx`:
+  - Refactored to use ContactFormSuccess and ContactFormError components
+  - Proper focus management on error/success
+  - Loading state with spinner on submit button
+- Updated `src/components/contact/ContactFormField.tsx`:
+  - Fixed onChange handler to work with string-based onChange from Input/Textarea
+- Updated `src/components/ui/Input.tsx` and `src/components/ui/Textarea.tsx`:
+  - Changed onChange prop to accept `(value: string) => void` instead of ChangeEvent
+  - Internal handler extracts value and calls parent onChange
+  - Maintained all accessibility features (aria-invalid, aria-describedby, role=alert, etc.)
+- Updated `src/components/contact/index.ts` to export new components
+- All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M18.05)
 

@@ -3,13 +3,14 @@
 import React, { forwardRef, useState, useCallback, useEffect, useRef } from 'react';
 import { useTheme } from '@/design/themeContext';
 
-interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
   label: string;
   error?: string;
   maxChars?: number;
   helperText?: string;
   autoResize?: boolean;
   maxHeight?: number;
+  onChange?: (value: string) => void;
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
@@ -81,8 +82,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           return;
         }
         setValue(newValue);
+        onChangeProp?.(newValue);
       },
-      []
+      [onChangeProp]
     );
 
     const isError = !!error;
@@ -192,11 +194,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             ref={ref}
             id={textareaId}
             value={currentValue}
-            onChange={(e) => {
-              const newValue = e.target.value;
-              if (maxChars && newValue.length > maxChars) return;
-              setValue(newValue);
-            }}
+            onChange={handleChange}
             onClick={adjustHeight}
             disabled={disabled}
             required={required}

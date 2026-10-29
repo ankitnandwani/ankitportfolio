@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M18.06.
+- Begin implementation of M18.07.
 - Contact form placement: dedicated `/contact` page linked from footer and homepage.
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch.
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch.
@@ -11,6 +11,31 @@
 - The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow.
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
+
+## Completed (M18.06)
+
+- Created `src/components/contact/ContactFormSuccess.tsx`:
+  - Success state with checkmark icon, heading, message, and "Send Another Message" button
+  - Framer Motion entrance animation (respects reduced motion)
+  - Accessible: `role="status"`, `aria-live="polite"`
+- Created `src/components/contact/ContactFormError.tsx`:
+  - Error state with alert icon, dynamic heading based on error type (validation, rate_limit, server, network)
+  - Retry and Dismiss buttons
+  - `getErrorType()` helper to classify errors from API response
+  - Framer Motion entrance animation (respects reduced motion)
+  - Accessible: `role="alert"`, `aria-live="assertive"`
+- Updated `src/components/contact/ContactForm.tsx`:
+  - Refactored to use ContactFormSuccess and ContactFormError components
+  - Proper focus management on error/success
+  - Loading state with spinner on submit button
+- Updated `src/components/contact/ContactFormField.tsx`:
+  - Fixed onChange handler to work with string-based onChange from Input/Textarea
+- Updated `src/components/ui/Input.tsx` and `src/components/ui/Textarea.tsx`:
+  - Changed onChange prop to accept `(value: string) => void` instead of ChangeEvent
+  - Internal handler extracts value and calls parent onChange
+  - Maintained all accessibility features (aria-invalid, aria-describedby, role=alert, etc.)
+- Updated `src/components/contact/index.ts` to export new components
+- All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M18.05)
 
@@ -216,7 +241,7 @@ Task specifications created in `tasks/M18/`:
 - M18.03 – Implement contact form API route with validation (completed)
 - M18.04 – Add spam protection/rate limiting for contact form (completed)
 - M18.05 – Implement email delivery via transactional provider (completed)
-- M18.06 – Create success/failure UI states
+- M18.06 – Create success/failure UI states (completed)
 - M18.07 – Add contact form to site (homepage/footer)
 - M18.08 – Test and verify contact form end to end
 

@@ -1,3 +1,29 @@
+## [0.1.136] - 2026-10-28
+- Implemented M18.06 – Create Success/Failure UI States:
+  - Created `src/components/contact/ContactFormSuccess.tsx`:
+    - Success state with checkmark icon, "Message Sent!" heading, confirmation message
+    - "Send Another Message" button to reset form
+    - Framer Motion entrance animation (fade in + slide up, respects reduced motion)
+    - Accessible: `role="status"`, `aria-live="polite"`
+  - Created `src/components/contact/ContactFormError.tsx`:
+    - Error state with alert icon, dynamic heading based on error type (validation, rate_limit, server, network)
+    - Retry and Dismiss buttons
+    - `getErrorType()` helper to classify errors from API response/message
+    - Framer Motion entrance animation (fade in, respects reduced motion)
+    - Accessible: `role="alert"`, `aria-live="assertive"`
+  - Updated `src/components/contact/ContactForm.tsx`:
+    - Refactored to use ContactFormSuccess and ContactFormError components
+    - Proper focus management: focuses first invalid field on validation error, success message on success
+    - Loading state with spinner on submit button
+  - Updated `src/components/contact/ContactFormField.tsx`:
+    - Fixed onChange handler to work with string-based onChange from Input/Textarea
+  - Updated `src/components/ui/Input.tsx` and `src/components/ui/Textarea.tsx`:
+    - Changed onChange prop from `ChangeEventHandler` to `(value: string) => void`
+    - Internal handler extracts value from event and calls parent onChange
+    - Maintained all accessibility features (aria-invalid, aria-describedby, role=alert for errors)
+  - Updated `src/components/contact/index.ts` to export new components
+  - All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
+
 ## [0.1.135] - 2026-10-28
 - Implemented M18.05 – Implement Email Delivery via Transactional Provider:
   - Created `src/lib/contact/email.ts` with Resend provider support:

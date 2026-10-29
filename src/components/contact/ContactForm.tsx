@@ -4,10 +4,11 @@ import React, { useState, useCallback, useRef, useEffect, FormEvent } from 'reac
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/design/themeContext';
 import { Button } from '@/src/components/ui/Button';
-import { Card } from '@/src/components/ui/Card';
 import { Input } from '@/src/components/ui/Input';
 import { Textarea } from '@/src/components/ui/Textarea';
-import { validateContactForm, validateField, type ValidationResult, type ContactFormRequest, type FieldErrors } from '@/src/lib/contact/validation';
+import { validateContactForm, validateField, type ContactFormRequest, type FieldErrors } from '@/src/lib/contact/validation';
+import { ContactFormSuccess } from './ContactFormSuccess';
+import { ContactFormError, getErrorType } from './ContactFormError';
 
 interface ContactFormProps {
   onSubmit?: (data: { name: string; email: string; company: string; message: string }) => Promise<void>;
@@ -87,14 +88,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
     []
   );
 
-  const [formState, setFormState] = useState<{
-    values: ContactFormRequest;
-    errors: FieldErrors;
-    touched: Record<FormFieldName, boolean>;
-    isSubmitting: boolean;
-    submitStatus: 'idle' | 'success' | 'error';
-    submitError: string;
-  }>({
+  const [formState, setFormState] = useState<FormState>({
     values: INITIAL_VALUES,
     errors: INITIAL_ERRORS,
     touched: INITIAL_TOUCHED,
@@ -177,11 +171,16 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
         submitError: '',
       }));
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+      // Try to extract status code from error if available
+      const statusCode = (err as { statusCode?: number; response?: { status?: number } })?.statusCode ??
+        (err as { response?: { status?: number } })?.response?.status;
+
       setFormState((prev) => ({
         ...prev,
         isSubmitting: false,
         submitStatus: 'error',
-        submitError: err instanceof Error ? err.message : 'Something went wrong. Please try again.',
+        submitError: errorMessage,
       }));
     }
   }, [formState.values, onSubmit]);
@@ -207,6 +206,13 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
     }));
   }, []);
 
+  const handleSendAnother = useCallback(() => {
+    setFormState((prev) => ({
+      ...prev,
+      submitStatus: 'idle',
+    }));
+  }, []);
+
   const containerStyle: React.CSSProperties = {
     width: '100%',
     maxWidth: 600,
@@ -219,130 +225,25 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
     gap: 24,
   };
 
-  const submitButtonStyle: React.CSSProperties = {
-    marginTop: 8,
-    minWidth: 200,
-  };
-
-  const statusContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 16,
-    padding: '24px 16px',
-    textAlign: 'center',
-  };
-
-  const successIconStyle: React.CSSProperties = {
-    width: 64,
-    height: 64,
-    color: theme === 'dark' ? '#66BB6A' : '#43A047',
-  };
-
-  const errorIconStyle: React.CSSProperties = {
-    width: 64,
-    height: 64,
-    color: theme === 'dark' ? '#EF5350' : '#C62828',
-  };
-
-  const statusTitleStyle: React.CSSProperties = {
-    fontSize: '1.25rem',
-    fontWeight: 600,
-    color: theme === 'dark' ? '#E0E0E0' : '#212121',
-    margin: 0,
-  };
-
-  const statusMessageStyle: React.CSSProperties = {
-    fontSize: '1rem',
-    lineHeight: 1.6,
-    color: theme === 'dark' ? '#B0B0B0' : '#616161',
-    maxWidth: 400,
-    margin: 0,
-  };
-
-  const buttonGroupStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: 12,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  };
-
   return (
     <div style={containerStyle}>
       <AnimatePresence mode="wait">
         {formState.submitStatus === 'success' && (
-          <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-            animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? {} : { opacity: 0, y: -20 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
-            style={statusContainerStyle}
-            role="status"
-            aria-live="polite"
-          >
-            <svg
-              style={successIconStyle}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-            <h3 style={statusTitleStyle}>Message Sent!</h3>
-            <p style={statusMessageStyle}>
-              Thanks for reaching out! I&apos;ll get back to you as soon as possible.
-            </p>
-            <div style={buttonGroupStyle}>
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() => setFormState((prev) => ({ ...prev, submitStatus: 'idle' }))}
-              >
-                Send Another Message
-              </Button>
-            </div>
-          </motion.div>
+          <ContactFormSuccess
+            theme={theme}
+            onSendAnother={handleSendAnother}
+          />
         )}
 
         {formState.submitStatus === 'error' && (
-          <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
-            animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
-            role="alert"
-            aria-live="assertive"
-            style={statusContainerStyle}
-          >
-            <svg
-              style={errorIconStyle}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <h3 style={statusTitleStyle}>Something Went Wrong</h3>
-            <p style={statusMessageStyle}>{formState.submitError}</p>
-            <div style={buttonGroupStyle}>
-              <Button variant="primary" size="md" onClick={handleRetry} disabled={formState.isSubmitting}>
-                Retry
-              </Button>
-              <Button variant="secondary" size="md" onClick={handleDismissError}>
-                Dismiss
-              </Button>
-            </div>
-          </motion.div>
+          <ContactFormError
+            theme={theme}
+            errorType={getErrorType(formState.submitError)}
+            message={formState.submitError}
+            onRetry={handleRetry}
+            onDismiss={handleDismissError}
+            isSubmitting={formState.isSubmitting}
+          />
         )}
 
         {formState.submitStatus === 'idle' && (
@@ -361,14 +262,8 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
                       label={config.label}
                       name={fieldName}
                       value={value}
-                      onChange={(val) => setFormState((prev) => ({ ...prev, values: { ...prev.values, [fieldName]: val } }))}
-                      onBlur={() => {
-                        setFormState((prev) => ({
-                          ...prev,
-                          touched: { ...prev.touched, [fieldName]: true },
-                          errors: { ...prev.errors, [fieldName]: validateField(fieldName, value) ?? '' },
-                        }));
-                      }}
+                      onChange={(val) => handleChange(fieldName, val)}
+                      onBlur={() => handleBlur(fieldName)}
                       error={error}
                       required={isRequired}
                       disabled={formState.isSubmitting}
@@ -383,14 +278,8 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
                       label={config.label}
                       name={fieldName}
                       value={value}
-                      onChange={(val) => setFormState((prev) => ({ ...prev, values: { ...prev.values, [fieldName]: val } }))}
-                      onBlur={() => {
-                        setFormState((prev) => ({
-                          ...prev,
-                          touched: { ...prev.touched, [fieldName]: true },
-                          errors: { ...prev.errors, [fieldName]: validateField(fieldName, value) ?? '' },
-                        }));
-                      }}
+                      onChange={(val) => handleChange(fieldName, val)}
+                      onBlur={() => handleBlur(fieldName)}
                       error={error}
                       helperText={fieldName === 'company' ? 'Optional' : undefined}
                       required={isRequired}

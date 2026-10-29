@@ -3,13 +3,14 @@
 import React, { forwardRef, useState, useCallback, useEffect, useRef } from 'react';
 import { useTheme } from '@/design/themeContext';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label: string;
   error?: string;
   maxChars?: number;
   helperText?: string;
   autoResize?: boolean;
   maxHeight?: number;
+  onChange?: (value: string) => void;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -83,11 +84,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           return;
         }
         setValue(newValue);
-        if (!event.currentTarget) return;
-        // We don't call onChangeProp here since it's controlled/uncontrolled
-        // The parent will handle the value change via onChange prop
+        onChangeProp?.(newValue);
       },
-      []
+      [onChangeProp]
     );
 
     const isError = !!error;
@@ -196,16 +195,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={inputId}
-            value={value}
-            onChange={(e) => {
-              const newValue = e.target.value;
-              if (maxChars && newValue.length > maxChars) return;
-              setValue(newValue);
-            }}
+            value={currentValue}
+            onChange={handleChange}
             onClick={adjustHeight}
             disabled={disabled}
             required={required}
-            aria-invalid={!!error}
+            aria-invalid={isError}
             aria-describedby={describedBy}
             aria-required={required}
             style={inputStyle}

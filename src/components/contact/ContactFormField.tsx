@@ -56,8 +56,8 @@ export const ContactFormField = forwardRef<HTMLDivElement, ContactFormFieldProps
     ref
   ) => {
     const handleChange = React.useCallback(
-      (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        onChange(event.target.value);
+      (value: string) => {
+        onChange(value);
       },
       [onChange]
     );
