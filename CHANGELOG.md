@@ -1,3 +1,12 @@
+## [0.1.140] - 2026-10-29
+- Set up the PostHog project and verified the sending against it:
+  - The project is on the EU cloud. The credentials are in `.env.local`, which is gitignored. The key is in no tracked file, which was checked with a search for the exact value
+  - The capture endpoint answered `{"status":"Ok"}`, so the key, the host and the project all accept events
+  - A real event went out of the running application with no flush error, where the old code produced one against the placeholder host every nine seconds
+  - The payload on the wire was captured and checked: it carries the `distinct_id`, the event name, the properties, an ISO timestamp and `$geoip_disable: true`, and the personal data in the feedback comment is redacted before it leaves
+  - The PostHog browser snippet and the session recording are deliberately not used, so nothing a visitor types is captured automatically. The client side events go through the server side proxy of M19.02
+- The temporary files of the check, one of which held the key in clear text, were deleted
+
 ## [0.1.139] - 2026-10-29
 - Implemented M19.01 – Set Up PostHog Analytics Configuration and Verify Server-Side Integration
 - Fixed the server-side event sending, which never reached PostHog:

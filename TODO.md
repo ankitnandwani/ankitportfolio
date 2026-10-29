@@ -1,7 +1,8 @@
 # Immediate Next Actions
 
 - Begin implementation of M19.02 (the server-side analytics proxy endpoint for client-side events).
-- The PostHog project credentials are still needed before the events can reach a real PostHog. Until they are set, the analytics stay in the console only mode, which is what they do now. The value that is still the placeholder of `.env.example` is treated as no credentials, so nothing is sent to a host that does not exist
+- The PostHog project is set up and the credentials are in `.env.local`, so the events reach a real PostHog. The value that is still the placeholder of `.env.example` is treated as no credentials, so a deployment without the credentials stays in the console only mode instead of sending to a host that does not exist
+- The PostHog browser snippet and the session recording are deliberately not used. The events are sent from the server, and the client side events go through the proxy endpoint of M19.02, so nothing a visitor types is ever captured automatically
 - The events that carry a group of properties put them in a `properties` object of their own, so they reach PostHog one level deeper than the other events. M19.04 is the task that looks at the whole event catalogue
 - `SENTRY_DSN` and the two `UPSTASH_REDIS` variables are still required by the environment validation, although they are only placeholders and the milestones that use them have not been reached. M20 is the task that changes that
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch.

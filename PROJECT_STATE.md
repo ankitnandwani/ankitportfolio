@@ -74,7 +74,7 @@
 ## Next Task
 
 - M19.02 – Create the server-side analytics proxy endpoint for client-side events (the next action: begin implementation of M19.02)
-- The PostHog project credentials are still needed before the events can reach a real PostHog. Until they are set, the analytics stay in the console only mode, which is what they do now
+- The PostHog project is set up and the credentials are in `.env.local` (EU cloud). The events now reach a real PostHog, verified on 2026-10-29: the capture endpoint answered `{"status":"Ok"}`, a real event went out of the app with no flush error, and the payload on the wire carries the `distinct_id`, the event name, the properties, an ISO timestamp and `$geoip_disable: true`. The key is in `.env.local` only and is in no tracked file
 - The events that carry a group of properties put them in a `properties` object of their own, so they reach PostHog one level deeper than the other events. M19.04 is the task that looks at the whole event catalogue
 - `SENTRY_DSN` and the two `UPSTASH_REDIS` variables are still required by the environment validation, although they are only placeholders and the milestones that use them have not been reached. M20 is the task that changes that
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
