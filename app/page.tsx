@@ -75,6 +75,34 @@ export default function Home() {
             </div>
           </section>
           <TestimonialsSection className="mt-16" />
+          {/* Get in Touch Section */}
+          <section className="mt-16" aria-labelledby="contact-heading">
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2
+                    id="contact-heading"
+                    className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 tracking-tight"
+                  >
+                    Get in Touch
+                  </h2>
+                  <p className="text-zinc-600 dark:text-zinc-400 max-w-2xl">
+                    Have a project in mind or want to collaborate? I&apos;d love to hear from you.
+                  </p>
+                </div>
+                <a
+                  href="/contact"
+                  className="mt-4 sm:mt-0 inline-flex items-center gap-2 px-6 py-3 bg-blue-900 text-white font-medium rounded-full hover:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                >
+                  Contact Ankit
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </section>
         </main>
       </ResponsiveContainer>
     </div>

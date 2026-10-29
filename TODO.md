@@ -1,7 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M18.07.
-- Contact form placement: dedicated `/contact` page linked from footer and homepage.
+- Begin implementation of M18.08.
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch.
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch.
 - The rate limit of the chat is kept in memory, so it is lost when the instance restarts and it is per instance. That is what PRD §48 accepts for a site with low traffic, but a shared store (the Upstash Redis of PRD §53) would make it hold across instances. The store of the limiter is injected, so this is a change in one place.
@@ -11,6 +10,24 @@
 - The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow.
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
+
+## Completed (M18.07)
+
+- Created `app/contact/page.tsx`:
+  - Server component with metadata using `generateBaseMetadata`
+  - Renders `ContactForm` client component
+  - Title: "Contact Ankit" with description
+  - Styled consistently with `/job-fit` and `/resume` pages
+- Updated `src/components/footer/Footer.tsx`:
+  - Added "Contact" link in footer navigation
+  - Links to `/contact`
+  - Consistent with existing footer style
+- Updated `app/page.tsx`:
+  - Added "Get in Touch" section after TestimonialsSection
+  - Heading, description, and CTA button linking to `/contact`
+  - Styled consistently with Job Description Analyzer entry point
+- No changes to main navigation (8 items per PRD §8/§92)
+- All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M18.06)
 
@@ -242,7 +259,7 @@ Task specifications created in `tasks/M18/`:
 - M18.04 – Add spam protection/rate limiting for contact form (completed)
 - M18.05 – Implement email delivery via transactional provider (completed)
 - M18.06 – Create success/failure UI states (completed)
-- M18.07 – Add contact form to site (homepage/footer)
+- M18.07 – Add contact form to site (homepage/footer) (completed)
 - M18.08 – Test and verify contact form end to end
 
 **Decisions needed before implementation:**

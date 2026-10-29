@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -13,6 +14,15 @@ export const Footer = () => {
           <div className="text-center text-sm text-muted-foreground">
             &copy; {currentYear} Ankit Nandwani. All rights reserved.
           </div>
+          {/* Footer Navigation */}
+          <nav className="flex items-center gap-6 text-sm text-muted-foreground" aria-label="Footer navigation">
+            <Link
+              href="/contact"
+              className="hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
+            >
+              Contact
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

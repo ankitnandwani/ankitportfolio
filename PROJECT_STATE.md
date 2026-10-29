@@ -66,10 +66,27 @@
 
 ## Next Task
 
-- M18.07 – Add contact form to site (homepage/footer) (the next action: continue Milestone 18 – Contact Form)
-- Contact form placement: dedicated `/contact` page linked from footer and homepage
+- M18.08 – Test and verify contact form end to end (the next action: continue Milestone 18 – Contact Form)
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - The standing items are listed in TODO.md
+
+## Completed (M18.07)
+
+- Created `app/contact/page.tsx`:
+  - Server component with metadata using `generateBaseMetadata`
+  - Renders `ContactForm` client component
+  - Title: "Contact Ankit" with description
+  - Styled consistently with `/job-fit` and `/resume` pages
+- Updated `src/components/footer/Footer.tsx`:
+  - Added "Contact" link in footer navigation
+  - Links to `/contact`
+  - Consistent with existing footer style
+- Updated `app/page.tsx`:
+  - Added "Get in Touch" section after TestimonialsSection
+  - Heading, description, and CTA button linking to `/contact`
+  - Styled consistently with Job Description Analyzer entry point
+- No changes to main navigation (8 items per PRD §8/§92)
+- All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
 
 ## Completed (M18.06)
 

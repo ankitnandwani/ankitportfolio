@@ -1,3 +1,21 @@
+## [0.1.137] - 2026-10-28
+- Implemented M18.07 – Add Contact Form to Site (Homepage/Footer):
+  - Created `app/contact/page.tsx`:
+    - Server component with metadata using `generateBaseMetadata`
+    - Renders `ContactForm` client component
+    - Title: "Contact Ankit" with description
+    - Styled consistently with `/job-fit` and `/resume` pages
+  - Updated `src/components/footer/Footer.tsx`:
+    - Added "Contact" link in footer navigation
+    - Links to `/contact`
+    - Consistent with existing footer style
+  - Updated `app/page.tsx`:
+    - Added "Get in Touch" section after TestimonialsSection
+    - Heading, description, and CTA button linking to `/contact`
+    - Styled consistently with Job Description Analyzer entry point
+  - No changes to main navigation (8 items per PRD §8/§92)
+  - All 465 tests pass (459 pass, 0 fail, 6 skipped), lint clean (0 errors), typecheck clean, build succeeds
+
 ## [0.1.136] - 2026-10-28
 - Implemented M18.06 – Create Success/Failure UI States:
   - Created `src/components/contact/ContactFormSuccess.tsx`:
