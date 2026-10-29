@@ -4,6 +4,7 @@
  */
 
 import { randomUUID } from './crypto.ts';
+import { readAnalyticsConfig } from './config.ts';
 import type { CtaType, AnalyticsConfig } from './eventTypes.ts';
 
 /**
@@ -61,25 +62,14 @@ export function generateClientKey(
  * Client-side: analytics disabled (only server tracks).
  */
 export function getAnalyticsConfig(): AnalyticsConfig {
-  if (typeof window !== 'undefined') {
-    // Client-side: analytics disabled (only server tracks)
-    return {
-      enabled: false,
-      logToConsole: process.env.NODE_ENV !== 'production',
-    };
-  }
-
-  const enabled = !!(
-    process.env.POSTHOG_KEY &&
-    process.env.POSTHOG_HOST
+  return readAnalyticsConfig(
+    {
+      posthogKey: process.env.POSTHOG_KEY,
+      posthogHost: process.env.POSTHOG_HOST,
+      nodeEnv: process.env.NODE_ENV,
+    },
+    { isBrowser: typeof window !== 'undefined' }
   );
-
-  return {
-    enabled,
-    posthogKey: process.env.POSTHOG_KEY,
-    posthogHost: process.env.POSTHOG_HOST,
-    logToConsole: process.env.NODE_ENV !== 'production',
-  };
 }
 
 /**

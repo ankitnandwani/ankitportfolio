@@ -2,16 +2,23 @@
 
 ## Current Phase
 
-- Planning
+- Implementation
 
 ## Current Milestone
 
-- M18 – Contact Form (ROADMAP Milestone 18)
+- M19 – Analytics (ROADMAP Milestone 19)
 
 ## Status
 
+- Task specifications created for M19 – Analytics (see tasks/M19/). M19.01 implemented and verified.
+- M19.01 – Set up PostHog analytics configuration and verify server-side integration (completed – `src/lib/analytics/config.ts` with the one implementation of the configuration, shared by the server side and the browser side: a value that is still the placeholder of `.env.example` counts as no credentials, the host has to be an http or https url, and the credentials are only carried when the analytics are on; `src/lib/analytics/analytics.ts` exports `initPostHog` and takes an injectable client factory through `setPostHogClientFactory`, and the tracking functions read the configuration from the environment by default instead of defaulting to the disabled one; the event sending was fixed, because `posthog-node` v4 takes one message object `capture({ distinctId, event, properties, timestamp })` and the module was calling the version 3 shape `capture(name, properties)`, so every event was sent with no name and no identity and none of them ever arrived; `POSTHOG_KEY` and `POSTHOG_HOST` are now optional in `src/lib/env.ts`, `src/lib/env.js` and `.env.example`, so the site boots without a PostHog project and stays in its console only mode; 44 tests added in `src/lib/analytics/config.test.mts`, `src/lib/analytics/analytics.test.mts` and `src/lib/env.test.mts`; all 509 tests pass, lint clean, typecheck clean, build succeeds)
+- Task specifications created for M18 – Contact Form (see tasks/M18/). M18.01 through M18.08 implemented and verified.
+- M19.02 – Create server-side analytics proxy endpoint for client-side events (not started)
+- M19.03 – Enable client-side CTA click tracking via proxy endpoint (not started)
+- M19.04 – Add missing PRD events and verify all events fire correctly (not started)
+- M19.05 – Create analytics verification script and test plan (not started)
+- M19.06 – Test and verify analytics end to end (not started)
 - Task specifications created for M17 – Job Description Analyzer (see tasks/M17/). M17.01 through M17.09 implemented and verified.
-- Task specifications created for M18 – Contact Form (see tasks/M18/). M18.01 and M18.02 implemented.
 - M18.01 – Define Contact Form Data Model and Validation (completed – `src/data/contact.ts` with ContactFormData, ContactFormRequest, ContactFormResponse, FieldErrors, CONTACT_FORM_LIMITS; `src/lib/contact/validation.ts` with Zod schemas, validateContactForm, validateField, createSuccessResponse, createErrorResponse, isSuccessResponse, isErrorResponse; `src/lib/contact/validation.test.mts` with 30 unit tests covering all validation rules; all tests pass, lint clean, typecheck clean, build succeeds)
 - M18.02 – Create Contact Form UI Components (completed – `src/components/ui/Input.tsx`, `src/components/ui/Textarea.tsx`, `src/components/contact/ContactFormField.tsx`, `src/components/contact/ContactForm.tsx` with full form state management, validation, loading/success/error states; accessibility features including ARIA labels, live regions, keyboard navigation; dark/light theme support; reduced motion support; Framer Motion animations; all 433 tests pass, lint clean, typecheck clean, build succeeds)
 - M17.01 through M17.09 completed and verified (see previous entries).
@@ -66,7 +73,10 @@
 
 ## Next Task
 
-- M19.01 – Set up PostHog analytics (the next action: begin Milestone 19 – Analytics)
+- M19.02 – Create the server-side analytics proxy endpoint for client-side events (the next action: begin implementation of M19.02)
+- The PostHog project credentials are still needed before the events can reach a real PostHog. Until they are set, the analytics stay in the console only mode, which is what they do now
+- The events that carry a group of properties put them in a `properties` object of their own, so they reach PostHog one level deeper than the other events. M19.04 is the task that looks at the whole event catalogue
+- `SENTRY_DSN` and the two `UPSTASH_REDIS` variables are still required by the environment validation, although they are only placeholders and the milestones that use them have not been reached. M20 is the task that changes that
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch
 - The standing items are listed in TODO.md
 

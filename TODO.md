@@ -1,6 +1,9 @@
 # Immediate Next Actions
 
-- Begin implementation of M19.01 (PostHog analytics setup).
+- Begin implementation of M19.02 (the server-side analytics proxy endpoint for client-side events).
+- The PostHog project credentials are still needed before the events can reach a real PostHog. Until they are set, the analytics stay in the console only mode, which is what they do now. The value that is still the placeholder of `.env.example` is treated as no credentials, so nothing is sent to a host that does not exist
+- The events that carry a group of properties put them in a `properties` object of their own, so they reach PostHog one level deeper than the other events. M19.04 is the task that looks at the whole event catalogue
+- `SENTRY_DSN` and the two `UPSTASH_REDIS` variables are still required by the environment validation, although they are only placeholders and the milestones that use them have not been reached. M20 is the task that changes that
 - Data verification: Replace TO_BE_VERIFIED_AGAINST_RESUME placeholders in src/data/ before launch.
 - Verify the social media placeholder URLs in `src/data/socialLinks.ts` before launch.
 - The rate limit of the chat is kept in memory, so it is lost when the instance restarts and it is per instance. That is what PRD §48 accepts for a site with low traffic, but a shared store (the Upstash Redis of PRD §53) would make it hold across instances. The store of the limiter is injected, so this is a change in one place.

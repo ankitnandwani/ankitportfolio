@@ -1,3 +1,20 @@
+## [0.1.139] - 2026-10-29
+- Implemented M19.01 – Set Up PostHog Analytics Configuration and Verify Server-Side Integration
+- Fixed the server-side event sending, which never reached PostHog:
+  - `posthog-node` v4 takes one message object, `capture({ distinctId, event, properties, timestamp })`. The module called `capture(name, properties)`, the shape of version 3 of the package, so every event was sent with no name and no identity. A cast on the client hid the mismatch from the type checker
+  - The session id is now sent as the `distinctId`, and the timestamp as a `Date`
+- Made the analytics credentials optional in `src/lib/env.ts` and `src/lib/env.js`, and documented them as optional in `.env.example`. The site now boots without a PostHog project and stays in its console only mode, which is the mode the analytics layer was written for
+- Added `src/lib/analytics/config.ts` with the one implementation of the configuration, shared by the server side and the browser side:
+  - a value that is still the placeholder of `.env.example` counts as no credentials, so the layer no longer builds a client that tries to reach a host that does not exist
+  - the host has to be an http or https url
+  - the credentials are only carried when the analytics are on
+- Exported `initPostHog` and added `setPostHogClientFactory`, so the client can be replaced in a test, following the pattern of `setLLMProvider` and `setRateLimiter`
+- The tracking functions now read the configuration from the environment by default, instead of defaulting to the disabled configuration. A caller that forgot to pass the configuration silently sent nothing
+- The index of the analytics module now exports the server side `getAnalyticsConfig`, so the routes and the browser cannot end up with two different answers about when the analytics are on
+- Added 44 tests: `src/lib/analytics/config.test.mts` (21), `src/lib/analytics/analytics.test.mts` (19), `src/lib/env.test.mts` (4). The environment tests run the validation in a child process, because the module is only evaluated once per process
+- Verified against the running site: the feedback event reaches the log with the comment redacted, and the flush errors against the placeholder host that the old code produced every nine seconds are gone
+- All 509 tests pass (503 pass, 0 fail, 6 skipped), lint clean (0 errors, 58 pre-existing warnings), typecheck clean, build succeeds
+
 ## [0.1.138] - 2026-10-28
 - Implemented M18.08 – Test and Verify Contact Form End to End:
   - Extended `test-plan.md` with contact form section (35 test cases across CFC, CSC, CEC, CIA):

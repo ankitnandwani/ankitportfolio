@@ -14,15 +14,29 @@ export {
   trackJobFitAnalysis,
   trackContactFormSubmission,
   shutdownAnalytics,
+  initPostHog,
+  setPostHogClientFactory,
+  getAnalyticsConfig,
+  type PostHogClient,
+  type PostHogClientFactory,
+  type PostHogClientOptions,
+  type PostHogEventMessage,
 } from './analytics.ts';
 
 // Client-side analytics (no PostHog, no Node.js dependencies)
 export {
   getSessionId,
   generateClientKey,
-  getAnalyticsConfig,
   trackCtaClicked,
 } from './client.ts';
+
+// The configuration of the analytics layer, shared by both sides
+export {
+  readAnalyticsConfig,
+  isConfiguredValue,
+  isPlaceholderValue,
+  isValidPostHogHost,
+} from './config.ts';
 
 export {
   type AnalyticsConfig,

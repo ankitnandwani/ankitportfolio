@@ -15,8 +15,12 @@ const serverEnvSchema = publicEnvSchema.extend({
   SUPABASE_ANON_KEY: z.string().nonempty(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().nonempty(),
   GITHUB_TOKEN: z.string().nonempty(),
-  POSTHOG_KEY: z.string().nonempty(),
-  POSTHOG_HOST: z.string().nonempty(),
+  // The analytics credentials are optional. Without them the analytics layer
+  // stays in its console only mode, which is how the site runs until a
+  // PostHog project is set up. The same is true of the variables that are
+  // only used by a milestone that has not been reached yet.
+  POSTHOG_KEY: z.string().nonempty().optional(),
+  POSTHOG_HOST: z.string().nonempty().optional(),
   SENTRY_DSN: z.string().nonempty(),
   UPSTASH_REDIS_REST_URL: z.string().nonempty(),
   UPSTASH_REDIS_REST_TOKEN: z.string().nonempty(),

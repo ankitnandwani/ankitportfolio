@@ -17,14 +17,16 @@ This milestone captures product-relevant metrics by completing the PostHog integ
 
 | Requirement | Source | Task | Status |
 |-------------|--------|------|--------|
-| Integrate PostHog (free tier) | ROADMAP M19, PRD §78 | M19.01 | Planned |
+| Integrate PostHog (free tier) | ROADMAP M19, PRD §78 | M19.01 | Complete |
 | Events listed in PRD fire correctly | PRD §46, §47, §48 | M19.04 | Planned |
-| Privacy-conscious configuration (no PII) | PRD §35, §36, ROADMAP M19 | M19.01, M19.04 | Planned |
+| Privacy-conscious configuration (no PII) | PRD §35, §36, ROADMAP M19 | M19.01, M19.04 | M19.01 Complete, M19.04 Planned |
 | CTA click tracking (client-side) | PRD §90, §46 | M19.03 | Planned |
 | Feedback tracking (thumbs up/down) | PRD §46, §47 | M19.04 | Planned |
-| Session tracking | PRD §46 | M19.01 | Planned |
+| Session tracking | PRD §46 | M19.01 | Complete |
 | Rate limit metrics | PRD §48 | M19.04 | Planned |
 | Events fire correctly and respect privacy | ROADMAP M19 DoD | M19.06 | Planned |
+
+**Note on M19.01:** the server-side integration was broken and is now fixed. `posthog-node` v4 takes one message object, `capture({ distinctId, event, properties, timestamp })`, and the module was calling the version 3 shape `capture(name, properties)`, so every event was sent with no name and no identity and none of them ever arrived. The credentials are now optional, and a value that is still the placeholder of `.env.example` counts as no credentials, so the layer no longer builds a client that tries to reach a host that does not exist. Sending to a real PostHog still needs the credentials of a project, which is the first decision below.
 
 ## Parallel Work
 

@@ -25,14 +25,84 @@ import {
   type OutputGuardrailAction,
   type FeedbackRating,
   type CtaType,
-  DEFAULT_ANALYTICS_CONFIG,
 } from './eventTypes.ts';
+import { readAnalyticsConfig } from './config.ts';
 import type { TokenUsage } from '../llm/provider.ts';
+
+/**
+ * The options the PostHog client is created with.
+ */
+export interface PostHogClientOptions {
+  /** The PostHog host the events are sent to. */
+  host: string;
+  /** Whether the IP address is left out of the events. */
+  disableGeoip: boolean;
+  /** How often the queue is flushed, in milliseconds. */
+  flushInterval: number;
+  /** How many events are queued before the queue is flushed. */
+  flushAt: number;
+}
+
+/**
+ * The message one event is sent as.
+ *
+ * This is the shape `posthog-node` expects. It takes a single object with
+ * the name of the event, the identity it belongs to and the properties. An
+ * earlier version of this module called `capture(name, properties)` instead,
+ * which is the shape of the version 3 of the package. Against the version
+ * that is installed, that call sends an event with no name and no identity,
+ * so the events never arrive.
+ */
+export interface PostHogEventMessage {
+  /** The identity the event belongs to. The anonymous session id. */
+  distinctId: string;
+  /** The name of the event. */
+  event: string;
+  /** The properties of the event. */
+  properties?: Record<string, unknown>;
+  /** When the event happened. */
+  timestamp?: Date;
+}
+
+/**
+ * The part of the PostHog client this module uses.
+ */
+export interface PostHogClient {
+  capture: (message: PostHogEventMessage) => void;
+  shutdown: () => Promise<void>;
+}
+
+/**
+ * Creates the PostHog client. Used by the tests to replace the real one.
+ */
+export type PostHogClientFactory = (
+  key: string,
+  options: PostHogClientOptions
+) => PostHogClient | Promise<PostHogClient>;
 
 /**
  * In-memory PostHog client (lazy initialized).
  */
-let posthogClient: unknown = null;
+let posthogClient: PostHogClient | null = null;
+
+/**
+ * The factory that creates the client. When it is null the real PostHog
+ * package is used.
+ */
+let posthogClientFactory: PostHogClientFactory | null = null;
+
+/**
+ * Replaces the factory that creates the PostHog client. Used by the tests.
+ *
+ * The cached client is dropped, so the new factory is used from the next
+ * event on.
+ *
+ * @param factory The factory to use, or null to use the real package.
+ */
+export function setPostHogClientFactory(factory: PostHogClientFactory | null): void {
+  posthogClientFactory = factory;
+  posthogClient = null;
+}
 
 /**
  * In-memory storage for session IDs (per process).
@@ -85,26 +155,48 @@ export function generateClientKey(
 }
 
 /**
- * Initializes the PostHog client if credentials are available.
+ * Creates the real PostHog client.
+ *
+ * The package is loaded with a dynamic import, so it is never part of a
+ * client bundle.
  */
-async function initPostHog(config: AnalyticsConfig): Promise<unknown> {
+async function createPostHogClient(
+  key: string,
+  options: PostHogClientOptions
+): Promise<PostHogClient> {
+  const { PostHog } = await import('posthog-node');
+  // The options and the methods this module uses are a subset of the ones
+  // the package offers. The cast keeps the package at the edge of this
+  // module, so a change in the package does not spread through the code.
+  return new PostHog(key, options) as unknown as PostHogClient;
+}
+
+/**
+ * Initializes the PostHog client if credentials are available.
+ *
+ * @param config The configuration to build the client from.
+ * @returns The client, or null when there are no credentials or the client
+ *          could not be created.
+ */
+export async function initPostHog(config: AnalyticsConfig): Promise<PostHogClient | null> {
   if (posthogClient) return posthogClient;
 
   if (!config.posthogKey || !config.posthogHost) {
     return null;
   }
 
+  const options: PostHogClientOptions = {
+    host: config.posthogHost,
+    // Disable IP collection for privacy
+    disableGeoip: true,
+    // Flush quickly for serverless environments
+    flushInterval: 5000,
+    flushAt: 20,
+  };
+
   try {
-    // Dynamic import to avoid bundling PostHog in client builds
-    const { PostHog } = await import('posthog-node');
-    posthogClient = new PostHog(config.posthogKey, {
-      host: config.posthogHost,
-      // Disable IP collection for privacy
-      disableGeoip: true,
-      // Flush quickly for serverless environments
-      flushInterval: 5000,
-      flushAt: 20,
-    });
+    const factory = posthogClientFactory ?? createPostHogClient;
+    posthogClient = await factory(config.posthogKey, options);
     return posthogClient;
   } catch (error) {
     console.warn('[analytics] Failed to initialize PostHog:', error);
@@ -135,12 +227,19 @@ async function sendEvent(
   }
 
   try {
-    // PostHog expects event name and properties
+    // PostHog takes a single message with the name of the event, the
+    // identity it belongs to and the properties. The session id is the
+    // identity, because it is the only thing that connects the events of
+    // one visit without identifying the visitor.
     const { eventType, sessionId, timestamp, ...properties } = event;
-    (client as { capture: (event: string, properties: Record<string, unknown>) => void }).capture(eventType, {
-      ...properties,
-      session_id: sessionId,
-      timestamp,
+    client.capture({
+      distinctId: sessionId,
+      event: eventType,
+      properties: {
+        ...properties,
+        session_id: sessionId,
+      },
+      timestamp: new Date(timestamp),
     });
   } catch (error) {
     console.warn('[analytics] Failed to send event:', error);
@@ -167,7 +266,7 @@ function createBaseEvent<const T extends string>(
 export async function trackChatSessionStart(
   sessionId: string,
   userAgent?: string,
-  config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
+  config: AnalyticsConfig = getAnalyticsConfig()
 ): Promise<void> {
   const event: ChatSessionStartEvent = {
     ...createBaseEvent(sessionId, 'chat_session_start'),
@@ -185,7 +284,7 @@ export async function trackMessageSent(
   questionCategory: QuestionCategory,
   guardrailAction: GuardrailAction,
   messageLength: number,
-  config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
+  config: AnalyticsConfig = getAnalyticsConfig()
 ): Promise<void> {
   const event: MessageSentEvent = {
     ...createBaseEvent(sessionId, 'message_sent'),
@@ -214,7 +313,7 @@ export async function trackResponseReceived(
   wasRedacted: boolean,
   outputGuardrailAction: OutputGuardrailAction,
   answerConfidence: number | null,
-  config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
+  config: AnalyticsConfig = getAnalyticsConfig()
 ): Promise<void> {
   const event: ResponseReceivedEvent = {
     ...createBaseEvent(sessionId, 'response_received'),
@@ -249,7 +348,7 @@ export async function trackFeedbackGiven(
   rating: FeedbackRating,
   comment: string | undefined,
   isRedirect: boolean,
-  config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
+  config: AnalyticsConfig = getAnalyticsConfig()
 ): Promise<void> {
   // Redact PII from comment if provided
   const redactedComment = comment ? redactPiiFromText(comment) : undefined;
@@ -272,7 +371,7 @@ export async function trackCtaClicked(
   queryId: string,
   ctaType: CtaType,
   targetDomain: string,
-  config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
+  config: AnalyticsConfig = getAnalyticsConfig()
 ): Promise<void> {
   const event: CtaClickedEvent = {
     ...createBaseEvent(sessionId, 'cta_clicked'),
@@ -290,7 +389,7 @@ export async function trackJobFitAnalysis(
   sessionId: string,
   queryId: string,
   properties: JobFitAnalysisProperties,
-  config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
+  config: AnalyticsConfig = getAnalyticsConfig()
 ): Promise<void> {
   const event: JobFitAnalysisEvent = {
     ...createBaseEvent(sessionId, 'job_fit_analysis'),
@@ -307,7 +406,7 @@ export async function trackContactFormSubmission(
   sessionId: string,
   queryId: string,
   properties: ContactFormSubmissionProperties,
-  config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG
+  config: AnalyticsConfig = getAnalyticsConfig()
 ): Promise<void> {
   const event: ContactFormSubmissionEvent = {
     ...createBaseEvent(sessionId, 'contact_form_submission'),
@@ -348,29 +447,27 @@ function redactPiiFromText(text: string): string {
  */
 export async function shutdownAnalytics(): Promise<void> {
   if (posthogClient) {
-    await (posthogClient as { shutdown: () => Promise<void> }).shutdown();
+    await posthogClient.shutdown();
     posthogClient = null;
   }
 }
 
 /**
  * Gets the current analytics configuration from environment.
+ *
+ * The configuration is read when it is asked for rather than when the module
+ * is loaded, so a change of the environment is picked up without a restart
+ * of the module.
+ *
+ * @returns The configuration.
  */
 export function getAnalyticsConfig(): AnalyticsConfig {
-  if (typeof window !== 'undefined') {
-    // Client-side: analytics disabled (only server tracks)
-    return DEFAULT_ANALYTICS_CONFIG;
-  }
-
-  const enabled = !!(
-    process.env.POSTHOG_KEY &&
-    process.env.POSTHOG_HOST
+  return readAnalyticsConfig(
+    {
+      posthogKey: process.env.POSTHOG_KEY,
+      posthogHost: process.env.POSTHOG_HOST,
+      nodeEnv: process.env.NODE_ENV,
+    },
+    { isBrowser: typeof window !== 'undefined' }
   );
-
-  return {
-    enabled,
-    posthogKey: process.env.POSTHOG_KEY,
-    posthogHost: process.env.POSTHOG_HOST,
-    logToConsole: process.env.NODE_ENV !== 'production',
-  };
 }
