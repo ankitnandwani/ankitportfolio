@@ -875,6 +875,8 @@ The contact form:
 **Command:** `npm run verify:analytics`
 **Result:** ✅ PASS — 24 cases, 405 rules checked, 405 passed, 0 failed, exit code 0
 
+The same run was made again on 2026-11-03 for M19.06, with the same result: 24 cases, 405 rules checked, 405 passed, 0 failed, exit code 0. See the section of M19.06 below.
+
 ### Environment
 
 | Item | Value |
@@ -895,11 +897,93 @@ The contact form:
 
 ---
 
-## Milestone 19 Definition of Done (so far)
+## M19.06 — Manual End-to-End Verification
+
+Run on 2026-11-03. This task changed no code; it checked the work of M19.01 to M19.05 against the real PostHog project.
+
+### Automated run
+
+| Item | Value |
+|------|-------|
+| Command | `npm run verify:analytics` |
+| Cases | 24 |
+| Rules checked | 405 |
+| Rules passed | 405 |
+| Rules failed | 0 |
+| Exit code | 0 |
+
+The whole suite was run again at the same time: 576 tests with 570 pass, 0 fail and 6 skipped; `npm run lint` clean with 0 errors and the same 58 warnings as before; `npm run typecheck` clean; `npm run build` succeeds.
+
+The script was also run with a rule broken on purpose. It answered with the exit code 1 and named the rule that failed, so the script really fails when it should. The fixture was put back afterwards and is byte for byte the file of the repository.
+
+### The events on the wire
+
+Every event of the catalogue was fired for real against the real PostHog project. The wire was read with a small forwarding server that wrote the body down and passed it on to `https://eu.i.posthog.com`, so the real project received every event and the exact bytes could be checked at the same time. The file that held the key was deleted at once.
+
+| Event | Fired by | Seen on the wire |
+|-------|----------|-----------------|
+| `chat_session_start` | the first message of the chat | ✅ |
+| `message_sent` | the question of the visitor | ✅ |
+| `response_received` | the answer of the assistant | ✅ |
+| `feedback_given` | the thumb up and the thumb down | ✅ |
+| `cta_clicked` | the proxy of M19.02 | ✅ |
+| `contact_form_submission` | the contact form | ✅ |
+| `job_fit_analysis` | the analyzer of a job description | ✅ |
+| `rate_limit_exceeded` | the three parts of the site when they refuse | ✅ |
+
+The server reported no error of the flush in any of the runs.
+
+### The project in the browser
+
+The activity log of project 325584 was opened in the browser. All eight kinds of event are there, every one of them with the library `posthog-node` and the version 4.18.0, the identity of the session, the moment of the sending, the `GeoIP disabled` on and the properties the PRD asks for.
+
+### The audit of the private data
+
+Checked on the payloads that really went out, not on the rules of the script:
+
+| Pattern | Result |
+|---------|--------|
+| Address of a mailbox | none in the eight kinds of event |
+| Number of a phone, written as it is written | none |
+| Ten digits on their own | none |
+| Address of a computer | none |
+| `$geoip_disable: true` | on every event |
+
+The shape of the events that carry a group of properties:
+
+| Event | What it carries |
+|-------|-----------------|
+| `contact_form_submission` | four booleans of which fields were filled in, never what was written |
+| `job_fit_analysis` | counts and times only |
+| `rate_limit_exceeded` | the identifier of the query, the scope, the part of the site and the wait |
+
+A comment of the feedback that held a telephone number and an address of a mailbox arrived on the wire as `'Call me on [REDACTED] or email me at [REDACTED]'`.
+
+### The sessions
+
+| Group of events | Session |
+|-----------------|---------|
+| The events of the server | one session for the whole visit |
+| The event of the refusal | a session of its own for the visitor that was refused |
+| The click of the browser | the session of the tab, which is the one known difference between the two sides |
+
+### What was found and left alone
+
+These are changes of their own and were not made by this task. They are in `TODO.md` and in `PROJECT_STATE.md`:
+
+- The limits of the job fit analyzer are still not read from the environment.
+- The events of the browser and the events of the server still carry two different sessions.
+- The comment of `app/api/analytics/route.ts` still overstates the headers and the counting of the proxy. The code is right and the comment is wrong.
+- PostHog counts a session as a person, because the identifier of the session is the identity of the event. The number of people is the number of sessions and not the number of visitors.
+- A visit from the local machine reaches the real project, because there is no project of its own for the work on the machine.
+
+---
+
+## Milestone 19 Definition of Done
 
 **Definition:** "Events fire correctly and respect privacy settings."
 
-**Status:** 🔶 IN PROGRESS — the events of PRD §46, §47, §48 and §90 fire and carry no personal data. The end-to-end run of the milestone is M19.06.
+**Status:** ✅ COMPLETE — all six tasks of the milestone are done and verified. The events of PRD §46, §47, §48 and §90 fire, they reach the real PostHog project and they carry no personal data.
 
 The analytics:
 - Send the events of the conversation, of the analysis of a job description, of the contact form, of the feedback, of the calls to action and of the refusals
@@ -908,6 +992,7 @@ The analytics:
 - Keep the session anonymous
 - Are refused by the proxy when the kind of the event, the fields or the origin are not allowed
 - Are verified by `npm run verify:analytics`, which passes every rule
+- Were seen for real in the project itself, in the activity log, with the right properties and the geography turned off
 
 ---
 
@@ -924,4 +1009,6 @@ The analytics:
 
 3. **Pre-launch:** Run full test suite again after data verification
 
-4. **Milestone 19:** Analytics (ROADMAP Milestone 19)
+4. **Milestone 19:** Analytics (ROADMAP Milestone 19) — ✅ complete, verified on 2026-11-03
+
+5. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — the next milestone. Its test cases are added here when the task specifications of the milestone are written

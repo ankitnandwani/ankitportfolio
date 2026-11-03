@@ -1,3 +1,23 @@
+## [0.1.145] - 2026-11-03
+- Implemented M19.06 – Test and verify analytics end to end
+- Ran the verification script of M19.05 against the running site: 24 cases, 405 rules checked, 405 passed, 0 failed, exit code 0. A run with a rule broken on purpose answers with the exit code 1 and names the rule that failed, so the script really fails when it should
+- Ran the whole suite again: 576 tests (570 pass, 0 fail, 6 skipped), lint clean (0 errors, 58 pre-existing warnings), typecheck clean, build succeeds
+- Fired every event of the catalogue for real against the real PostHog project and read the payload on the wire:
+  - `chat_session_start`, `message_sent`, `response_received`, `feedback_given`, `cta_clicked`, `contact_form_submission`, `job_fit_analysis`, `rate_limit_exceeded`
+  - The wire was read with a small forwarding server that wrote the body down and passed it on to PostHog, so the real project still received every event and the exact bytes could be checked. The file that held the key was deleted at once
+  - The server reported no error of the flush in any of the runs
+- Checked the project in the browser: the activity log of project 325584 shows all eight kinds of event, every one of them with the library `posthog-node`, the identity of the session and the `GeoIP disabled` on
+- The privacy audit of the real payloads:
+  - No address of a mailbox, no number of a phone (both the written form and the digits on their own), no address of a computer and no run of ten digits in any of the eight kinds of event
+  - `contact_form_submission` carries only which fields were filled in (four booleans), never what was written
+  - `job_fit_analysis` carries only counts and times
+  - `rate_limit_exceeded` carries only the identifier of the query, the scope, the part of the site and the wait
+  - A comment of the feedback that held a telephone number and an address of a mailbox arrived on the wire as `[REDACTED]`
+- The sessions join up as they should: the events of the server share one session, the refusal carries one of its own, and the click of the browser carries the session of the tab
+- Three findings were left alone and are recorded in TODO.md: the limits of the job fit analyzer are still not read from the environment, the events of the browser and the events of the server still carry two different sessions, and the comment of `app/api/analytics/route.ts` still overstates the headers and the counting of the proxy
+- The PostHog project counts a session as a person, because the identifier of the session is the identity of the event. Every visit is therefore a person of its own in the project, and the number of people is not the number of visitors
+- Milestone 19 is complete
+
 ## [0.1.144] - 2026-10-29
 - Implemented M19.05 – Create analytics verification script and test plan
 - Added `scripts/verifyAnalytics.mts`, run with `npm run verify:analytics`. It runs the cases of the catalogue of events against the running site and writes a report with the result of every rule, and exits with a non-zero code when a rule fails
