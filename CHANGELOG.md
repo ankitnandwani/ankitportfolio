@@ -1,3 +1,19 @@
+## [0.1.146] - 2026-11-04
+- Planned the next milestone. The task specifications of M20 – Monitoring are written in `tasks/M20/`, nine of them, and the milestone is waiting to be implemented
+  - M20.01 – Install and configure Sentry; make the monitoring environment variables optional
+  - M20.02 – Scrub the failures so that nothing private reaches the monitoring service
+  - M20.03 – Capture the failures of the API routes
+  - M20.04 – Monitor the failures of the language model
+  - M20.05 – Monitor the failures of the external services
+  - M20.06 – Monitor the performance of the requests
+  - M20.07 – Add the error boundaries and the browser error capture
+  - M20.08 – Set up the Sentry project, the alerts and the verification script
+  - M20.09 – Test and verify the monitoring end to end
+- The planning was written against the state of the repository: there is no monitoring code, no error boundary, no `instrumentation.ts`, and `SENTRY_DSN` and the two `UPSTASH_REDIS` variables are required by the environment although nothing reads them
+- Next.js 16 hands the server failure over through `onRequestError` with the path, the method and the headers and **without the body**, which is the shape the privacy of PRD §79 needs
+- The findings that the verification of M19 left behind are written as specifications in `tasks/M19-followups/`: M19F.01 (one identity for the visitor across the events), M19F.02 (the page level events of PRD §78) and M19F.03 (the comment of the proxy that does not tell the truth, and the limits of the analyzer that are not read from the environment)
+- No application code was changed and no dependency was installed. This is a planning task
+
 ## [0.1.145] - 2026-11-03
 - Implemented M19.06 – Test and verify analytics end to end
 - Ran the verification script of M19.05 against the running site: 24 cases, 405 rules checked, 405 passed, 0 failed, exit code 0. A run with a rule broken on purpose answers with the exit code 1 and names the rule that failed, so the script really fails when it should

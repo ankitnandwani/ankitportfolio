@@ -2,14 +2,16 @@
 
 ## Current Phase
 
-- Implementation
+- Planning
 
 ## Current Milestone
 
-- M20 – Monitoring (ROADMAP Milestone 20). The task specifications of this milestone do not exist yet and come with the planning phase
+- M20 – Monitoring (ROADMAP Milestone 20). The task specifications are written (see tasks/M20/), nine of them, and the milestone is waiting to be implemented
 
 ## Status
 
+- Task specifications created for M20 – Monitoring (see tasks/M20/). M20.01 through M20.09 are written and waiting to be implemented. The milestone is not started
+- The specifications of the findings that M19 left behind are written in `tasks/M19-followups/`: M19F.01 (one identity for the visitor across the events), M19F.02 (the page level events of PRD §78) and M19F.03 (the two corrections of M19.06)
 - Task specifications created for M19 – Analytics (see tasks/M19/). M19.01 through M19.06 implemented and verified. The milestone is complete
 - M19.01 – Set up PostHog analytics configuration and verify server-side integration (completed – `src/lib/analytics/config.ts` with the one implementation of the configuration, shared by the server side and the browser side: a value that is still the placeholder of `.env.example` counts as no credentials, the host has to be an http or https url, and the credentials are only carried when the analytics are on; `src/lib/analytics/analytics.ts` exports `initPostHog` and takes an injectable client factory through `setPostHogClientFactory`, and the tracking functions read the configuration from the environment by default instead of defaulting to the disabled one; the event sending was fixed, because `posthog-node` v4 takes one message object `capture({ distinctId, event, properties, timestamp })` and the module was calling the version 3 shape `capture(name, properties)`, so every event was sent with no name and no identity and none of them ever arrived; `POSTHOG_KEY` and `POSTHOG_HOST` are now optional in `src/lib/env.ts`, `src/lib/env.js` and `.env.example`, so the site boots without a PostHog project and stays in its console only mode; 44 tests added in `src/lib/analytics/config.test.mts`, `src/lib/analytics/analytics.test.mts` and `src/lib/env.test.mts`; all 509 tests pass, lint clean, typecheck clean, build succeeds)
 - M19.02 – Create server-side analytics proxy endpoint for client-side events (completed – `src/lib/analytics/proxy.ts` with the check of the event, the limiter of the proxy and the handler, and `app/api/analytics/route.ts` as a thin boundary; only the event types on a list are accepted and an unknown field is refused rather than dropped, so a client cannot put anything of its own into an event; the target has to be a bare host name, so a path, a port or an e-mail address cannot pass as one; the proxy has its own limiter with its own store and namespaced keys, so the events of a visitor never use up the allowance of the chat; a request whose origin is not the site is refused; the event is flushed before the answer goes out, because a serverless function is put to sleep as soon as it has answered and an event that is still queued can be lost; 34 tests added in `src/lib/analytics/proxy.test.mts`; verified against the running site, including the payload on the wire; all 543 tests pass, lint clean, typecheck clean, build succeeds)
@@ -74,7 +76,10 @@
 
 ## Next Task
 
-- M20 – Monitoring (ROADMAP Milestone 20). The next action is the planning phase of M20: write the task specifications of the milestone in `tasks/M20/`, one file per task, the way `tasks/M19/` was written. The specifications of M20 do not exist yet, and `tasks/M20/README.md` says so
+- M19F.03 – Close out the findings of the verification of M19 (the next action: one small commit that corrects the comment of `app/api/analytics/route.ts` and makes the limits of the analyzer read the environment. The specification is `tasks/M19-followups/03-close-out-the-findings-of-m19.md`)
+- M20.01 – Install and configure Sentry; make the monitoring environment variables optional (the first task of M20, the specification is `tasks/M20/01-sentry-foundation.md`)
+- The nine specifications of M20 are written. The plan of the milestone, the order, the table of the requirements and the decisions that need a person are in `tasks/M20/README.md`
+- M19F.01 (one identity for the visitor across the events) and M19F.02 (the page level events of PRD §78) are written in `tasks/M19-followups/` and are worked on after M19F.03. They are changes of the design of the analytics and are not part of M20
 - Milestone 19 – Analytics is complete. All six tasks are done and verified
 - The events of M19 were verified for real on 2026-11-03. Every event of the catalogue was fired against the real PostHog project and the payload on the wire was read, and the project itself was opened in the browser: the activity log of project 325584 shows all eight kinds of event with the library `posthog-node`, the identity of the session and the `GeoIP disabled` on
 - The PostHog project is set up and the credentials are in `.env.local` (EU cloud). The events now reach a real PostHog, verified on 2026-10-29: the capture endpoint answered `{"status":"Ok"}`, a real event went out of the app with no flush error, and the payload on the wire carries the `distinct_id`, the event name, the properties, an ISO timestamp and `$geoip_disable: true`. The key is in `.env.local` only and is in no tracked file
