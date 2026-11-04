@@ -30,9 +30,6 @@ const REQUIRED_ENV_VARS: Record<string, string> = {
   SUPABASE_ANON_KEY: 'test-anon-key',
   SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key',
   GITHUB_TOKEN: 'test-github-token',
-  SENTRY_DSN: 'https://example@sentry.example.com/1',
-  UPSTASH_REDIS_REST_URL: 'https://example.upstash.io',
-  UPSTASH_REDIS_REST_TOKEN: 'test-redis-token',
 };
 
 /**
@@ -47,6 +44,13 @@ function buildEnv(overrides: Record<string, string | null> = {}): NodeJS.Process
   // test asks for them.
   delete env.POSTHOG_KEY;
   delete env.POSTHOG_HOST;
+
+  // The monitoring credentials are optional as well, and so are the two
+  // variables of the rate limit store that no milestone has reached.
+  delete env.SENTRY_DSN;
+  delete env.NEXT_PUBLIC_SENTRY_DSN;
+  delete env.UPSTASH_REDIS_REST_URL;
+  delete env.UPSTASH_REDIS_REST_TOKEN;
 
   for (const [name, value] of Object.entries(overrides)) {
     if (value === null) {
@@ -65,7 +69,7 @@ function buildEnv(overrides: Record<string, string | null> = {}): NodeJS.Process
  */
 const LOAD_ENV_SCRIPT =
   "const m = await import('./src/lib/env.ts');" +
-  "console.log(JSON.stringify({ key: m.env.POSTHOG_KEY ?? null, host: m.env.POSTHOG_HOST ?? null }));";
+  "console.log(JSON.stringify({ key: m.env.POSTHOG_KEY ?? null, host: m.env.POSTHOG_HOST ?? null, dsn: m.env.SENTRY_DSN ?? null }));";
 
 /**
  * Loads the environment module in a child process.
@@ -100,6 +104,24 @@ test('the environment loads with the analytics credentials', () => {
   const parsed = JSON.parse(output.trim().split('\n').pop() ?? '{}');
   assert.equal(parsed.key, 'phc_abc123DEF456');
   assert.equal(parsed.host, 'https://eu.i.posthog.com');
+});
+
+test('the environment loads without the monitoring credentials', () => {
+  const output = loadEnv(buildEnv());
+
+  const parsed = JSON.parse(output.trim().split('\n').pop() ?? '{}');
+  assert.equal(parsed.dsn, null);
+});
+
+test('the environment loads with the monitoring credentials', () => {
+  const output = loadEnv(
+    buildEnv({
+      SENTRY_DSN: 'https://example@sentry.example.com/1',
+    })
+  );
+
+  const parsed = JSON.parse(output.trim().split('\n').pop() ?? '{}');
+  assert.equal(parsed.dsn, 'https://example@sentry.example.com/1');
 });
 
 test('the environment still refuses to load without a required variable', () => {

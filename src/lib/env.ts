@@ -3,6 +3,12 @@ import { z } from "zod";
 // Variables that must be present in every environment (server and browser).
 const publicEnvSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().nonempty(),
+  // The DSN of the browser side of the monitoring. It is optional, because
+  // the site runs without a monitoring project. A DSN of Sentry is not a
+  // secret: it is written in the page by design and only allows sending
+  // events to the project it belongs to. The key of the project is not the
+  // same thing and never leaves the server.
+  NEXT_PUBLIC_SENTRY_DSN: z.string().nonempty().optional(),
 });
 
 // Server-only secrets. These are never exposed to the browser, so they are
@@ -21,9 +27,14 @@ const serverEnvSchema = publicEnvSchema.extend({
   // only used by a milestone that has not been reached yet.
   POSTHOG_KEY: z.string().nonempty().optional(),
   POSTHOG_HOST: z.string().nonempty().optional(),
-  SENTRY_DSN: z.string().nonempty(),
-  UPSTASH_REDIS_REST_URL: z.string().nonempty(),
-  UPSTASH_REDIS_REST_TOKEN: z.string().nonempty(),
+  // The monitoring credentials are optional. Without them the monitoring
+  // stays off, which is how the site runs until a Sentry project is set up.
+  // The Upstash variables are optional as well: no milestone has reached the
+  // rate limit store that would use them, and a variable that nothing reads
+  // must not stop the site from booting.
+  SENTRY_DSN: z.string().nonempty().optional(),
+  UPSTASH_REDIS_REST_URL: z.string().nonempty().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().nonempty().optional(),
   // The limits of the chat. They are optional, because the code has the
   // values PRD §48 suggests and a missing variable only means the default
   // is used.

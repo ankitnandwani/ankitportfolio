@@ -22,9 +22,9 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 
 | Requirement | Source | Task | Status |
 |-------------|--------|------|--------|
-| Sentry is integrated | ROADMAP M20, PRD §129 | M20.01 | Covered |
-| Only the variables the implementation needs are required | PRD _Environment variables_ | M20.01 | Covered |
-| The site runs without a monitoring project | ROADMAP M20 (free tier, optional) | M20.01 | Covered |
+| Sentry is integrated | ROADMAP M20, PRD §129 | M20.01 | Complete |
+| Only the variables the implementation needs are required | PRD _Environment variables_ | M20.01 | Complete |
+| The site runs without a monitoring project | ROADMAP M20 (free tier, optional) | M20.01 | Complete |
 | Nothing private reaches the monitoring service | PRD §79, §36, §78 | M20.02 | Covered |
 | API errors are monitored | PRD §79, §129 | M20.03 | Covered |
 | AI failures are monitored | PRD §79, §129, ROADMAP M20 | M20.04 | Covered |
@@ -39,6 +39,17 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | A secret is removed from every message | DECISIONS M13 (provider) | M20.02 | Satisfied, reused |
 | The events of the visits are counted | ROADMAP M19 | M19.01–M19.06 | Satisfied |
 | The chat, the analyzer and the contact form are limited | PRD §48 | M17, M19.04 | Satisfied |
+
+M20.01 is done (2026-11-04). The rest of the milestone is waiting to be implemented.
+
+## What the repository holds after M20.01
+
+- **The SDK is installed.** `@sentry/nextjs` 11.10.0, the newest stable version. Its support of Next.js 16 was read before the installation: the package declares `next: "^14.0 || ^15.0.0-rc.0 || ^16.0.0-0"`, and the version of Next.js in this repository is 16.3.2
+- **The files are `instrumentation.ts` and `instrumentation-client.ts`, not `sentry.server.config.ts` and `sentry.client.config.ts`.** The installed version of the SDK warns at the build that a file of the second kind is an outdated configuration and asks for its content to be put into the `register()` function of the instrumentation file, because `Sentry.init` has to be called inside an instrumentation file. The written task of M20.01 named the two configuration files, and it was written before the version of the SDK was known
+- **The configuration lives in `src/lib/monitoring/config.ts`** and is the only part of the layer that the browser and the server share
+- **The SDK of the browser is loaded with a dynamic import.** A static import put a hundred and twenty five kilobytes gzipped into the first load of the homepage. The chunk is a hundred and fifty kilobytes gzipped and is not part of the first load
+- **The environment no longer demands `SENTRY_DSN` or the two `UPSTASH_REDIS` variables.** The site boots without the placeholders that nothing read
+- **The browser has a DSN of its own**, `NEXT_PUBLIC_SENTRY_DSN`. A DSN of Sentry is not a secret; the key of the project is, and it never leaves the server
 
 ## What the repository holds today
 
@@ -63,14 +74,15 @@ They are recorded in `DECISIONS.md` as the milestone is carried out.
 - **The monitoring never receives a request body.** The bodies carry the message of the chat, the description of a job and the form of a contact, which PRD §36 and §78 tell us not to record. The capture is built so that there is nowhere for a body to go, rather than so that a body is removed later.
 - **The scrubbing is a layer of its own.** Everything that is sent goes through one function, so a new capture path cannot bypass it by accident.
 - **The failures of the routes and the failures of the framework are captured separately.** A route that catches its own failure and answers with a 500 is invisible to the framework, so the catch blocks report it themselves.
+- **The SDK of the browser is loaded on its own.** The chunk of the SDK is not part of the first load of a page, and it is never fetched when there is no DSN. The price is that the SDK is ready a moment after the page is there.
 
 ## Decisions that need a person
 
 These are not settled by the planning and are marked in the task that carries them.
 
-1. **Which Sentry package.** `@sentry/nextjs` is the recommendation: it is the package that supports the `instrumentation.ts` hook of Next.js 16 out of the box, and it covers the browser, the server and the edge in one dependency. It has to be a version that declares support for Next.js 16, and that has to be checked at the moment it is installed. Carried by M20.01.
+1. **Which Sentry package.** **Answered by M20.01:** `@sentry/nextjs` 11.10.0. It is the one package that covers the browser, the server and the edge, and it is the only one that uses the `instrumentation.ts` hook of Next.js 16 on its own. The version was chosen by reading the support that the package declares, not by taking the newest number on the page.
 2. **Whether the performance is watched with a threshold or with tracing.** A threshold ("this request was slower than three seconds") is cheap on the free tier and enough for a site with low traffic. Full tracing costs a span per request and would need a decision about the sample rate. The threshold is the recommendation. Carried by M20.06.
-3. **Whether the local machine reports to the same project as the live site.** The same reasoning as the analytics of M19: a project of its own for the work on the machine keeps the numbers of the site clean. This needs an account action. Carried by M20.08.
+3. **Whether the local machine reports to the same project as the live site.** The same reasoning as the analytics of M19: a project of its own for the machine keeps the numbers of the site clean. This needs an account action. Carried by M20.08.
 4. **How the alerts reach the owner.** The email alerts of Sentry are free and need nothing else. A chat channel would need another service. The email is the recommendation. Carried by M20.08.
 
 ## Notes for the tasks

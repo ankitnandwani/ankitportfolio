@@ -1029,6 +1029,73 @@ The requests were refused before the analysis, so no answer was paid for.
 
 ---
 
+## M20.01 — The Foundation of the Monitoring
+
+Run on 2026-11-04. This task changed no behaviour of the site: nothing is captured yet, that is M20.03 to M20.07.
+
+### The configuration of the monitoring
+
+| Case | Expected | Result |
+|------|----------|--------|
+| No DSN | the monitoring is off | ✅ |
+| The placeholder of `.env.example` | the monitoring is off | ✅ |
+| A value that is not a URL | the monitoring is off | ✅ |
+| A URL that is not http or https | the monitoring is off | ✅ |
+| A real DSN | the monitoring is on and the DSN is carried | ✅ |
+| The DSN is not carried while the monitoring is off | there is nothing to leak | ✅ |
+| The DSN is trimmed | the value is used as it is | ✅ |
+| The environment is named after the build | `production` or `development` | ✅ |
+| The release is carried when there is one | the value of the build | ✅ |
+
+### The options the SDK is started with
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The personal data of the visitor | `sendDefaultPii` is false | ✅ |
+| The session recording | both samples are 0 | ✅ |
+| The tracing | the sample is 0 | ✅ |
+| The environment and the release | they are carried | ✅ |
+| No DSN while the monitoring is off | the options carry no DSN | ✅ |
+
+### The environment
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The environment loads without `SENTRY_DSN` | the site boots | ✅ |
+| The environment loads without the two `UPSTASH_REDIS` variables | the site boots | ✅ |
+| The environment loads with a DSN | the DSN is carried | ✅ |
+| A required variable is still missing | the environment refuses to load | ✅ |
+
+### The build and the site
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The build with no DSN | it succeeds | ✅ |
+| The build with a DSN | it succeeds | ✅ |
+| The site with no DSN | it boots and answers, and reports no error of the SDK | ✅ |
+| The `instrumentation.ts` is compiled | the server bundle holds the hook of the framework | ✅ |
+| The first load of the homepage | the chunk of the SDK is not part of it | ✅ |
+
+### The state of the repository
+
+| Command | Result |
+|---------|--------|
+| `npm test` | 604 tests, 598 pass, 0 fail, 6 skipped |
+| `npm run lint` | 0 errors, 58 warnings (the unchanged baseline) |
+| `npm run typecheck` | clean |
+| `npm run build` | succeeds, with a DSN and without one |
+
+### The size of the SDK of the browser
+
+| Case | Expected | Result |
+|------|----------|--------|
+| A static import | 125 KB gzipped in the first load | ❌ it was |
+| A dynamic import | the chunk is not part of the first load | ✅ it is now |
+| The chunk on its own | 155 KB gzipped, fetched after the page is there | ✅ |
+| No DSN | the chunk is never fetched | ✅ |
+
+---
+
 ## Milestone 19 Definition of Done
 
 **Definition:** "Events fire correctly and respect privacy settings."
@@ -1063,4 +1130,4 @@ The analytics:
 
 5. **M19 follow-ups:** the two findings of M19.06 — ✅ M19F.03 complete, verified on 2026-11-04. M19F.01 (one identity for the visitor) and M19F.02 (the page level events of PRD §78) are written and waiting to be chosen
 
-6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — the next milestone. Its task specifications are written in `tasks/M20/`, and its test cases are added here when the first task of the milestone is carried out
+6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04. The rest of the cases are added here as the tasks are carried out
