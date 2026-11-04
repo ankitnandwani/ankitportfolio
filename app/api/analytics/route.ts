@@ -10,9 +10,17 @@ import { handleClientEvent, isSameOrigin } from '@/src/lib/analytics';
  * have to be published to the page. It posts the event here instead, and
  * this route checks it and sends it on with the credentials of the server.
  *
- * The request is counted against the limit of the visitor before anything
- * is parsed, and every answer carries the limit headers and the header
- * that keeps the answer out of any cache.
+ * Two answers are given before the request is counted against the limit of
+ * the visitor: a request from another site is refused with a 403, and a body
+ * that cannot be read is refused with a 400. Neither of them carries the
+ * limit headers, and neither of them is counted. Counting a request from
+ * another site would let that site use up the allowance of a visitor, and
+ * counting a body that could not be read would let a broken client spend the
+ * allowance of a visitor for nothing.
+ *
+ * Every answer that comes from the handler carries the limit headers and the
+ * header that keeps the answer out of any cache. The request is counted
+ * there, before the event itself is checked.
  */
 export async function POST(request: NextRequest) {
   const origin = request.headers.get('origin');

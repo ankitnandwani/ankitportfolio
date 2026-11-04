@@ -246,10 +246,26 @@ let defaultPolicy: ReturnType<typeof createJobFitPolicy> | null = null;
 
 /**
  * Returns the default policy, creating it on first use.
+ *
+ * The limits come from the environment when it holds them, so they can be
+ * changed without a change to the code (PRD §48), the same way the limits of
+ * the chat and of the contact form do.
+ *
+ * @returns The policy.
  */
 export function getJobFitPolicy(): ReturnType<typeof createJobFitPolicy> {
   if (!defaultPolicy) {
-    defaultPolicy = createJobFitPolicy();
+    const windowSeconds = readNumber('JOB_FIT_WINDOW_SECONDS');
+    const maxRequests = readNumber('JOB_FIT_MAX_REQUESTS');
+    const dailyWindowSeconds = readNumber('JOB_FIT_DAILY_WINDOW_SECONDS');
+    const dailyMaxRequests = readNumber('JOB_FIT_DAILY_MAX_REQUESTS');
+
+    defaultPolicy = createJobFitPolicy({
+      windowSeconds: windowSeconds ?? DEFAULT_JOB_FIT_WINDOW_SECONDS,
+      maxRequests: maxRequests ?? DEFAULT_JOB_FIT_MAX_REQUESTS,
+      dailyWindowSeconds: dailyWindowSeconds ?? DEFAULT_JOB_FIT_DAILY_WINDOW_SECONDS,
+      dailyMaxRequests: dailyMaxRequests ?? DEFAULT_JOB_FIT_DAILY_MAX_REQUESTS,
+    });
   }
   return defaultPolicy;
 }
@@ -259,4 +275,24 @@ export function getJobFitPolicy(): ReturnType<typeof createJobFitPolicy> {
  */
 export function setJobFitPolicy(policy: ReturnType<typeof createJobFitPolicy> | null): void {
   defaultPolicy = policy;
+}
+
+/**
+ * Reads a number from the environment.
+ *
+ * A variable that is not set, or that holds something that is not a positive
+ * number, is ignored and the default of the code is used instead.
+ *
+ * @param name The name of the variable.
+ * @returns The number, or null when it is not set or not a number.
+ */
+function readNumber(name: string): number | null {
+  const raw = process.env[name];
+
+  if (!raw) return null;
+
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value <= 0) return null;
+
+  return value;
 }

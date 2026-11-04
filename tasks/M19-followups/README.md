@@ -18,12 +18,14 @@ M19F.03 is first because it is small, it is already diagnosed, and it leaves the
 
 | Requirement | Source | Task | Status |
 |-------------|--------|------|--------|
-| The limits of the analyzer are configurable through the environment | PRD §48 | M19F.03 | Covered |
-| The comment of the proxy tells the truth about the proxy | the finding of M19.06 | M19F.03 | Covered |
+| The limits of the analyzer are configurable through the environment | PRD §48 | M19F.03 | Complete |
+| The comment of the proxy tells the truth about the proxy | the finding of M19.06 | M19F.03 | Complete |
 | The events of the browser and the events of the server share one identity | PRD §46, ROADMAP M19 | M19F.01 | Covered |
 | The number of people in the project is the number of visitors | ROADMAP M19 | M19F.01 | Covered |
 | `page_view`, `project_view`, `chat_open` and `contact_click` are tracked | PRD §78 | M19F.02 | Covered |
 | The events carry no personal data | PRD §36, §78 | M19F.01, M19F.02 | Covered |
+
+M19F.03 is done (2026-11-04). M19F.01 and M19F.02 are written and waiting to be chosen.
 
 ## Why these were left alone
 
@@ -32,6 +34,11 @@ M19F.03 is first because it is small, it is already diagnosed, and it leaves the
 - **The two sessions.** The browser keeps its session in the storage of the tab and the server keeps its own in the memory of the process, so a click on a call to action cannot be joined with the conversation of the same visit in PostHog.
 - **The session counted as a person.** The identifier of the session is the identity of the event, so every session becomes a person of its own in PostHog and the number of people is the number of sessions rather than the number of visitors.
 - **The page level events.** PRD §78 lists `page_view`, `resume_download`, `project_view`, `project_github_click`, `linkedin_click`, `contact_click`, `chat_open`, `chat_question`, `chat_feedback` and `job_fit_analysis`. The events of M19 cover the last four and the calls to action, but not `page_view`, `project_view`, `chat_open` and the click on the contact link.
+
+## What was found and closed
+
+- **M19F.03 (done, 2026-11-04).** The comment of `app/api/analytics/route.ts` now describes what the code does, and the reason for the order is written down. The limits of the analyzer come from the environment, read when the limiter is built, and a missing or an invalid value means the default of the code. Six tests were added and the whole suite, the lint, the typecheck and the build were run again; the verification of M19.05 was run again as well, to prove that the behaviour of the proxy is unchanged
+- **Two more variables of the environment were found while M19F.03 was carried out** and were left alone, because they were not part of that task: `CONTACT_FORM_DAILY_WINDOW_SECONDS` and `JOB_FIT_MAX_TOKENS` are declared in `src/lib/env.ts` and written in `.env.example`, but `src/lib/contact/rateLimiter.ts` never looks at the first one and `src/lib/jobFit/analysis.ts` uses the constant `MAX_JOB_FIT_RESPONSE_TOKENS` instead of the second. They are the same kind of finding as the one M19F.03 closed, and they are in `TODO.md`
 
 ## The decisions that these tasks need
 

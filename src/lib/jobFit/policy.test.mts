@@ -424,3 +424,161 @@ test('defaults are correct', () => {
   assert.equal(DEFAULT_JOB_FIT_DAILY_WINDOW_SECONDS, 86400);
   assert.equal(DEFAULT_JOB_FIT_DAILY_MAX_REQUESTS, 10);
 });
+
+// ============================================================
+// The limits of the environment
+// ============================================================
+
+/**
+ * The variables that hold the limits of the analyzer.
+ */
+const JOB_FIT_LIMIT_VARIABLES = [
+  'JOB_FIT_WINDOW_SECONDS',
+  'JOB_FIT_MAX_REQUESTS',
+  'JOB_FIT_DAILY_WINDOW_SECONDS',
+  'JOB_FIT_DAILY_MAX_REQUESTS',
+] as const;
+
+/**
+ * Remembers the values of the variables, so that a test can put them back.
+ */
+function saveEnvironment(names: readonly string[]): Record<string, string | undefined> {
+  const saved: Record<string, string | undefined> = {};
+
+  for (const name of names) {
+    saved[name] = process.env[name];
+  }
+
+  return saved;
+}
+
+/**
+ * Puts the values of the variables back.
+ */
+function restoreEnvironment(saved: Record<string, string | undefined>): void {
+  for (const [name, value] of Object.entries(saved)) {
+    if (value === undefined) {
+      delete process.env[name];
+    } else {
+      process.env[name] = value;
+    }
+  }
+}
+
+/**
+ * Builds the default policy with the given environment and gives it back.
+ *
+ * The default policy is built once and then kept, so the environment is only
+ * read after the policy was thrown away. The values of the environment are
+ * put back before the policy is handed over, because the limiter keeps the
+ * numbers it was built with and does not read the environment again.
+ */
+function policyWithEnvironment(
+  values: Record<string, string>
+): ReturnType<typeof getJobFitPolicy> {
+  const saved = saveEnvironment(JOB_FIT_LIMIT_VARIABLES);
+
+  try {
+    for (const name of JOB_FIT_LIMIT_VARIABLES) {
+      delete process.env[name];
+    }
+    for (const [name, value] of Object.entries(values)) {
+      process.env[name] = value;
+    }
+
+    setJobFitPolicy(null);
+
+    return getJobFitPolicy();
+  } finally {
+    restoreEnvironment(saved);
+    setJobFitPolicy(null);
+  }
+}
+
+test('the limits of the analyzer come from the environment when they are set', () => {
+  const policy = policyWithEnvironment({
+    JOB_FIT_MAX_REQUESTS: '2',
+    JOB_FIT_WINDOW_SECONDS: '600',
+  });
+
+  const first = policy.checkRateLimit('env-client');
+  assert.equal(first.allowed, true);
+  assert.equal(first.limit, 2);
+  assert.equal(first.remaining, 1);
+
+  const second = policy.checkRateLimit('env-client');
+  assert.equal(second.remaining, 0);
+
+  const third = policy.checkRateLimit('env-client');
+  assert.equal(third.allowed, false);
+  assert.equal(third.scope, 'window');
+});
+
+test('the limits of the analyzer fall back to the defaults when the variables are missing', () => {
+  const policy = policyWithEnvironment({});
+
+  const result = policy.checkRateLimit('defaults-env-client');
+  assert.equal(result.limit, DEFAULT_JOB_FIT_MAX_REQUESTS);
+  assert.equal(result.remaining, DEFAULT_JOB_FIT_MAX_REQUESTS - 1);
+});
+
+test('a limit of the environment that is not a number is ignored', () => {
+  const policy = policyWithEnvironment({
+    JOB_FIT_MAX_REQUESTS: 'not-a-number',
+    JOB_FIT_WINDOW_SECONDS: '0',
+    JOB_FIT_DAILY_MAX_REQUESTS: '-5',
+  });
+
+  const result = policy.checkRateLimit('invalid-env-client');
+  assert.equal(result.limit, DEFAULT_JOB_FIT_MAX_REQUESTS);
+});
+
+test('the daily limit of the environment is independent of the window', () => {
+  const policy = policyWithEnvironment({
+    JOB_FIT_MAX_REQUESTS: '5',
+    JOB_FIT_DAILY_MAX_REQUESTS: '1',
+    JOB_FIT_WINDOW_SECONDS: '3600',
+    JOB_FIT_DAILY_WINDOW_SECONDS: '86400',
+  });
+
+  policy.checkRateLimit('daily-env-client');
+  const result = policy.checkRateLimit('daily-env-client');
+
+  assert.equal(result.allowed, false);
+  assert.equal(result.scope, 'daily');
+  assert.equal(result.limit, 1);
+});
+
+test('the window of the environment is the window that is used', () => {
+  const policy = policyWithEnvironment({
+    JOB_FIT_WINDOW_SECONDS: '60',
+    JOB_FIT_DAILY_WINDOW_SECONDS: '7200',
+  });
+
+  const before = Date.now();
+  const result = policy.checkRateLimit('window-env-client');
+  const after = Date.now();
+
+  // A window of an hour would put the reset an hour away and the day of two
+  // hours further still. The reset is a minute away, so the window of the
+  // environment is the one that was used.
+  assert.ok(result.resetAt - before <= 61_000, `the reset was ${result.resetAt - before}ms away`);
+  assert.ok(result.resetAt - after >= 59_000);
+});
+
+test('the daily window of the environment is the window that is used', () => {
+  const policy = policyWithEnvironment({
+    JOB_FIT_WINDOW_SECONDS: '7200',
+    JOB_FIT_DAILY_WINDOW_SECONDS: '60',
+  });
+
+  const before = Date.now();
+  const result = policy.checkRateLimit('daily-window-env-client');
+  const after = Date.now();
+
+  // The window of two hours would put the reset two hours away and the day of
+  // a minute closer. The reset is a minute away, so the daily window of the
+  // environment is the one that was used.
+  assert.ok(result.resetAt - before <= 61_000, `the reset was ${result.resetAt - before}ms away`);
+  assert.ok(result.resetAt - after >= 59_000);
+});

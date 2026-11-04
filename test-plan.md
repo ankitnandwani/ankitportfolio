@@ -979,6 +979,56 @@ These are changes of their own and were not made by this task. They are in `TODO
 
 ---
 
+## M19F.03 — The Two Findings That M19.06 Left Behind
+
+Run on 2026-11-04.
+
+### The comment of the proxy
+
+The comment of `app/api/analytics/route.ts` said that every answer of the proxy carries the headers of the limit and that the request is counted before anything is parsed. The code does not do that for the two answers that are refused before the counting. The comment was corrected and the behaviour was not changed.
+
+| Check | Result |
+|---|---|
+| The comment describes the two refusals that are not counted | ✅ |
+| The comment says why a request from another site is not counted | ✅ |
+| The behaviour of the proxy is unchanged | ✅ the verification of M19.05 passes every rule again |
+
+### The limits of the analyzer from the environment
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The limits come from the environment when they are set | `JOB_FIT_MAX_REQUESTS=2` gives a limit of 2 | ✅ |
+| The defaults are used when the variables are missing | the limit is 5 | ✅ |
+| A value that is not a number is ignored | the limit is 5 | ✅ |
+| The daily limit is independent of the window | a daily limit of 1 refuses the second request with the scope `daily` | ✅ |
+| The window of the environment is the window that is used | the reset is a minute away | ✅ |
+| The daily window of the environment is the window that is used | the reset is a minute away and not two hours | ✅ |
+
+The tests were proved to depend on the change: with the reading of the environment removed, the test of the limits coming from the environment fails. The file was put back byte for byte.
+
+### Verified against the running site
+
+| Check | Expected | Result |
+|---|----------|--------|
+| The limit of the environment is applied | `x-ratelimit-limit: 2` | ✅ |
+| The request over the limit is refused | 429 with `Retry-After` | ✅ |
+| The headers carry the values that were applied | the limit and the remainder | ✅ |
+| The daily window of the environment is applied | the reset is 62s away, not 7200s | ✅ |
+
+The requests were refused before the analysis, so no answer was paid for.
+
+### The state of the repository
+
+| Command | Result |
+|---------|--------|
+| `npm test` | 582 tests, 576 pass, 0 fail, 6 skipped |
+| `npm run lint` | 0 errors, 58 warnings (the unchanged baseline) |
+| `npm run typecheck` | clean |
+| `npm run build` | succeeds |
+| `npm run verify:analytics` | 24 cases, 405 rules checked, 405 passed, 0 failed, exit code 0 |
+
+---
+
 ## Milestone 19 Definition of Done
 
 **Definition:** "Events fire correctly and respect privacy settings."
@@ -1011,4 +1061,6 @@ The analytics:
 
 4. **Milestone 19:** Analytics (ROADMAP Milestone 19) — ✅ complete, verified on 2026-11-03
 
-5. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — the next milestone. Its test cases are added here when the task specifications of the milestone are written
+5. **M19 follow-ups:** the two findings of M19.06 — ✅ M19F.03 complete, verified on 2026-11-04. M19F.01 (one identity for the visitor) and M19F.02 (the page level events of PRD §78) are written and waiting to be chosen
+
+6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — the next milestone. Its task specifications are written in `tasks/M20/`, and its test cases are added here when the first task of the milestone is carried out

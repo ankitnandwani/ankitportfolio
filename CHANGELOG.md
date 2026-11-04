@@ -1,3 +1,14 @@
+## [0.1.147] - 2026-11-04
+- Implemented M19F.03 – Close out the findings of the verification of M19
+- The comment of `app/api/analytics/route.ts` now describes what the code does. It used to say that every answer of the proxy carries the headers of the limit and that the request is counted before anything is parsed. The two answers that are refused before the counting, the request from another site and the body that cannot be read, carry no headers of the limit and are not counted. The reason is written down, because counting a request from another site would let it use up the allowance of a visitor. The behaviour of the proxy was not changed
+- The limits of the analyzer of a job description come from the environment now: `JOB_FIT_WINDOW_SECONDS`, `JOB_FIT_MAX_REQUESTS`, `JOB_FIT_DAILY_WINDOW_SECONDS` and `JOB_FIT_DAILY_MAX_REQUESTS` are read when the limiter is built, the way the limits of the chat and of the contact form are read. A variable that is missing, or that holds something that is not a positive number, is ignored and the default of the code is used
+  - PRD §48 asks for the limits of the AI features to be configurable through the environment. The variables were declared in `src/lib/env.ts` and written in `.env.example`, but setting them changed nothing
+- Six tests added in `src/lib/jobFit/policy.test.mts`, and they were proved to depend on the change: with the reading of the environment removed the test of the limits coming from the environment fails, and the file was put back byte for byte
+- Verified against the running site: with `JOB_FIT_MAX_REQUESTS=2` the third analysis is refused with a 429 and the headers carry `x-ratelimit-limit: 2`, and with `JOB_FIT_DAILY_WINDOW_SECONDS=60` and `JOB_FIT_WINDOW_SECONDS=7200` the reset is a minute away instead of two hours. The requests were refused before the analysis, so no answer was paid for
+- The whole suite was run again: 582 tests with 576 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
+- The verification of M19.05 was run again to prove that the behaviour of the proxy is unchanged: 24 cases, 405 rules checked, 405 passed, 0 failed, exit code 0
+- Two more variables of the environment were found and left alone, because they were not part of this task: `CONTACT_FORM_DAILY_WINDOW_SECONDS` and `JOB_FIT_MAX_TOKENS` are declared and never read
+
 ## [0.1.146] - 2026-11-04
 - Planned the next milestone. The task specifications of M20 – Monitoring are written in `tasks/M20/`, nine of them, and the milestone is waiting to be implemented
   - M20.01 – Install and configure Sentry; make the monitoring environment variables optional
