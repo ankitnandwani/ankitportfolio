@@ -1,3 +1,21 @@
+## [0.1.149] - 2026-11-04
+- Implemented M20.02 – Scrub the failures so that nothing private reaches the monitoring service
+- Added `src/lib/monitoring/scrub.ts`, the one layer between the application and the monitoring service. Everything that is sent goes through it, so a capture path that is added later cannot bypass it
+  - `scrubFailure()` takes the parts of a failure and gives back the safe version of them. The name of the error, the message, the kind, the route, the method, the status, the moment, the identifier of the query and the stack stay; everything else is left out
+  - `scrubEvent()` is the backstop. The SDK runs it on every event through the `beforeSend` hook of both sides
+  - The bodies of the chat, of the analyzer of a job description and of the contact form are removed by the name of their fields, and the body of a request is never sent whatever shape it has
+  - The address of a mailbox and the number of a phone are removed from every string that is sent, with the redaction the guardrails already hold
+  - The headers that carry a secret are never sent: `authorization`, `cookie`, `set-cookie`, `x-api-key`, and any header whose name holds `token`, `secret`, `key` or `password`
+  - The values of the secrets of the environment are removed from every string that is sent. A value that is still the placeholder of `.env.example` is not a secret and is not looked for
+- **The list of the secrets is curated, and not the rule of the guardrails.** The guardrails treat every name with an underscore as a secret, which cannot be used here: the value of a limit such as `RATE_LIMIT_MAX_REQUESTS` is the number twenty, and removing that number from every message would be worse than useless. The list holds the eleven variables of the site that hold a credential
+- A secret shorter than eight characters is not looked for, because removing it from a message would take half of its words away
+- **The hook of `beforeSend` takes the event alone.** The SDK calls the hook with the event and a hint, and the hint is not a list of secrets. This was found by reading the wire: with the scrubbing handed to the SDK directly, the hint landed in the place of the secrets, the scrubbing failed, and every report was lost without a word. The hook takes the event alone now, and the scrubbing ignores a second argument that is not a list
+- **A failure of the scrubbing does not send the event unchecked, and it does not lose it either.** A safe shape takes its place, with the identity of the event and a note that says the scrubbing failed
+- The safe shape of an event is built by an allow list. The parts the SDK builds itself keep every field and only their strings are cleaned, because the name of the SDK is the name of the SDK and not the name of a recruiter; the parts that the application fills lose the fields that hold what a visitor wrote
+- 42 tests added: 39 in `src/lib/monitoring/scrub.test.mts` and 3 in `src/lib/monitoring/config.test.mts`. The whole suite was run again: 646 tests with 640 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean
+- **Verified on the wire with the real SDK.** A failure was reported to a local server that wrote the body of the envelope down. One envelope was sent, and it held no address of a mailbox, no number of a phone, no body of a chat, no key, no DSN, no name of a recruiter and no identity of a visitor, while the redaction token was there in their place
+- The build was run by hand, because the CI does not run it. It succeeds, and the scrubbing is in the bundle of the server and in the bundle of the browser
+
 ## [0.1.148] - 2026-11-04
 - Implemented M20.01 – Install and configure Sentry; make the monitoring environment variables optional
 - Installed `@sentry/nextjs` 11.10.0, the newest stable version. The support of Next.js 16 was read before the installation rather than assumed: the package declares `next: "^14.0 || ^15.0.0-rc.0 || ^16.0.0-0"`, and the version of Next.js in this repository is 16.3.2

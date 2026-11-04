@@ -18,6 +18,30 @@
  */
 
 import { isConfiguredValue } from '../analytics/config.ts';
+import { isSecretValue, scrubEvent } from './scrub.ts';
+
+/**
+ * The variables whose value is a secret.
+ *
+ * The guardrails hold the names of the same variables, but their rule is used
+ * on the assignments of a text (`NAME=value`), and it treats every name with
+ * an underscore as a secret. That rule cannot be used here: the value of a
+ * limit such as `RATE_LIMIT_MAX_REQUESTS` is the number twenty, and removing
+ * that number from every message would be worse than useless.
+ */
+const SECRET_VARIABLE_NAMES: readonly string[] = [
+  'GEMINI_API_KEY',
+  'SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'GITHUB_TOKEN',
+  'POSTHOG_KEY',
+  'SENTRY_DSN',
+  'NEXT_PUBLIC_SENTRY_DSN',
+  'SENTRY_AUTH_TOKEN',
+  'EMAIL_API_KEY',
+  'UPSTASH_REDIS_REST_TOKEN',
+  'UPSTASH_REDIS_REST_URL',
+];
 
 /**
  * The values the configuration is read from.
@@ -95,7 +119,28 @@ export interface MonitoringOptions {
   replaysSessionSampleRate: number;
   /** The share of the sessions with a failure that are recorded. */
   replaysOnErrorSampleRate: number;
+  /**
+   * The hook that runs before an event leaves the process.
+   *
+   * It is the backstop: it cleans the event of everything private, so a path
+   * that nobody remembered cannot send anything that should not be sent.
+   */
+  beforeSend?: (<T>(event: T) => T) | undefined;
 }
+
+/**
+ * The hook that runs before an event leaves the process.
+ *
+ * The SDK calls it with the event and a hint. The hint is not a list of
+ * secrets, so the hook takes the event alone and the secrets of the
+ * environment are used. This is the backstop: it cleans the event of
+ * everything private, so a path that nobody remembered cannot send anything
+ * that should not be sent.
+ *
+ * @param event The event of the SDK.
+ * @returns The clean event.
+ */
+const beforeSend = <T>(event: T): T => scrubEvent(event);
 
 /**
  * Builds the options the SDK is started with.
@@ -118,7 +163,34 @@ export function buildMonitoringOptions(config: MonitoringConfig): MonitoringOpti
     // and into the field of the job description (PRD §36, §78).
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0,
+    // The scrubbing runs on every event before it leaves the process.
+    beforeSend,
   };
+}
+
+/**
+ * Reads the values of the secrets of the environment.
+ *
+ * They are read once, when the configuration is read, and every string that
+ * is sent is checked against them.
+ *
+ * A value that is not there, that is still the placeholder of `.env.example`
+ * or that is too short to be a secret is left out. A placeholder is not a
+ * secret, and looking for it would only change the text for nothing.
+ *
+ * @param source The environment to read.
+ * @returns The values that are worth looking for.
+ */
+export function readMonitoringSecrets(source: Record<string, string | undefined>): string[] {
+  const values: string[] = [];
+
+  for (const name of SECRET_VARIABLE_NAMES) {
+    const value = source[name];
+    if (!isSecretValue(value)) continue;
+    values.push((value as string).trim());
+  }
+
+  return values;
 }
 
 /**

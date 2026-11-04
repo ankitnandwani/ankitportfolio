@@ -25,7 +25,7 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | Sentry is integrated | ROADMAP M20, PRD §129 | M20.01 | Complete |
 | Only the variables the implementation needs are required | PRD _Environment variables_ | M20.01 | Complete |
 | The site runs without a monitoring project | ROADMAP M20 (free tier, optional) | M20.01 | Complete |
-| Nothing private reaches the monitoring service | PRD §79, §36, §78 | M20.02 | Covered |
+| Nothing private reaches the monitoring service | PRD §79, §36, §78 | M20.02 | Complete |
 | API errors are monitored | PRD §79, §129 | M20.03 | Covered |
 | AI failures are monitored | PRD §79, §129, ROADMAP M20 | M20.04 | Covered |
 | GitHub API failures are monitored | PRD §79, ROADMAP M20 | M20.05 | Covered |
@@ -35,12 +35,21 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | Error boundaries exist | PRD §129 | M20.07 | Covered |
 | Errors are captured and alertable | ROADMAP M20 DoD | M20.08 | Covered |
 | The monitoring is verified end to end | ROADMAP M20 DoD | M20.09 | Covered |
-| Personal data is redacted before it is written | DECISIONS M13 (guardrails), `src/lib/guardrails/piiDetection.ts` | M20.02 | Satisfied, reused |
-| A secret is removed from every message | DECISIONS M13 (provider) | M20.02 | Satisfied, reused |
+| Personal data is redacted before it is written | DECISIONS M13 (guardrails), `src/lib/guardrails/piiDetection.ts` | M20.02 | Complete, reused |
+| A secret is removed from every message | DECISIONS M13 (provider) | M20.02 | Complete, reused |
 | The events of the visits are counted | ROADMAP M19 | M19.01–M19.06 | Satisfied |
 | The chat, the analyzer and the contact form are limited | PRD §48 | M17, M19.04 | Satisfied |
 
-M20.01 is done (2026-11-04). The rest of the milestone is waiting to be implemented.
+M20.01 and M20.02 are done (2026-11-04). The rest of the milestone is waiting to be implemented.
+
+## What the repository holds after M20.02
+
+- **The scrubbing is one layer and it is on the way out of the process.** `src/lib/monitoring/scrub.ts` holds `scrubFailure()` for the failures the application builds and `scrubEvent()` for the events of the SDK. The `beforeSend` hook of both sides runs the second one, so a capture path that is added in M20.03 to M20.07 cannot bypass it by accident
+- **The safe shape is built by an allow list.** A part that is not on the list of the safe parts does not reach the service, so a field that nobody thought of is not sent by accident
+- **The list of the secrets of the environment is curated.** The rule of the guardrails, which treats every name with an underscore as a secret, cannot be used here: the value of a limit is a number, and removing that number from every message would be worse than useless. A secret shorter than eight characters is not looked for either
+- **The hook of `beforeSend` takes the event alone.** The SDK calls the hook with the event and a hint, and the hint is not a list of secrets. Handing the scrubbing to the SDK directly put the hint in the place of the secrets, so the scrubbing failed and every report was lost. This was found by reading the wire
+- **A failure of the scrubbing does not send the event unchecked and does not lose it either.** A safe shape takes its place, with the identity of the event and a note that says the scrubbing failed
+- **The redaction of the personal data is the one of the guardrails.** It is reused as it is, and it is applied to every string that is sent, not only to the fields whose name says what they hold
 
 ## What the repository holds after M20.01
 

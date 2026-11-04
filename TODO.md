@@ -1,6 +1,6 @@
 # Immediate Next Actions
 
-- Begin implementation of M20.02 – Scrub the failures so that nothing private reaches the monitoring service. The specification is `tasks/M20/02-error-scrubbing.md`. The scrubbing is the privacy centre of the milestone: everything that is sent goes through it, and it has to be in place before the first report is sent in M20.03
+- Begin implementation of M20.03 – Capture the failures of the API routes. The specification is `tasks/M20/03-api-error-capture.md`. The scrubbing of M20.02 is in place, so the safe shape is what the application holds and not only what the SDK receives
 - The nine specifications of M20 are written and the milestone is in progress. The plan, the order of the tasks, the table of the requirements and the decisions that need a person are in `tasks/M20/README.md`
 - **The SDK of the browser is loaded on its own, and a failure of the very first moment is not seen.** The import of `instrumentation-client.ts` is a dynamic one, so the hundred and fifty kilobytes of the SDK are not part of the first load of a page and the page never waits for them. The price is that the SDK is ready a moment after the page is there. The boundaries of M20.07 and the capture of M20.03 have to work with that
 - **Four moderate advisories came with the SDK**, all of them in `@sentry/bundler-plugins`, which only runs at the build. The count of the audit went from 24 to 28 and no new serious one came. The serious ones that were already there are in Next.js 16.3.2 itself and are written down in `TODO.md`
@@ -32,6 +32,18 @@
 - The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow.
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
+
+## Completed (M20.02)
+
+- The scrubbing of the failures was put in place on 2026-11-04. Nothing is captured yet, that is M20.03 to M20.07
+- `src/lib/monitoring/scrub.ts` holds the one layer between the application and the monitoring service, and everything that is sent goes through it. A capture path that is added later cannot bypass it, because the hook is on the way out of the process
+- The safe shape is built by an allow list. The parts that are known to be safe stay, and a part that is not on the list does not reach the service, so a field that nobody thought of is not sent by accident
+- The bodies of the chat, of the analyzer of a job description and of the contact form are removed by the name of their fields, the body of a request is never sent whatever shape it has, the address of a mailbox and the number of a phone are removed from every string that is sent, the headers that carry a secret are never sent, and the values of the secrets of the environment are removed from every string that is sent
+- **The list of the secrets is curated, and not the rule of the guardrails.** The rule of the guardrails would have removed the number twenty from every message, because a limit such as `RATE_LIMIT_MAX_REQUESTS` holds a number. A secret shorter than eight characters is not looked for either
+- **The hook of `beforeSend` takes the event alone.** The SDK calls the hook with the event and a hint, and the hint is not a list of secrets. With the scrubbing handed to the SDK directly the hint landed in the place of the secrets, the scrubbing failed and every report was lost without a word. This was found by reading the wire, and it is fixed
+- A failure of the scrubbing does not send the event unchecked and does not lose it either: a safe shape takes its place, with the identity of the event and a note that says the scrubbing failed
+- 42 tests added. The whole suite: 646 tests with 640 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
+- Verified on the wire with the real SDK: one envelope was sent, and it held no address of a mailbox, no number of a phone, no body of a chat, no key, no DSN, no name of a recruiter and no identity of a visitor
 
 ## Completed (M20.01)
 

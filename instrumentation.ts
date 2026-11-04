@@ -1,6 +1,11 @@
 import * as Sentry from '@sentry/nextjs';
 
-import { buildMonitoringOptions, readMonitoringConfig } from './src/lib/monitoring/config';
+import {
+  buildMonitoringOptions,
+  readMonitoringConfig,
+  readMonitoringSecrets,
+} from './src/lib/monitoring/config';
+import { setMonitoringSecrets } from './src/lib/monitoring/scrub';
 
 /**
  * Starts the monitoring of the server when the instance starts.
@@ -15,6 +20,10 @@ export function register(): void {
     nodeEnv: process.env.NODE_ENV,
     release: process.env.SENTRY_RELEASE,
   });
+
+  // The values of the secrets of the environment are read once, and every
+  // string that is sent is checked against them.
+  setMonitoringSecrets(readMonitoringSecrets(process.env));
 
   if (!config.enabled) {
     return;

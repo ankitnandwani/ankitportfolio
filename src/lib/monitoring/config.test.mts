@@ -145,3 +145,49 @@ test('the options carry no DSN while the monitoring is off', () => {
 
   assert.equal(options.dsn, undefined);
 });
+
+test('the options carry the hook that scrubs the event before it leaves', () => {
+  const options = buildMonitoringOptions(
+    readMonitoringConfig({ sentryDsn: A_DSN, nodeEnv: 'production' })
+  );
+
+  assert.equal(typeof options.beforeSend, 'function');
+});
+
+test('the hook removes the private parts of an event', () => {
+  const options = buildMonitoringOptions(
+    readMonitoringConfig({ sentryDsn: A_DSN, nodeEnv: 'production' })
+  );
+
+  const event = {
+    event_id: 'abc123',
+    user: { id: 'visitor-1', email: 'recruiter@example.com' },
+    request: { url: 'https://ankitnandwani.com/api/chat?token=x', method: 'POST' },
+    extra: { body: { message: 'What are Ankit main technical skills?' } },
+  };
+
+  const clean = options.beforeSend?.(event) as Record<string, unknown>;
+
+  assert.equal('user' in clean, false);
+  assert.equal('body' in (clean.extra as Record<string, unknown>), false);
+  assert.equal(JSON.stringify(clean).includes('What are Ankit main technical skills'), false);
+});
+
+test('the hook is called the way the SDK calls it, with a hint', () => {
+  const options = buildMonitoringOptions(
+    readMonitoringConfig({ sentryDsn: A_DSN, nodeEnv: 'production' })
+  );
+
+  const event = {
+    event_id: 'abc123',
+    user: { id: 'visitor-1', email: 'recruiter@example.com' },
+    extra: { body: { message: 'What are Ankit main technical skills?' } },
+  };
+
+  const hook = options.beforeSend as (event: unknown, hint: unknown) => unknown;
+  const clean = hook(event, { captureContext: { name: 'chat' } }) as Record<string, unknown>;
+
+  assert.notEqual(clean, undefined);
+  assert.equal('user' in clean, false);
+  assert.equal(JSON.stringify(clean).includes('What are Ankit main technical skills'), false);
+});

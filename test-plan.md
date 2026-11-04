@@ -1096,6 +1096,84 @@ Run on 2026-11-04. This task changed no behaviour of the site: nothing is captur
 
 ---
 
+## M20.02 — The Scrubbing of the Failures
+
+Run on 2026-11-04. This task changed no behaviour of the site: nothing is captured yet, that is M20.03 to M20.07. What it did is put the layer in place that every capture of the milestone will go through.
+
+### The bodies of the three free text forms
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The body of a chat message | none of its text is in the safe shape | ✅ |
+| The body of a job description | none of its text is in the safe shape | ✅ |
+| The body of a contact form | no name, no address, no company, no text | ✅ |
+| A field that holds the whole body | it is dropped wherever it is | ✅ |
+| The body of a request of the SDK | it is never sent, whatever shape it has | ✅ |
+
+### The personal data and the secrets
+
+| Case | Expected | Result |
+|------|----------|--------|
+| An address of a mailbox in a message | it is removed | ✅ |
+| A number of a phone in a message | it is removed | ✅ |
+| The personal data in every string that is sent | it is removed | ✅ |
+| The key of the language model in a message | it is removed | ✅ |
+| The DSN in a message | it is removed | ✅ |
+| A value that is the placeholder of the environment | it is not a secret and the text is untouched | ✅ |
+| A value that is too short to be a secret | it is not looked for | ✅ |
+
+### The headers of the request
+
+| Case | Expected | Result |
+|------|----------|--------|
+| `authorization`, `cookie`, `set-cookie`, `x-api-key` | never sent | ✅ |
+| A header whose name holds `token`, `secret`, `key` or `password` | never sent | ✅ |
+| A header that carries nothing | it is kept | ✅ |
+| The query of the address | left out | ✅ |
+
+### What survives the scrubbing
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The name of the error, the message, the kind, the route, the method, the status, the moment, the identifier of the query, the stack | all of them are kept | ✅ |
+| A part that is not there | it is null | ✅ |
+| The user of a visitor | never sent | ✅ |
+| The name of the SDK | kept, because it is the name of the SDK | ✅ |
+
+### The hook of the SDK
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The hook is given to the SDK | it is present in the options of both sides | ✅ |
+| The hook removes the private parts of an event | it does | ✅ |
+| The SDK calls the hook with the event and a hint | the hint is not taken for the secrets and the report is not lost | ✅ |
+| A value that is not an object | it does not throw | ✅ |
+| An event that cannot be read | the report is not lost and the event is not sent unchecked | ✅ |
+
+### The real SDK on the wire
+
+A failure was reported to a local server that wrote the body of the envelope down, with an address of a mailbox, a number of a phone, a body of a chat, a key, a DSN, a name of a recruiter and an identity of a visitor in it.
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The envelopes that were sent | one | ✅ |
+| The address of a mailbox | not in the envelope | ✅ |
+| The number of a phone | not in the envelope | ✅ |
+| The body of the chat | not in the envelope | ✅ |
+| The key and the DSN | not in the envelope, the token of the redaction is there instead | ✅ |
+| The name of a recruiter and the identity of a visitor | not in the envelope | ✅ |
+
+### The state of the repository
+
+| Command | Result |
+|---------|--------|
+| `npm test` | 646 tests, 640 pass, 0 fail, 6 skipped |
+| `npm run lint` | 0 errors, 58 warnings (the unchanged baseline) |
+| `npm run typecheck` | clean |
+| `npm run build` | succeeds, and the scrubbing is in the bundle of the server and in the bundle of the browser |
+
+---
+
 ## Milestone 19 Definition of Done
 
 **Definition:** "Events fire correctly and respect privacy settings."
@@ -1130,4 +1208,4 @@ The analytics:
 
 5. **M19 follow-ups:** the two findings of M19.06 — ✅ M19F.03 complete, verified on 2026-11-04. M19F.01 (one identity for the visitor) and M19F.02 (the page level events of PRD §78) are written and waiting to be chosen
 
-6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04. The rest of the cases are added here as the tasks are carried out
+6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) and M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04. The rest of the cases are added here as the tasks are carried out

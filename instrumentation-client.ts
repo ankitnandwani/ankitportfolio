@@ -1,4 +1,9 @@
-import { buildMonitoringOptions, readMonitoringConfig } from './src/lib/monitoring/config';
+import {
+  buildMonitoringOptions,
+  readMonitoringConfig,
+  readMonitoringSecrets,
+} from './src/lib/monitoring/config';
+import { setMonitoringSecrets } from './src/lib/monitoring/scrub';
 
 /**
  * The configuration of the monitoring of the browser.
@@ -12,6 +17,10 @@ const config = readMonitoringConfig({
   nodeEnv: process.env.NODE_ENV,
   release: process.env.NEXT_PUBLIC_SENTRY_RELEASE,
 });
+
+// The values of the secrets of the environment are read once, and every
+// string that is sent is checked against them.
+setMonitoringSecrets(readMonitoringSecrets(process.env));
 
 /**
  * The SDK of the browser, once it has been loaded.
