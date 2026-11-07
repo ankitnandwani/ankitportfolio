@@ -1,6 +1,7 @@
 import { env } from './env.ts';
 import type { GitHubRepoData, GitHubRepoIdentifier } from './types.ts';
 import { parseGitHubUrl } from './githubUrl.ts';
+import { classifyExternalFailure, reportExternalFailure } from './monitoring/externalFailures.ts';
 
 /**
  * Simple in-memory cache with TTL.
@@ -31,6 +32,70 @@ function enforceCacheSize() {
   const excess = cache.size - MAX_CACHE_SIZE;
   for (let i = 0; i < excess; i++) {
     cache.delete(entries[i].key);
+  }
+}
+
+/**
+ * The answer of the GitHub API, as far as the failure needs it.
+ *
+ * The headers are optional, because a stand-in of a response in a test may
+ * not have any.
+ */
+interface GitHubAnswer {
+  /** The status the API reported. */
+  status: number;
+  /** The headers of the answer. */
+  headers?: { get: (name: string) => string | null } | undefined;
+}
+
+/**
+ * Reports a failure of the GitHub API.
+ *
+ * A repository that is not found is an answer and not a failure of the
+ * service, so it is not reported. Everything else that the API refuses is
+ * worth knowing about, because the page is served with the copy the site has
+ * and the numbers of the repository are not live.
+ *
+ * The name of the repository is reported and not the address of the API,
+ * because an address can carry the token in its query. The report goes out on
+ * its own and is not awaited, so the visitor waits for nothing.
+ *
+ * @param cacheKey The name of the repository, as `owner/repo`.
+ * @param answer The answer of the API, when there was one.
+ * @param error The failure of the request, when the request itself failed.
+ */
+function reportGitHubFailure(cacheKey: string, answer: GitHubAnswer | null, error: unknown): void {
+  try {
+    const status = answer?.status;
+    const requestId = answer?.headers?.get('x-github-request-id') ?? undefined;
+    const rateLimited = answer?.headers?.get('x-ratelimit-remaining') === '0';
+
+    const kind = classifyExternalFailure({
+      status,
+      rateLimited,
+      // The request itself failed, so the service was not reached at all.
+      unreachable: answer === null,
+      message: error instanceof Error ? error.message : undefined,
+    });
+
+    // A repository that is not found is an answer, not a failure of the
+    // service.
+    if (kind === 'not_found') {
+      return;
+    }
+
+    void reportExternalFailure({
+      service: 'github',
+      kind,
+      // The site answers with the copy it has instead of failing, so the page
+      // keeps working and the numbers of the repository are not live.
+      what: 'cached',
+      status,
+      requestId,
+      repository: cacheKey,
+    });
+  } catch {
+    // A failure of the monitoring never reaches the visitor.
   }
 }
 
@@ -96,6 +161,7 @@ export async function fetchGitHubRepoData(
       console.warn(
         `GitHub API request failed for ${cacheKey}: ${response.status} ${response.statusText}`
       );
+      reportGitHubFailure(cacheKey, response, null);
       return null;
     }
 
@@ -126,6 +192,7 @@ export async function fetchGitHubRepoData(
   } catch (error) {
     // Network error, JSON parsing error, etc.
     console.error(`Error fetching GitHub repo ${cacheKey}:`, error);
+    reportGitHubFailure(cacheKey, null, error);
     return null;
   }
 }

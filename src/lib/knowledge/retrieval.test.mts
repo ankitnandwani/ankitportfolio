@@ -5,6 +5,51 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { EMBEDDING_DIMENSIONS, type TextEmbedder } from './embedding.ts';
 import { createRetrievalService } from './retrieval.ts';
 import { FakeSupabase } from './testing/fakeSupabase.ts';
+import { setMonitoringClientFactory, type MonitoringClient, type MonitoringHint } from '../monitoring/capture.ts';
+
+/**
+ * A report the fake client received.
+ */
+interface Report {
+  /** The text of the report. */
+  message?: string;
+  /** The hint that came with it. */
+  hint?: MonitoringHint;
+}
+
+/**
+ * A client that writes the reports down instead of sending them.
+ */
+function createFakeClient(reports: Report[]): MonitoringClient {
+  return {
+    captureException: () => {},
+    captureMessage: (message, hint) => {
+      reports.push({ message, hint });
+    },
+    flush: async () => {},
+  };
+}
+
+/**
+ * Runs something with the monitoring on.
+ *
+ * The configuration of the monitoring is read from the environment, so the
+ * variable of the DSN is what turns it on.
+ */
+async function withMonitoring(run: () => Promise<void>): Promise<void> {
+  const original = process.env.SENTRY_DSN;
+  process.env.SENTRY_DSN = 'https://key@example.com/1';
+
+  try {
+    await run();
+  } finally {
+    if (original === undefined) {
+      delete process.env.SENTRY_DSN;
+    } else {
+      process.env.SENTRY_DSN = original;
+    }
+  }
+}
 
 function asClient(fake: FakeSupabase): SupabaseClient {
   return fake as unknown as SupabaseClient;
@@ -221,4 +266,41 @@ test('reports a failure from the database', async () => {
     () => service.retrieve('a question', { logMetrics: false }),
     /the search failed/
   );
+});
+
+test('a failure of the database is reported with nothing as what answered', async () => {
+  const reports: Report[] = [];
+  setMonitoringClientFactory(() => createFakeClient(reports));
+
+  const failing = {
+    rpc: async () => ({
+      data: null,
+      error: { message: 'relation "knowledge_chunks" does not exist' },
+    }),
+  } as unknown as SupabaseClient;
+
+  const service = createRetrievalService(
+    fixedEmbedder(axisVector(EMBEDDING_DIMENSIONS, 0)),
+    failing
+  );
+
+  try {
+    await withMonitoring(async () => {
+      await assert.rejects(
+        () => service.retrieve('a question', { logMetrics: false }),
+        /knowledge_chunks/
+      );
+    });
+
+    assert.equal(reports.length, 1);
+    assert.equal(reports[0].hint?.tags?.service, 'supabase');
+    assert.equal(reports[0].hint?.tags?.what, 'none');
+    assert.deepEqual(reports[0].hint?.fingerprint, ['supabase', 'unknown']);
+
+    // The message of the database is not the report: it can name a table, a
+    // column or a constraint.
+    assert.equal(JSON.stringify(reports[0]).includes('knowledge_chunks'), false);
+  } finally {
+    setMonitoringClientFactory(null);
+  }
 });

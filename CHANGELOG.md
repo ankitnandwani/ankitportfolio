@@ -1,3 +1,22 @@
+## [0.1.152] - 2026-11-07
+- Implemented M20.05 – Monitor the failures of the external services
+- Added `src/lib/monitoring/externalFailures.ts`, the one place where a failure of a service outside the site is reported
+  - `reportExternalFailure(failure)` reports a failure with the name of the service (`github` or `supabase`), the kind of the failure (`unavailable`, `timeout`, `not_found`, `rate_limited`, `unknown`), what the site did instead (`cached`, `empty`, `none`), the status when the service reported one and the identifier of the request when there is one
+  - It never throws, and it does nothing when the monitoring is off
+  - The address of a service is only reported when it holds no query, because an address can carry a token in its query. The name of the repository is reported and not its address
+  - The report is grouped by the name of the service and by the kind of the failure, so an outage is one issue and not one issue for every repository
+  - One report goes out per service and repository per window of five minutes, and the count of the failures that piled up is added to the report that follows. The map is held in the memory of the process, the same way the limiter of the chat is held
+- `src/lib/githubService.ts` reports the failure when the fetch fails, and it says that the site answered with what it had. The report is not awaited, so the visitor waits for nothing
+  - A repository that is not found is not a failure of the service. It is an answer, and it is not reported
+  - The identifier of the request of GitHub is carried in the report, and it holds no token
+- `src/lib/knowledge/retrieval.ts` reports the failure when the database answers with an error, before it throws it, so the report is not lost when the instance is put to sleep. The message of the database is reduced to its kind: it can name a table, a column or a constraint, so it stays in the log of the server and never reaches a report
+- **The text of a report that is not a failure was never delivered.** The allow-list of the scrubbing of M20.02 held no `message` and no `logentry`, so every report of `captureMessage` arrived with nothing to read. Both are in the list now, and the text is cleaned of its private parts like any other text
+- **A report of a service now carries its level.** The SDK gives a message the level "info" when nothing else is said, and a report of the level "info" is not one that can be alerted on. A failure the site answered with what it had is a warning, and a failure that reached the visitor is an error
+- The safe shape of a failure holds the tags, the fingerprint and the level of a report now, so a report that is not of a route can say what it is about and how it is grouped. The reports of the routes are exactly the ones they were
+- 17 tests added: 14 in `src/lib/monitoring/externalFailures.test.mts`, 2 in `src/lib/githubService.test.mts` and 1 in `src/lib/knowledge/retrieval.test.mts`. The whole suite was run again: 703 tests with 697 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
+- **Verified on the wire with the real SDK.** The GitHub service was called for real with a token that is wrong: the report said `GitHub could not answer for ankitnandwani/ankitnaadwani (unknown). The site answered with what it had.`, it carried the name of the repository, the identifier of the request of GitHub and the status 401, and it held no token, no address of the API and no query. The database that answers with an error produced `The knowledge base could not answer (unknown). The answer came with no context of the retrieval.` and it held no message of the database. Three failures of one repository produced exactly one report
+- **Two findings were left alone and are written down in `TODO.md`.** The GitHub service runs in the browser, where there is no token, so every request of the API is refused with a 401 and the numbers of the repositories never appear on the site; and the report of the GitHub failure is throttled in the memory of the browser, so a page of the projects sends one report per repository while the monitoring of the browser is on
+
 ## [0.1.151] - 2026-11-07
 - Implemented M20.04 – Monitor the failures of the language model
 - Added `src/lib/monitoring/aiFailures.ts`, the one place where a failure of the model is told apart from another failure. The kinds are `configuration`, `quota`, `timeout`, `unavailable`, `blocked` and `unknown`

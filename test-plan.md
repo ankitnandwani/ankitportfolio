@@ -1161,6 +1161,78 @@ Run on 2026-11-05. The verification was done with the dev server running and the
 
 ---
 
+## M20.05 – The Failures of the External Services
+
+Run on 2026-11-07. The GitHub service was called for real, with a token that is wrong, and the database was a stand-in that answers with an error. The reports were read on the wire, out of the envelope that the SDK sent.
+
+### What the report holds
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The name of the service | it is in the report | ✅ `service: github`, `service: supabase` |
+| The kind of the failure | it is in the report | ✅ `kind: unknown` |
+| What the site did instead | it is in the report | ✅ `what: cached`, `what: none` |
+| The status the service reported | it is in the report | ✅ `status: 401` |
+| The identifier of the request | it is in the report | ✅ the identifier of GitHub, `61DD:8763:...` |
+| The name of the repository | it is in the report | ✅ `ankitnandwani/ankitnaadwani` |
+| The address of the API | it is not in the report | ✅ |
+| An address with a query | it is not in the report | ✅ the address is left out whole |
+| The token of GitHub | it is not in the report | ✅ |
+| The message of the database | it is not in the report | ✅ the kind of it is there and not the text |
+| The address of a visitor | it is not in the report | ✅ none in the reports of the browser |
+| A cookie | it is not in the report | ✅ |
+
+### The grouping of the reports
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The fingerprint of a report of a service | the service and the kind | ✅ `["github", "unknown"]` |
+| The fingerprint of the database | the service and the kind | ✅ `["supabase", "unknown"]` |
+| An outage | one issue and not one issue per repository | ✅ the repository is not in the fingerprint |
+
+### One report per window
+
+| Case | Expected | Result |
+|------|----------|--------|
+| Three failures of one repository | one report | ✅ one report on the wire |
+| The count of the failures | it is added to the report that follows | ✅ the count of the unit test, with a window of no length |
+| Two repositories | they are counted apart | ✅ one report for each |
+
+### The text of the report
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The failure of the GitHub API | the text says what happened | ✅ `GitHub could not answer for ankitnandwani/ankitnaadwani (unknown). The site answered with what it had.` |
+| The failure of the database | the text says what happened | ✅ `The knowledge base could not answer (unknown). The answer came with no context of the retrieval.` |
+| The level of the failure of the GitHub API | a warning | ✅ `level: warning` |
+| The level of the failure of the database | an error | ✅ `level: error` |
+
+### What is not reported
+
+| Case | Expected | Result |
+|------|----------|--------|
+| A repository that is not found | it is not reported | ✅ it is an answer and not a failure of the service |
+| The monitoring being off | nothing is sent and nothing throws | ✅ |
+| A failure of the monitoring | it never reaches the visitor | ✅ |
+
+### The state of the repository
+
+| Command | Result |
+|---------|--------|
+| `npm test` | 703 tests, 697 pass, 0 fail, 6 skipped |
+| `npm run lint` | 0 errors, 58 warnings (the unchanged baseline) |
+| `npm run typecheck` | clean |
+| `npm run build` | succeeds |
+
+### The two findings that were left alone
+
+| Case | What was seen |
+|------|---------------|
+| The GitHub service in the browser | ten requests, all of them a 401, and the card of every project shows the placeholders |
+| The report of the GitHub failure in the browser | one page of the projects sent five reports, one for each repository |
+
+---
+
 ## M20.04 – The Failures of the Language Model
 
 Run on 2026-11-07. The verification was done with the dev server running and the real SDK pointed at a local server that wrote the body of every envelope down, so what is claimed here is what was seen on the wire.
@@ -1342,4 +1414,4 @@ The analytics:
 
 5. **M19 follow-ups:** the two findings of M19.06 — ✅ M19F.03 complete, verified on 2026-11-04. M19F.01 (one identity for the visitor) and M19F.02 (the page level events of PRD §78) are written and waiting to be chosen
 
-6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, and M20.04 (the failures of the language model) ✅ verified on 2026-11-07. The rest of the cases are added here as the tasks are carried out
+6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, M20.04 (the failures of the language model) ✅ verified on 2026-11-07, and M20.05 (the failures of the external services) ✅ verified on 2026-11-07. The rest of the cases are added here as the tasks are carried out

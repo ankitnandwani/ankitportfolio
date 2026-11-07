@@ -32,6 +32,7 @@ import {
   scrubFailure,
   setMonitoringSecrets,
   type FailureContext,
+  type ReportLevel,
   type SafeFailure,
 } from './scrub.ts';
 
@@ -86,6 +87,13 @@ export interface MonitoringHint {
   extra?: Record<string, unknown>;
   /** The fingerprint that groups the reports. */
   fingerprint?: string[];
+  /**
+   * The level of the report.
+   *
+   * The SDK gives a message the level "info" when nothing else is said, and
+   * a report that the site answered with what it had is a warning.
+   */
+  level?: ReportLevel;
 }
 
 /**
@@ -275,7 +283,10 @@ export function buildRouteContext(
  * @returns The hint of the report.
  */
 function buildHint(safe: SafeFailure): MonitoringHint {
-  const tags: Record<string, string> = {};
+  // The tags of the report of a service come first, so the name of the
+  // service and what the site did instead are there next to the kind of the
+  // failure.
+  const tags: Record<string, string> = { ...safe.tags };
 
   if (safe.route) tags.route = safe.route;
   if (safe.kind) tags.kind = safe.kind;
@@ -283,7 +294,9 @@ function buildHint(safe: SafeFailure): MonitoringHint {
   if (safe.model) tags.model = safe.model;
   if (safe.status !== null) tags.status = String(safe.status);
 
-  const extra: Record<string, unknown> = {};
+  // The extra parts of the failure are the parts the caller added, and they
+  // were cleaned before they got here.
+  const extra: Record<string, unknown> = { ...safe.extra };
 
   if (safe.queryId) extra.queryId = safe.queryId;
   if (safe.timestamp) extra.timestamp = safe.timestamp;
@@ -291,12 +304,17 @@ function buildHint(safe: SafeFailure): MonitoringHint {
   return {
     tags,
     extra,
+    level: safe.level ?? undefined,
     // A failure that comes from the model is grouped by its kind alone, so
     // a thousand timeouts are one issue and not a thousand. Every other
-    // failure is grouped by its kind and by the route it happened in.
-    fingerprint: safe.route
-      ? [safe.kind ?? 'unknown_failure', safe.route]
-      : [safe.kind ?? 'unknown_failure'],
+    // failure is grouped by its kind and by the route it happened in. A
+    // report that brings its own fingerprint is grouped by it, so a failure
+    // of a service is one issue and not one issue per repository.
+    fingerprint:
+      safe.fingerprint ??
+      (safe.route
+        ? [safe.kind ?? 'unknown_failure', safe.route]
+        : [safe.kind ?? 'unknown_failure']),
   };
 }
 

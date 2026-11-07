@@ -10,7 +10,7 @@ This milestone observes the runtime health of the site: the errors that happen i
 | 2 | M20.02 – Scrub the failures so that nothing private reaches the monitoring service | M20.01 | – |
 | 3 | M20.03 – Capture the failures of the API routes | M20.02 | Done (2026-11-05) |
 | 4 | M20.04 – Monitor the failures of the language model | M20.02 | Done (2026-11-07) |
-| 5 | M20.05 – Monitor the failures of the external services | M20.02 | M20.03, M20.04 |
+| 5 | M20.05 – Monitor the failures of the external services | M20.02 | Done (2026-11-07) |
 | 6 | M20.06 – Monitor the performance of the requests | M20.02 | M20.03, M20.04, M20.05 |
 | 7 | M20.07 – Add the error boundaries and the browser error capture | M20.02 | M20.03, M20.04, M20.05, M20.06 |
 | 8 | M20.08 – Set up the Sentry project, the alerts and the verification script | M20.01, M20.03, M20.04, M20.05, M20.06, M20.07 | – |
@@ -28,8 +28,8 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | Nothing private reaches the monitoring service | PRD §79, §36, §78 | M20.02 | Complete |
 | API errors are monitored | PRD §79, §129 | M20.03 | Complete |
 | AI failures are monitored | PRD §79, §129, ROADMAP M20 | M20.04 | Complete |
-| GitHub API failures are monitored | PRD §79, ROADMAP M20 | M20.05 | Covered |
-| Database failures are monitored | PRD §79 | M20.05 | Covered |
+| GitHub API failures are monitored | PRD §79, ROADMAP M20 | M20.05 | Complete |
+| Database failures are monitored | PRD §79 | M20.05 | Complete |
 | Performance is monitored | PRD §129, ROADMAP M20 | M20.06 | Covered |
 | Frontend errors are monitored | PRD §79, §129 | M20.07 | Covered |
 | Error boundaries exist | PRD §129 | M20.07 | Covered |
@@ -40,7 +40,19 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | The events of the visits are counted | ROADMAP M19 | M19.01–M19.06 | Satisfied |
 | The chat, the analyzer and the contact form are limited | PRD §48 | M17, M19.04 | Satisfied |
 
-M20.01, M20.02, M20.03 and M20.04 are done (2026-11-05 and 2026-11-07). The rest of the milestone is waiting to be implemented.
+M20.01, M20.02, M20.03, M20.04 and M20.05 are done (2026-11-05 and 2026-11-07). The rest of the milestone is waiting to be implemented.
+
+## What the repository holds after M20.05
+
+- **The failures of the services outside the site are reported in one place.** `src/lib/monitoring/externalFailures.ts` holds `reportExternalFailure()`. The name of the service is `github` or `supabase`, the kind of the failure is `unavailable`, `timeout`, `not_found`, `rate_limited` or `unknown`, and what the site did instead is `cached`, `empty` or `none`
+- **The report holds the status when the service reported one and the identifier of the request when there is one.** The address of a service is only reported when it holds no query, because an address can carry a token in its query. The name of the repository is reported and not its address
+- **The report is grouped by the service and by the kind of the failure.** An outage is one issue and not one issue for every repository of the site
+- **One report goes out per service and repository per window.** The count of the failures that piled up is added to the report that follows, and the map of the counts is held in the memory of the process
+- **The GitHub service reports the failure and says that the site answered with what it had.** The report is not awaited, so the visitor waits for nothing. A repository that is not found is not reported, because it is an answer and not a failure of the service
+- **The database reports the failure before it throws it.** The message of the database is reduced to its kind, because it can name a table, a column or a constraint. It stays in the log of the server
+- **A report of a service carries a level.** A failure the site answered with what it had is a warning, and a failure that reached the visitor is an error, because the SDK gives a message the level "info" and a report of that level cannot be alerted on
+- **The text of a report of a message arrives.** The allow-list of the scrubbing of M20.02 held no `message` and no `logentry`, so every report of `captureMessage` arrived with nothing to read. It was found when M20.05 sent its first report, and both keys are in the list now
+- Two findings were left alone and are written down in `TODO.md`: the GitHub service runs in the browser, where there is no token, so every request of the API is refused with a 401 and the numbers of the repositories never appear on the site; and the throttle of the GitHub failure is held in the memory of the browser, so a page of the projects sends one report per repository while the monitoring of the browser is on
 
 ## What the repository holds after M20.04
 

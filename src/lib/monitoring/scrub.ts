@@ -95,6 +95,11 @@ const SAFE_EVENT_KEYS: readonly string[] = [
   'stacktrace',
   'breadcrumbs',
   'request',
+  // The text of a report that is not a failure. It is a text and not an
+  // identifier, so it is cleaned of its private parts like any other text.
+  // Without it a report of a message arrives with nothing to read.
+  'message',
+  'logentry',
   // The fingerprint is what groups the reports. It is a list of the words
   // that name the kind of the failure and the route, so it holds nothing
   // private, and without it every failure opens an issue of its own.
@@ -403,6 +408,23 @@ export function scrubUrl(url: string | undefined): string | undefined {
 }
 
 /**
+ * The levels a report can have.
+ *
+ * A report of a service that could not be reached and that the site answered
+ * with what it had is a warning, and a report of a failure that reached the
+ * visitor is an error.
+ */
+export type ReportLevel = 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug';
+
+/**
+ * The levels a report can have, as a list.
+ *
+ * It is a fixed list, so a level that nobody thought of is not carried into
+ * a report.
+ */
+const REPORT_LEVELS: readonly ReportLevel[] = ['fatal', 'error', 'warning', 'log', 'info', 'debug'];
+
+/**
  * The parts of a failure that are worth reporting.
  *
  * The names are the ones the site uses, and anything else is left out. The
@@ -430,10 +452,33 @@ export interface FailureContext {
   model?: string | undefined;
   /** The stack of the failure. */
   stack?: string | undefined;
+  /**
+   * The level of the report.
+   *
+   * A report of a service that the site answered with what it had is a
+   * warning, and a report of a failure that reached the visitor is an error.
+   */
+  level?: ReportLevel | undefined;
   /** The headers of the request. */
   headers?: Record<string, string | string[] | undefined> | undefined;
   /** The extra parts of the failure. */
   extra?: Record<string, unknown> | undefined;
+  /**
+   * The tags of the report.
+   *
+   * They are what a report is filtered by. A report of a service that is not
+   * a route brings its own, so the name of the service and what the site did
+   * instead can be told apart from the kind of a failure of a route.
+   */
+  tags?: Record<string, string> | undefined;
+  /**
+   * The fingerprint that groups the reports.
+   *
+   * A fingerprint that changes every time opens an issue of its own every
+   * time, so it holds the parts that stay the same: the service and the kind
+   * of the failure.
+   */
+  fingerprint?: readonly string[] | undefined;
   /** Any other part. It is left out of the safe shape. */
   [key: string]: unknown;
 }
@@ -456,8 +501,14 @@ export interface SafeFailure {
   /** The model that was asked, when the failure is of the model. */
   model: string | null;
   stack: string | null;
+  /** The level of the report. */
+  level: ReportLevel | null;
   headers: Record<string, string>;
   extra: Record<string, unknown>;
+  /** The tags of the report. */
+  tags: Record<string, string>;
+  /** The fingerprint that groups the reports. */
+  fingerprint: string[] | null;
 }
 
 /**
@@ -483,8 +534,11 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
     queryId: null,
     model: null,
     stack: null,
+    level: null,
     headers: {},
     extra: {},
+    tags: {},
+    fingerprint: null,
   };
 
   try {
@@ -503,6 +557,22 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
     const cleanIdentifier = (value: unknown): string | null =>
       typeof value === 'string' ? redactSecrets(value, secrets) : null;
 
+    /**
+     * Cleans the parts of a fingerprint. They are identifiers, so the secrets
+     * are taken out of them and nothing else is.
+     */
+    const cleanParts = (values: unknown): string[] | null => {
+      if (!Array.isArray(values)) {
+        return null;
+      }
+
+      const parts = values
+        .filter((value): value is string => typeof value === 'string')
+        .map((value) => redactSecrets(value, secrets));
+
+      return parts.length > 0 ? parts : null;
+    };
+
     safe.errorName = cleanIdentifier(context.errorName);
     safe.message = clean(context.message);
     safe.kind = cleanIdentifier(context.kind);
@@ -513,11 +583,30 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
     safe.model = cleanIdentifier(context.model);
     safe.stack = clean(context.stack);
 
+    if (context.level && REPORT_LEVELS.includes(context.level)) {
+      safe.level = context.level;
+    }
+
     if (typeof context.status === 'number') {
       safe.status = context.status;
     }
 
     safe.headers = scrubHeaders(context.headers);
+
+    safe.fingerprint = cleanParts(context.fingerprint);
+
+    if (context.tags && typeof context.tags === 'object') {
+      const tags: Record<string, string> = {};
+
+      for (const [name, value] of Object.entries(context.tags)) {
+        const cleaned = cleanIdentifier(value);
+        if (cleaned !== null) {
+          tags[name] = cleaned;
+        }
+      }
+
+      safe.tags = tags;
+    }
 
     if (context.extra && typeof context.extra === 'object') {
       const cleaned = scrubValue(context.extra, secrets, 0);
@@ -539,8 +628,11 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
       queryId: null,
       model: null,
       stack: null,
+      level: null,
       headers: {},
       extra: {},
+      tags: {},
+      fingerprint: null,
     };
   }
 

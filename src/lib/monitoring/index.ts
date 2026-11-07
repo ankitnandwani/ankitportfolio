@@ -57,3 +57,19 @@ export {
   readAiModel,
 } from './aiFailures.ts';
 export type { AiFailureKind } from './aiFailures.ts';
+
+export {
+  buildExternalFailureContext,
+  buildExternalFailureMessage,
+  classifyExternalFailure,
+  reportExternalFailure,
+  resetExternalFailureCounts,
+  setExternalFailureWindow,
+} from './externalFailures.ts';
+export type {
+  ExternalFallback,
+  ExternalFailure,
+  ExternalFailureKind,
+  ExternalFailureSignal,
+  ExternalServiceName,
+} from './externalFailures.ts';

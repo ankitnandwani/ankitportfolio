@@ -47,6 +47,56 @@ for (const name of REQUIRED_ENV_VARS) {
 
 const { fetchGitHubRepoData } = await import('./githubService.ts');
 
+import {
+  setMonitoringClientFactory,
+  type MonitoringClient,
+  type MonitoringHint,
+} from './monitoring/capture.ts';
+
+/**
+ * A report the fake client received.
+ */
+interface Report {
+  /** The text of the report. */
+  message?: string;
+  /** The hint that came with it. */
+  hint?: MonitoringHint;
+}
+
+/**
+ * A client that writes the reports down instead of sending them.
+ */
+function createFakeClient(reports: Report[]): MonitoringClient {
+  return {
+    captureException: () => {},
+    captureMessage: (message, hint) => {
+      reports.push({ message, hint });
+    },
+    flush: async () => {},
+  };
+}
+
+/**
+ * Runs something with the monitoring on.
+ *
+ * The configuration of the monitoring is read from the environment, so the
+ * variable of the DSN is what turns it on.
+ */
+async function withMonitoring(run: () => Promise<void>): Promise<void> {
+  const original = process.env.SENTRY_DSN;
+  process.env.SENTRY_DSN = 'https://key@example.com/1';
+
+  try {
+    await run();
+  } finally {
+    if (original === undefined) {
+      delete process.env.SENTRY_DSN;
+    } else {
+      process.env.SENTRY_DSN = original;
+    }
+  }
+}
+
 /**
  * Builds a minimal Response stand-in so the service can be exercised without
  * network access.
@@ -182,4 +232,57 @@ test('caches a response so a repeated request does not call the API again', asyn
   );
 
   assert.equal(calls, 1);
+});
+
+test('a failure of the GitHub API is reported with the cache as what answered', async () => {
+  const reports: Report[] = [];
+  setMonitoringClientFactory(() => createFakeClient(reports));
+
+  try {
+    await withMonitoring(async () => {
+      await withFetch(
+        async () => {
+          throw new Error('network unreachable');
+        },
+        async () => {
+          assert.equal(
+            await fetchGitHubRepoData('https://github.com/reportowner/reportrepo'),
+            null
+          );
+        }
+      );
+    });
+
+    assert.equal(reports.length, 1);
+    assert.equal(reports[0].hint?.tags?.service, 'github');
+    assert.equal(reports[0].hint?.tags?.what, 'cached');
+    assert.equal(reports[0].hint?.tags?.kind, 'unavailable');
+
+    // The name of the repository is reported and not the address of the API.
+    assert.equal(reports[0].hint?.extra?.repository, 'reportowner/reportrepo');
+    assert.match(reports[0].message ?? '', /reportowner\/reportrepo/);
+    assert.equal(JSON.stringify(reports[0]).includes('api.github.com'), false);
+  } finally {
+    setMonitoringClientFactory(null);
+  }
+});
+
+test('a repository that is not found is not reported', async () => {
+  const reports: Report[] = [];
+  setMonitoringClientFactory(() => createFakeClient(reports));
+
+  try {
+    await withMonitoring(async () => {
+      await withFetch(
+        async () => jsonResponse({}, { ok: false, status: 404 }),
+        async () => {
+          assert.equal(await fetchGitHubRepoData('https://github.com/goneowner/gonerepo'), null);
+        }
+      );
+    });
+
+    assert.equal(reports.length, 0);
+  } finally {
+    setMonitoringClientFactory(null);
+  }
 });

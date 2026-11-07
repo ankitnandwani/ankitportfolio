@@ -13,6 +13,10 @@ import {
   type RetrievalResult,
   type RetrievedChunk,
 } from './types.ts';
+import {
+  classifyExternalFailure,
+  reportExternalFailure,
+} from '../monitoring/externalFailures.ts';
 
 /**
  * The default number of chunks a retrieval returns.
@@ -136,7 +140,25 @@ export function createRetrievalService(
       allowed_source_types: options.sourceTypes ?? null,
     });
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      // The failure of the database is reported before it is thrown, so the
+      // report is not lost when the instance is put to sleep.
+      //
+      // The message of the database is not the report. It can name a table, a
+      // column or a constraint, so only the kind of the failure is reported
+      // and the message stays in the log of the server.
+      await reportExternalFailure({
+        service: 'supabase',
+        kind: classifyExternalFailure({ message: error.message }),
+        // The answer came with no context of the retrieval, so the assistant
+        // could not answer with the knowledge base.
+        what: 'none',
+        // The question failed, so the report is an error and not a warning.
+        level: 'error',
+      });
+
+      throw new Error(error.message);
+    }
 
     const rows = (data ?? []) as MatchRow[];
     result.chunks = rows.map(toRetrievedChunk);
