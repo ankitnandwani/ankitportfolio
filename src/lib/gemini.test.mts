@@ -38,6 +38,7 @@ test('reads the status and the message out of a plain SDK error', () => {
   assert.deepEqual(readErrorDetails(error), {
     message: 'API key not valid.',
     status: 400,
+    reason: null,
   });
 });
 
@@ -53,6 +54,7 @@ test('reads the status out of an error that carries the whole response body', ()
   assert.deepEqual(readErrorDetails(new Error(body)), {
     message: 'Resource has been exhausted.',
     status: 429,
+    reason: null,
   });
 });
 
@@ -60,6 +62,35 @@ test('keeps the message when it is not JSON', () => {
   assert.deepEqual(readErrorDetails(new Error('the network is down')), {
     message: 'the network is down',
     status: 0,
+    reason: null,
+  });
+});
+
+test('reads the reason out of an error that carries the whole response body', () => {
+  const body = JSON.stringify({
+    error: {
+      code: 400,
+      message: 'API key not valid. Please pass a valid API key.',
+      details: [{ reason: 'API_KEY_INVALID', metadata: {} }],
+    },
+  });
+
+  assert.deepEqual(readErrorDetails(new Error(body)), {
+    message: 'API key not valid. Please pass a valid API key.',
+    status: 400,
+    reason: 'API_KEY_INVALID',
+  });
+});
+
+test('reads the reason out of an answer whose code is a word', () => {
+  const body = JSON.stringify({
+    error: { code: 'safety', message: 'The request was blocked.' },
+  });
+
+  assert.deepEqual(readErrorDetails(new Error(body)), {
+    message: 'The request was blocked.',
+    status: 0,
+    reason: 'safety',
   });
 });
 

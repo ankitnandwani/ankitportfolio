@@ -554,9 +554,9 @@ export class GeminiProvider implements LLMProvider {
       );
     }
 
-    const { message, status } = readErrorDetails(error);
+    const { message, status, reason } = readErrorDetails(error);
 
-    return new LLMError(this.describe(message, status), status);
+    return new LLMError(this.describe(message, status), status, reason);
   }
 
   /**

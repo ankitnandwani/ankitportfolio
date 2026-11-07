@@ -1161,6 +1161,75 @@ Run on 2026-11-05. The verification was done with the dev server running and the
 
 ---
 
+## M20.04 – The Failures of the Language Model
+
+Run on 2026-11-07. The verification was done with the dev server running and the real SDK pointed at a local server that wrote the body of every envelope down, so what is claimed here is what was seen on the wire.
+
+### The classification of a failure
+
+| Case | Expected | Result |
+|------|----------|--------|
+| `LLMConfigurationError` | `configuration` | ✅ |
+| The status 429 | `quota` | ✅ |
+| The status 408 | `timeout` | ✅ |
+| The status 500 | `unavailable` | ✅ |
+| The status 400 | `unknown` | ✅ |
+| A failure that is not a failure at all | it does not throw | ✅ |
+| The reason of the API is `safety` | `blocked` | ✅ |
+| The reason of the API is `API_KEY_INVALID` | `configuration` | ✅ |
+| A body of an answer of the API | it is read through `readErrorDetails()` | ✅ |
+| A message that says "the free tier is spent" with no status | `unknown` | ✅ the text is not read |
+
+### What the report holds
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The kind of the failure | it is in the report | ✅ `kind: configuration` |
+| The status the API reported | it is in the report | ✅ `status: 404` |
+| The model that was asked | it is in the report | ✅ `model: definitely-not-a-real-model` |
+| The identifier of the query | it is in the report | ✅ |
+| The moment | it is in the report | ✅ |
+| The question | it is not in the report | ✅ |
+| The answer | it is not in the report | ✅ |
+| The prompt | it is not in the report | ✅ |
+| The context of the retrieval | it is not in the report | ✅ |
+| A key of the environment | it is not in the report | ✅ |
+
+### The grouping of the reports
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The fingerprint of a failure of the model | the kind alone | ✅ `["configuration"]` |
+| A thousand timeouts | one issue | ✅ the fingerprint does not hold the moment or the identifier of the query |
+| The fingerprint of a failure of a route | the kind and the route | ✅ `["unknown_failure", "chat"]` |
+
+### One failure is one report
+
+| Case | Expected | Result |
+|------|----------|--------|
+| A failure of the model in the route of the chat | one report | ✅ the report of the model and no second one from the route |
+| The line of the local log of the route | it is still written | ✅ `Chat API error:` |
+| The report of the model | it writes no line of its own | ✅ |
+
+### The answer of the visitor
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The route of the chat without a stream | 500 and `An error occurred processing your request` | ✅ unchanged |
+| The route of the chat with a stream | the stream is ended with an error | ✅ unchanged, checked against the committed code |
+| The words of the friendly answer | they are the ones of today | ✅ unchanged |
+
+### The state of the repository
+
+| Command | Result |
+|---------|--------|
+| `npm test` | 686 tests, 680 pass, 0 fail, 6 skipped |
+| `npm run lint` | 0 errors, 58 warnings (the unchanged baseline) |
+| `npm run typecheck` | clean |
+| `npm run build` | succeeds |
+
+---
+
 ## M20.02 — The Scrubbing of the Failures
 
 Run on 2026-11-04. This task changed no behaviour of the site: nothing is captured yet, that is M20.03 to M20.07. What it did is put the layer in place that every capture of the milestone will go through.
@@ -1273,4 +1342,4 @@ The analytics:
 
 5. **M19 follow-ups:** the two findings of M19.06 — ✅ M19F.03 complete, verified on 2026-11-04. M19F.01 (one identity for the visitor) and M19F.02 (the page level events of PRD §78) are written and waiting to be chosen
 
-6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, and M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05. The rest of the cases are added here as the tasks are carried out
+6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, and M20.04 (the failures of the language model) ✅ verified on 2026-11-07. The rest of the cases are added here as the tasks are carried out

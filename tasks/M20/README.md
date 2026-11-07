@@ -9,7 +9,7 @@ This milestone observes the runtime health of the site: the errors that happen i
 | 1 | M20.01 – Install and configure Sentry; make the monitoring environment variables optional | M19.06 | – |
 | 2 | M20.02 – Scrub the failures so that nothing private reaches the monitoring service | M20.01 | – |
 | 3 | M20.03 – Capture the failures of the API routes | M20.02 | Done (2026-11-05) |
-| 4 | M20.04 – Monitor the failures of the language model | M20.02 | M20.03 |
+| 4 | M20.04 – Monitor the failures of the language model | M20.02 | Done (2026-11-07) |
 | 5 | M20.05 – Monitor the failures of the external services | M20.02 | M20.03, M20.04 |
 | 6 | M20.06 – Monitor the performance of the requests | M20.02 | M20.03, M20.04, M20.05 |
 | 7 | M20.07 – Add the error boundaries and the browser error capture | M20.02 | M20.03, M20.04, M20.05, M20.06 |
@@ -27,7 +27,7 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | The site runs without a monitoring project | ROADMAP M20 (free tier, optional) | M20.01 | Complete |
 | Nothing private reaches the monitoring service | PRD §79, §36, §78 | M20.02 | Complete |
 | API errors are monitored | PRD §79, §129 | M20.03 | Complete |
-| AI failures are monitored | PRD §79, §129, ROADMAP M20 | M20.04 | Covered |
+| AI failures are monitored | PRD §79, §129, ROADMAP M20 | M20.04 | Complete |
 | GitHub API failures are monitored | PRD §79, ROADMAP M20 | M20.05 | Covered |
 | Database failures are monitored | PRD §79 | M20.05 | Covered |
 | Performance is monitored | PRD §129, ROADMAP M20 | M20.06 | Covered |
@@ -40,7 +40,20 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | The events of the visits are counted | ROADMAP M19 | M19.01–M19.06 | Satisfied |
 | The chat, the analyzer and the contact form are limited | PRD §48 | M17, M19.04 | Satisfied |
 
-M20.01, M20.02 and M20.03 are done (2026-11-05). The rest of the milestone is waiting to be implemented.
+M20.01, M20.02, M20.03 and M20.04 are done (2026-11-05 and 2026-11-07). The rest of the milestone is waiting to be implemented.
+
+## What the repository holds after M20.04
+
+- **The failures of the model are told apart in one place.** `src/lib/monitoring/aiFailures.ts` holds `classifyAiFailure()`, and the kinds are `configuration`, `quota`, `timeout`, `unavailable`, `blocked` and `unknown`. A failure of the configuration is a problem of the deployment, a failure of the limit is a problem of the plan, a failure of time is a problem of the limit of the request and a failure of the service is a problem of the day
+- **The classification never reads the text of the message.** It uses the status the provider already carries, the name of the error and the reason the API gives. The text of the message of the API can be anything, and a rule that read it would classify a failure by the wording of the API and not by what happened
+- **The reason of the API is carried by the failure.** `readErrorDetails()` in `src/lib/geminiErrors.ts` gives it back as well as the message and the status, and `LLMError` in `src/lib/llm/provider.ts` holds it. It was needed because a request the API refused for its own reasons and a request it refused because the key is wrong are both a 400
+- **The place where the failure happens reports it.** `src/lib/ai/orchestration.ts` reports the failure of the model in all four places where the model is asked, before the failure is turned into the friendly answer and without awaiting the report, so the latency of the visitor does not grow
+- **The friendly answer is exactly the one of today.** The words and the order of the steps were not changed, and the behaviour was checked against the committed code
+- **One failure is one report.** The capture marks a failure as reported before its first wait, so the route that catches it afterwards writes the line of the local log and does not report it a second time
+- **The report of the model is grouped by the kind alone.** A thousand timeouts are one issue and not a thousand. The reports of the routes keep the kind and the route
+- **The report holds nothing that a visitor wrote.** The kind, the status, the model, the identifier of the query and the moment. No question, no answer, no prompt, no context of the retrieval
+- **The refusals are not failures of the model.** A refusal of the limit of the chat is reported by the analytics of M19.04 and a question the guardrails refuse is a normal answer
+- Two things were found on the wire and left alone, and they are written down in `TODO.md`: the SDK reports the failure of the streaming path a second time on its own, and the friendly answer of the streaming path never reaches the visitor because the route ends the stream with an error
 
 ## What the repository holds after M20.03
 

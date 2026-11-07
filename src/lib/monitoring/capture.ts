@@ -280,6 +280,7 @@ function buildHint(safe: SafeFailure): MonitoringHint {
   if (safe.route) tags.route = safe.route;
   if (safe.kind) tags.kind = safe.kind;
   if (safe.method) tags.method = safe.method;
+  if (safe.model) tags.model = safe.model;
   if (safe.status !== null) tags.status = String(safe.status);
 
   const extra: Record<string, unknown> = {};
@@ -290,7 +291,12 @@ function buildHint(safe: SafeFailure): MonitoringHint {
   return {
     tags,
     extra,
-    fingerprint: [safe.kind ?? 'unknown_failure', safe.route ?? 'unknown'],
+    // A failure that comes from the model is grouped by its kind alone, so
+    // a thousand timeouts are one issue and not a thousand. Every other
+    // failure is grouped by its kind and by the route it happened in.
+    fingerprint: safe.route
+      ? [safe.kind ?? 'unknown_failure', safe.route]
+      : [safe.kind ?? 'unknown_failure'],
   };
 }
 
@@ -325,6 +331,41 @@ function safeError(error: unknown): unknown {
 }
 
 /**
+ * The failures that have been reported already.
+ *
+ * A failure of the model is reported by the place where it happens, and the
+ * route that catches it afterwards must not report it a second time. Two
+ * reports of one failure are two events in the project, and the count of the
+ * issue would be twice what it is.
+ */
+const reportedFailures = new WeakSet<object>();
+
+/**
+ * Marks a failure as reported, so it is not reported twice.
+ *
+ * @param error The failure.
+ */
+export function markFailureReported(error: unknown): void {
+  if (error && (typeof error === 'object' || typeof error === 'function')) {
+    reportedFailures.add(error as object);
+  }
+}
+
+/**
+ * Whether a failure has been reported already.
+ *
+ * @param error The failure.
+ * @returns True when the failure has been reported.
+ */
+export function isFailureReported(error: unknown): boolean {
+  if (!error || (typeof error !== 'object' && typeof error !== 'function')) {
+    return false;
+  }
+
+  return reportedFailures.has(error as object);
+}
+
+/**
  * Reports a failure.
  *
  * The report is sent before the answer of the route goes out, so it is not
@@ -334,6 +375,13 @@ function safeError(error: unknown): unknown {
  *
  * The line of the local log is written whether the monitoring is on or not,
  * because it is the only trace of a failure when nothing leaves the machine.
+ * It is the line of the route, so a report that does not come from a route
+ * writes no line of its own.
+ *
+ * A failure that has been reported already is not sent again, but the line of
+ * the local log is still written. The failure of the model is reported by the
+ * place where it happens, and the route that catches it afterwards writes the
+ * line and leaves the report to the place that knows the kind of it.
  *
  * @param error The failure.
  * @param context The context of the failure.
@@ -347,12 +395,24 @@ export async function captureException(
   try {
     const safe = scrubFailure(context);
 
-    const route = safe.route ?? 'unknown';
-    console.error(CONSOLE_LABELS[route] ?? `[monitoring] ${route}:`, error);
+    if (safe.route) {
+      console.error(CONSOLE_LABELS[safe.route] ?? `[monitoring] ${safe.route}:`, error);
+    }
 
     if (!config.enabled) {
       return;
     }
+
+    // A failure that has been reported already is not reported twice.
+    if (isFailureReported(error)) {
+      return;
+    }
+
+    // The failure is marked before the first wait, so the body of this
+    // function has run its first part by the time the call returns. The
+    // route that catches the failure afterwards therefore knows that it must
+    // not report it a second time, even when it catches it in the same tick.
+    markFailureReported(error);
 
     const client = await getMonitoringClient();
     if (!client) {

@@ -185,10 +185,21 @@ export class LLMError extends Error {
    */
   readonly status: number;
 
-  constructor(message: string, status = 0) {
+  /**
+   * The reason the provider reported, or null when it did not report one.
+   *
+   * It is a fixed word of the API and not the text of an answer. It tells
+   * the failures apart that the status alone cannot: a request the API
+   * refused for its own reasons and a request it refused because the key is
+   * wrong are both a 400.
+   */
+  readonly reason: string | null;
+
+  constructor(message: string, status = 0, reason: string | null = null) {
     super(message);
     this.name = 'LLMError';
     this.status = status;
+    this.reason = reason;
   }
 
   /**

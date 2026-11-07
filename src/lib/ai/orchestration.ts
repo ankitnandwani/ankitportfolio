@@ -11,7 +11,15 @@ import { getLLMProvider } from '../llm/index.ts';
 import { evaluateInput, applyOutputGuardrails, SUGGESTED_QUESTIONS } from '../guardrails/index.ts';
 import { retrieveChunks, DEFAULT_RETRIEVAL_LIMIT, DEFAULT_SIMILARITY_THRESHOLD } from '../knowledge/retrieval.ts';
 import type { RetrievalOptions } from '../knowledge/types.ts';
-import type { LLMProvider, GenerationOptions, TokenUsage, FinishReason } from '../llm/provider.ts';
+import type {
+  LLMProvider,
+  GenerationOptions,
+  GenerationResult,
+  TokenUsage,
+  FinishReason,
+} from '../llm/provider.ts';
+import { buildAiFailureContext } from '../monitoring/aiFailures.ts';
+import { captureException } from '../monitoring/capture.ts';
 import type {
   ChatOrchestrationOptions,
   ChatOrchestrationResult,
@@ -32,6 +40,31 @@ export const DEFAULT_TEMPERATURE = 0.3;
  * The default maximum tokens for generation.
  */
 export const DEFAULT_MAX_TOKENS = 1024;
+
+/**
+ * Reports a failure of the model.
+ *
+ * The report holds the kind of the failure, the status the API reported, the
+ * model that was asked and the identifier of the query. It holds no question,
+ * no answer, no prompt and no context of the retrieval, so the question of a
+ * recruiter never leaves the machine.
+ *
+ * The report goes out on its own and is not awaited, so the latency of the
+ * visitor does not grow: the visitor gets the friendly answer as soon as the
+ * failure is known. The capture marks the failure as reported before its
+ * first wait, so the route that catches it afterwards writes the line of the
+ * local log and does not report the same failure a second time.
+ *
+ * @param error The failure of the model.
+ * @param queryId The identifier of the query.
+ */
+function reportAiFailure(error: unknown, queryId: string): void {
+  try {
+    void captureException(error, buildAiFailureContext(error, { queryId }));
+  } catch {
+    // A failure of the monitoring never reaches the visitor.
+  }
+}
 
 /**
  * Processes a chat message through the full RAG pipeline (non-streaming).
@@ -123,7 +156,15 @@ export async function processChatMessage(
     signal: options.signal,
   };
 
-  const generationResult = await provider.generate(promptContext.fullPrompt, generationOptions);
+  let generationResult: GenerationResult;
+  try {
+    generationResult = await provider.generate(promptContext.fullPrompt, generationOptions);
+  } catch (error) {
+    // The failure of the model is reported before it is handed to the route,
+    // so the report goes out even when the route is the one that answers.
+    reportAiFailure(error, queryId);
+    throw error;
+  }
   metrics.generationMs = Date.now() - generationStartedAt;
   metrics.tokenUsage = generationResult.tokenUsage;
 
@@ -288,6 +329,10 @@ export async function* processChatMessageStream(
       }
     }
   } catch (error) {
+    // The failure of the model is reported before the friendly answer is
+    // given, so the report is not lost when the instance is put to sleep.
+    reportAiFailure(error, queryId);
+
     // If streaming fails, yield error chunk
     const errorMessage = 'I encountered an error generating the response. Please try again.';
     yield {
@@ -444,7 +489,13 @@ export function createOrchestrationService(provider: LLMProvider) {
         systemInstruction: SYSTEM_INSTRUCTION,
         signal: options.signal,
       };
-      const generationResult = await provider.generate(promptContext.fullPrompt, generationOptions);
+      let generationResult: GenerationResult;
+      try {
+        generationResult = await provider.generate(promptContext.fullPrompt, generationOptions);
+      } catch (error) {
+        reportAiFailure(error, queryId);
+        throw error;
+      }
       metrics.generationMs = Date.now() - generationStartedAt;
       metrics.tokenUsage = generationResult.tokenUsage;
 
@@ -599,6 +650,8 @@ export function createOrchestrationService(provider: LLMProvider) {
           }
         }
       } catch (error) {
+        reportAiFailure(error, queryId);
+
         const errorMessage = 'I encountered an error generating the response. Please try again.';
         yield {
           text: errorMessage,

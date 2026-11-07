@@ -6,10 +6,13 @@ import {
   captureException,
   captureMessage,
   classifyFailure,
+  isFailureReported,
   setMonitoringClientFactory,
   type MonitoringClient,
   type MonitoringHint,
 } from './capture.ts';
+import { buildAiFailureContext } from './aiFailures.ts';
+import { LLMError } from '../llm/provider.ts';
 import type { MonitoringConfig } from './config.ts';
 
 /**
@@ -156,6 +159,101 @@ test('the report is grouped by the kind of the failure and by the route', async 
   } finally {
     setMonitoringClientFactory(null);
   }
+});
+
+test('the report of a failure of the model is grouped by its kind alone', async () => {
+  const reports: Report[] = [];
+  setMonitoringClientFactory(() => createFakeClient(reports));
+
+  const original = process.env.GEMINI_MODEL;
+  process.env.GEMINI_MODEL = 'gemini-flash-lite-latest';
+
+  try {
+    const error = new LLMError('too many requests', 429);
+    const context = buildAiFailureContext(error, { queryId: 'abc-123' });
+
+    await captureException(error, context, ON);
+
+    assert.equal(reports.length, 1);
+    assert.equal(reports[0].hint?.tags?.kind, 'quota');
+    assert.equal(reports[0].hint?.tags?.model, 'gemini-flash-lite-latest');
+    assert.equal(reports[0].hint?.tags?.status, '429');
+    assert.equal(reports[0].hint?.extra?.queryId, 'abc-123');
+
+    // A thousand timeouts are one issue and not a thousand.
+    assert.deepEqual(reports[0].hint?.fingerprint, ['quota']);
+  } finally {
+    if (original === undefined) {
+      delete process.env.GEMINI_MODEL;
+    } else {
+      process.env.GEMINI_MODEL = original;
+    }
+    setMonitoringClientFactory(null);
+  }
+});
+
+test('a failure that has been reported already is not reported twice', async () => {
+  const reports: Report[] = [];
+  setMonitoringClientFactory(() => createFakeClient(reports));
+
+  try {
+    const error = new LLMError('too many requests', 429);
+
+    // The place where the failure happens reports it first.
+    await captureException(error, buildAiFailureContext(error, { queryId: 'abc-123' }), ON);
+
+    // The route that catches it afterwards writes the line of the local log
+    // and leaves the report to the place that knows the kind of it.
+    const context = buildRouteContext(
+      'chat',
+      { method: 'POST' },
+      {
+        status: 503,
+        kind: 'llm_unavailable',
+        queryId: 'abc-123',
+      }
+    );
+
+    const { lines } = await withConsole(() => captureException(error, context, ON));
+
+    assert.equal(reports.length, 1);
+    assert.equal(reports[0].hint?.tags?.kind, 'quota');
+    assert.equal(lines.length, 1);
+    assert.equal(lines[0][0], 'Chat API error:');
+  } finally {
+    setMonitoringClientFactory(null);
+  }
+});
+
+test('a failure is marked as reported before the report is sent', async () => {
+  const reports: Report[] = [];
+  setMonitoringClientFactory(() => createFakeClient(reports));
+
+  try {
+    const error = new Error('boom');
+
+    // The call is not awaited, the way the orchestration calls it.
+    const pending = captureException(error, buildAiFailureContext(error), ON);
+
+    // The failure is already marked before the first wait, so the route that
+    // catches it in the same tick knows that it must not report it again.
+    assert.equal(isFailureReported(error), true);
+
+    await pending;
+    assert.equal(reports.length, 1);
+  } finally {
+    setMonitoringClientFactory(null);
+  }
+});
+
+test('the report of a failure of the model writes no line of the local log', async () => {
+  const context = buildAiFailureContext(new LLMError('boom', 500), { queryId: 'abc-123' });
+
+  const { lines } = await withConsole(() =>
+    captureException(new LLMError('boom', 500), context, ON)
+  );
+
+  assert.equal(lines.length, 0);
 });
 
 test('the message of the parser does not hold the text of a visitor', async () => {

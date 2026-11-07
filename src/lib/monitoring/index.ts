@@ -21,6 +21,8 @@ export {
   captureException,
   captureMessage,
   classifyFailure,
+  isFailureReported,
+  markFailureReported,
   setMonitoringClientFactory,
 } from './capture.ts';
 export type {
@@ -47,3 +49,11 @@ export {
   setMonitoringSecrets,
 } from './scrub.ts';
 export type { FailureContext, SafeFailure } from './scrub.ts';
+
+export {
+  buildAiFailureContext,
+  classifyAiFailure,
+  readAiFailureStatus,
+  readAiModel,
+} from './aiFailures.ts';
+export type { AiFailureKind } from './aiFailures.ts';

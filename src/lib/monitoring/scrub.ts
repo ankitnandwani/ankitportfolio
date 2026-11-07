@@ -426,6 +426,8 @@ export interface FailureContext {
   timestamp?: string | undefined;
   /** The identifier of the query. */
   queryId?: string | undefined;
+  /** The model that was asked, when the failure is of the model. */
+  model?: string | undefined;
   /** The stack of the failure. */
   stack?: string | undefined;
   /** The headers of the request. */
@@ -451,6 +453,8 @@ export interface SafeFailure {
   status: number | null;
   timestamp: string | null;
   queryId: string | null;
+  /** The model that was asked, when the failure is of the model. */
+  model: string | null;
   stack: string | null;
   headers: Record<string, string>;
   extra: Record<string, unknown>;
@@ -477,6 +481,7 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
     status: null,
     timestamp: null,
     queryId: null,
+    model: null,
     stack: null,
     headers: {},
     extra: {},
@@ -505,6 +510,7 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
     safe.method = cleanIdentifier(context.method);
     safe.timestamp = cleanIdentifier(context.timestamp);
     safe.queryId = cleanIdentifier(context.queryId);
+    safe.model = cleanIdentifier(context.model);
     safe.stack = clean(context.stack);
 
     if (typeof context.status === 'number') {
@@ -531,6 +537,7 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
       status: null,
       timestamp: null,
       queryId: null,
+      model: null,
       stack: null,
       headers: {},
       extra: {},
