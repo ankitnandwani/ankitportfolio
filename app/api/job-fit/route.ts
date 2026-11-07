@@ -12,6 +12,7 @@ import {
   getSessionId,
   reportRateLimitExceeded,
 } from '@/src/lib/analytics';
+import { buildRouteContext, captureException, classifyFailure } from '@/src/lib/monitoring';
 
 /**
  * The message a visitor sees when the limit is reached.
@@ -301,7 +302,16 @@ export async function POST(request: NextRequest) {
       { headers: { ...rateLimitHeaders, 'Cache-Control': 'no-store' } }
     );
   } catch (error) {
-    console.error('Job fit API error:', error);
+    const kind = classifyFailure(error);
+    const status = kind === 'unknown_failure' ? 500 : 503;
+
+    // The report is sent before the answer goes out, so it is not lost when
+    // the instance is put to sleep. The line of the local log is written by
+    // the capture, so it looks the way it always looked.
+    await captureException(
+      error,
+      buildRouteContext('job-fit', request, { status, kind, queryId })
+    );
 
     // Fire analytics event for failure (fire and forget)
     trackJobFitAnalysis(
@@ -332,22 +342,17 @@ export async function POST(request: NextRequest) {
       analyticsConfig
     ).catch((err) => console.warn('[analytics] trackJobFitAnalysis failed:', err));
 
-    if (error instanceof Error) {
-      // Handle specific error types
-      if (error.name === 'LLMConfigurationError') {
-        return NextResponse.json(
-          { error: 'The analysis service is not configured.' },
-          { status: 503, headers: { ...rateLimitHeaders, 'Cache-Control': 'no-store' } }
-        );
-      }
-      // Check for retryable property on LLMError
-      const llmError = error as { retryable?: boolean; name?: string };
-      if (llmError.name === 'LLMError' && llmError.retryable) {
-        return NextResponse.json(
-          { error: 'The analysis service is temporarily unavailable. Please try again.' },
-          { status: 503, headers: { ...rateLimitHeaders, 'Cache-Control': 'no-store' } }
-        );
-      }
+    if (kind === 'llm_configuration_error') {
+      return NextResponse.json(
+        { error: 'The analysis service is not configured.' },
+        { status: 503, headers: { ...rateLimitHeaders, 'Cache-Control': 'no-store' } }
+      );
+    }
+    if (kind === 'llm_unavailable') {
+      return NextResponse.json(
+        { error: 'The analysis service is temporarily unavailable. Please try again.' },
+        { status: 503, headers: { ...rateLimitHeaders, 'Cache-Control': 'no-store' } }
+      );
     }
 
     return NextResponse.json(

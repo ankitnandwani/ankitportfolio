@@ -20,6 +20,7 @@ import {
   type OutputGuardrailAction,
 } from '@/src/lib/analytics';
 import type { InputGuardrailResult, OutputGuardrailResult } from '@/src/lib/guardrails/pipeline.ts';
+import { buildRouteContext, captureException, classifyFailure } from '@/src/lib/monitoring';
 
 /**
  * The message a visitor sees when the limit is reached.
@@ -188,6 +189,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // The identifier of the query is held outside the block below, so the
+  // report of a failure carries it.
+  const queryId = crypto.randomUUID();
+
   try {
     const body = await request.json();
     const { message, history, stream = true, retrievalLimit, minSimilarity, temperature, maxTokens } = body;
@@ -206,8 +211,6 @@ export async function POST(request: NextRequest) {
         { status: 400, headers: rateLimitHeaders }
       );
     }
-
-    const queryId = crypto.randomUUID();
 
     // The first message of the chat is where the session of the chat
     // begins. The session of the visitor is shared with the rest of the
@@ -418,24 +421,28 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error('Chat API error:', error);
+    const kind = classifyFailure(error);
+    const status = kind === 'unknown_failure' ? 500 : 503;
 
-    if (error instanceof Error) {
-      // Handle specific error types
-      if (error.name === 'LLMConfigurationError') {
-        return NextResponse.json(
-          { error: 'AI service is not configured' },
-          { status: 503, headers: rateLimitHeaders }
-        );
-      }
-      // Check for retryable property on LLMError
-      const llmError = error as { retryable?: boolean; name?: string };
-      if (llmError.name === 'LLMError' && llmError.retryable) {
-        return NextResponse.json(
-          { error: 'AI service temporarily unavailable, please try again' },
-          { status: 503, headers: rateLimitHeaders }
-        );
-      }
+    // The report is sent before the answer goes out, so it is not lost when
+    // the instance is put to sleep. The line of the local log is written by
+    // the capture, so it looks the way it always looked.
+    await captureException(
+      error,
+      buildRouteContext('chat', request, { status, kind, queryId })
+    );
+
+    if (kind === 'llm_configuration_error') {
+      return NextResponse.json(
+        { error: 'AI service is not configured' },
+        { status: 503, headers: rateLimitHeaders }
+      );
+    }
+    if (kind === 'llm_unavailable') {
+      return NextResponse.json(
+        { error: 'AI service temporarily unavailable, please try again' },
+        { status: 503, headers: rateLimitHeaders }
+      );
     }
 
     return NextResponse.json(

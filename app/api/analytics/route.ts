@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleClientEvent, isSameOrigin } from '@/src/lib/analytics';
+import { buildRouteContext, captureException } from '@/src/lib/monitoring';
 
 /**
  * POST /api/analytics
@@ -55,12 +56,28 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = await handleClientEvent(body, { clientKey });
+  try {
+    const result = await handleClientEvent(body, { clientKey });
 
-  return NextResponse.json(result.body, {
-    status: result.status,
-    headers: result.headers,
-  });
+    return NextResponse.json(result.body, {
+      status: result.status,
+      headers: result.headers,
+    });
+  } catch (error) {
+    // A failure the route does not expect is reported, and then it goes on
+    // the way it would have gone: the answer the visitor receives is the one
+    // of today. The refusals above are not failures and are not reported, or
+    // the project would fill with the traffic of other sites.
+    await captureException(
+      error,
+      buildRouteContext('analytics', request, {
+        status: 500,
+        kind: 'unknown_failure',
+      })
+    );
+
+    throw error;
+  }
 }
 
 /**

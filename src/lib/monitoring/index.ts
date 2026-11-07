@@ -1,18 +1,36 @@
 /**
  * The monitoring layer.
  *
- * The configuration lives in `config.ts` and the scrubbing lives in
- * `scrub.ts`. They are the two parts of the layer that the browser and the
- * server share. The capture of the failures arrives with M20.03.
+ * The configuration lives in `config.ts`, the scrubbing lives in `scrub.ts`
+ * and the capture lives in `capture.ts`. They are the parts of the layer that
+ * the browser and the server share. The capture of the failures of the
+ * routes arrived with M20.03.
  */
 
 export {
   buildMonitoringOptions,
+  getMonitoringConfig,
   isValidSentryDsn,
   readMonitoringConfig,
   readMonitoringSecrets,
 } from './config.ts';
 export type { MonitoringConfig, MonitoringEnvSource, MonitoringOptions } from './config.ts';
+
+export {
+  buildRouteContext,
+  captureException,
+  captureMessage,
+  classifyFailure,
+  setMonitoringClientFactory,
+} from './capture.ts';
+export type {
+  FailureKind,
+  MonitoringClient,
+  MonitoringClientFactory,
+  MonitoringHint,
+  RouteAnswer,
+  RouteRequest,
+} from './capture.ts';
 
 export {
   getMonitoringSecrets,

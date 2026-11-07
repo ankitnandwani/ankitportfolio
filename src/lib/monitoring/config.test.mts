@@ -173,6 +173,24 @@ test('the hook removes the private parts of an event', () => {
   assert.equal(JSON.stringify(clean).includes('What are Ankit main technical skills'), false);
 });
 
+test('the integration of the console is left out of the SDK', () => {
+  const options = buildMonitoringOptions(
+    readMonitoringConfig({ sentryDsn: A_DSN, nodeEnv: 'production' })
+  );
+
+  const integrations = options.integrations?.([
+    { name: 'Console' },
+    { name: 'Dedupe' },
+    { name: 'HttpContext' },
+    { name: 'FunctionToString' },
+  ]);
+
+  assert.deepEqual(
+    integrations?.map((integration) => integration.name),
+    ['HttpContext', 'FunctionToString']
+  );
+});
+
 test('the hook is called the way the SDK calls it, with a hint', () => {
   const options = buildMonitoringOptions(
     readMonitoringConfig({ sentryDsn: A_DSN, nodeEnv: 'production' })

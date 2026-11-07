@@ -8,7 +8,7 @@ This milestone observes the runtime health of the site: the errors that happen i
 |-------|------|------------|----------|
 | 1 | M20.01 – Install and configure Sentry; make the monitoring environment variables optional | M19.06 | – |
 | 2 | M20.02 – Scrub the failures so that nothing private reaches the monitoring service | M20.01 | – |
-| 3 | M20.03 – Capture the failures of the API routes | M20.02 | – |
+| 3 | M20.03 – Capture the failures of the API routes | M20.02 | Done (2026-11-05) |
 | 4 | M20.04 – Monitor the failures of the language model | M20.02 | M20.03 |
 | 5 | M20.05 – Monitor the failures of the external services | M20.02 | M20.03, M20.04 |
 | 6 | M20.06 – Monitor the performance of the requests | M20.02 | M20.03, M20.04, M20.05 |
@@ -26,7 +26,7 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | Only the variables the implementation needs are required | PRD _Environment variables_ | M20.01 | Complete |
 | The site runs without a monitoring project | ROADMAP M20 (free tier, optional) | M20.01 | Complete |
 | Nothing private reaches the monitoring service | PRD §79, §36, §78 | M20.02 | Complete |
-| API errors are monitored | PRD §79, §129 | M20.03 | Covered |
+| API errors are monitored | PRD §79, §129 | M20.03 | Complete |
 | AI failures are monitored | PRD §79, §129, ROADMAP M20 | M20.04 | Covered |
 | GitHub API failures are monitored | PRD §79, ROADMAP M20 | M20.05 | Covered |
 | Database failures are monitored | PRD §79 | M20.05 | Covered |
@@ -40,7 +40,17 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | The events of the visits are counted | ROADMAP M19 | M19.01–M19.06 | Satisfied |
 | The chat, the analyzer and the contact form are limited | PRD §48 | M17, M19.04 | Satisfied |
 
-M20.01 and M20.02 are done (2026-11-04). The rest of the milestone is waiting to be implemented.
+M20.01, M20.02 and M20.03 are done (2026-11-05). The rest of the milestone is waiting to be implemented.
+
+## What the repository holds after M20.03
+
+- **The capture is one module and every route hands over to it.** `src/lib/monitoring/capture.ts` holds `captureException()` and `captureMessage()`, and the client of the SDK is created through a factory that a test can replace, the same way the analytics of M19 create the client of PostHog
+- **The context of a route is built by one helper.** The name of the route, the method, the status of the answer, the kind of the failure, the identifier of the query and the moment. The address of the visitor is not part of it and the body never reaches it
+- **The report is grouped by the kind of the failure and by the route**, through the fingerprint of the SDK, so the same failure does not open an issue of its own every time it happens
+- **The console line keeps its shape.** The capture writes it with the words each route used, so the log of the machine reads the way it always read
+- **The integration of the console and the integration of the duplicates are left out of the SDK.** The console of the site holds the address of a visitor and the failure as it came, and it becomes a breadcrumb of the report; the integration of the duplicates drops the second of two failures that look the same, and every failure has to be reported
+- **The message of the parser of a body is not in the report.** It holds the first words of that body. The name of the error and the place it happened are kept
+- **The refusals are not reported.** A 400, a 403 and a 429 are the site doing its job
 
 ## What the repository holds after M20.02
 

@@ -15,6 +15,7 @@ import {
   reportRateLimitExceeded,
   type ContactFormSubmissionProperties,
 } from '@/src/lib/analytics';
+import { buildRouteContext, captureException } from '@/src/lib/monitoring';
 
 /**
  * The message a visitor sees when the limit is reached.
@@ -198,7 +199,17 @@ export async function POST(request: NextRequest) {
       { headers: { ...rateLimitHeaders, 'Cache-Control': 'no-store' } }
     );
   } catch (error) {
-    console.error('Contact form API error:', error);
+    // The report is sent before the answer goes out, so it is not lost when
+    // the instance is put to sleep. The line of the local log is written by
+    // the capture, so it looks the way it always looked.
+    await captureException(
+      error,
+      buildRouteContext('contact', request, {
+        status: 500,
+        kind: 'unknown_failure',
+        queryId,
+      })
+    );
 
     // Fire analytics event for unexpected error
     fireContactAnalytics(

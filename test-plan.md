@@ -1096,6 +1096,71 @@ Run on 2026-11-04. This task changed no behaviour of the site: nothing is captur
 
 ---
 
+## M20.03 – The Capture of the Failures of the API Routes
+
+Run on 2026-11-05. The verification was done with the dev server running and the real SDK pointed at a local server that wrote the body of every envelope down, so what is claimed here is what was seen on the wire.
+
+### What a report holds
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The name of the route | it is in the report | ✅ `route: chat`, `route: feedback` |
+| The method of the request | it is in the report | ✅ `method: POST` |
+| The status of the answer | it is in the report | ✅ `status: 500` |
+| The kind of the failure | it is in the report | ✅ `kind: unknown_failure` |
+| The identifier of the query | it is in the report when there is one | ✅ |
+| The moment | it is in the report | ✅ |
+| The body of the request | it is not in the report | ✅ |
+| The address of the visitor | it is not in the report, neither in the headers | ✅ `x-forwarded-for` is dropped |
+| The text of a visitor | it is not in the report, not even in the message of the parser | ✅ |
+| The user of a visitor | it is not in the report | ✅ |
+| The console of the site | it is not in the report, not even as a breadcrumb | ✅ |
+
+### The grouping of the reports
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The fingerprint of a report | the kind of the failure and the route | ✅ `["unknown_failure", "feedback"]` |
+| Two failures in a row | both are reported | ✅ two envelopes for two failures |
+| The integration of the duplicates | it is left out, or the second failure is lost | ✅ left out |
+
+### The refusals
+
+| Case | Expected | Result |
+|------|----------|--------|
+| A 400 of the route of the feedback | nothing is reported | ✅ no envelope at all |
+| A 400 of the route of the chat | nothing is reported | ✅ |
+| A 400 of the route of the analyzer | nothing is reported | ✅ |
+| A 403 of the proxy of the analytics | nothing is reported | ✅ |
+| A 400 of the proxy of the analytics | nothing is reported | ✅ |
+
+### The answer of the visitor
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The route of the feedback with a body that cannot be read | 500 and `Failed to process feedback` | ✅ unchanged |
+| The route of the chat with a body that cannot be read | 500 and `An error occurred processing your request` | ✅ unchanged |
+| The proxy of the analytics with a body that cannot be read | 400 and `Invalid event payload` | ✅ unchanged |
+
+### The line of the local log
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The route of the chat | `Chat API error:` | ✅ the same words as before |
+| The route of the feedback | `[feedback] Error processing feedback:` | ✅ the same words as before |
+| The line is written while the monitoring is off | it is | ✅ |
+
+### The state of the repository
+
+| Command | Result |
+|---------|--------|
+| `npm test` | 664 tests, 658 pass, 0 fail, 6 skipped |
+| `npm run lint` | 0 errors, 58 warnings (the unchanged baseline) |
+| `npm run typecheck` | clean |
+| `npm run build` | succeeds |
+
+---
+
 ## M20.02 — The Scrubbing of the Failures
 
 Run on 2026-11-04. This task changed no behaviour of the site: nothing is captured yet, that is M20.03 to M20.07. What it did is put the layer in place that every capture of the milestone will go through.
@@ -1208,4 +1273,4 @@ The analytics:
 
 5. **M19 follow-ups:** the two findings of M19.06 — ✅ M19F.03 complete, verified on 2026-11-04. M19F.01 (one identity for the visitor) and M19F.02 (the page level events of PRD §78) are written and waiting to be chosen
 
-6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) and M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04. The rest of the cases are added here as the tasks are carried out
+6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, and M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05. The rest of the cases are added here as the tasks are carried out

@@ -126,6 +126,31 @@ export interface MonitoringOptions {
    * that nobody remembered cannot send anything that should not be sent.
    */
   beforeSend?: (<T>(event: T) => T) | undefined;
+  /**
+   * The integrations of the SDK.
+   *
+   * The integrations that are left out of them are the ones that would work
+   * against what a report is for. The integration of the console writes the
+   * console of the site into the report as a breadcrumb, and the console of
+   * the site writes the address of a visitor (the line of the limiter) and
+   * the failure as it came (the line of the monitoring). Neither belongs in a
+   * report. The integration that removes the duplicates drops the second of
+   * two failures that look the same, and every failure that the routes catch
+   * has to be reported.
+   */
+  integrations?: (<T extends { name: string }>(integrations: T[]) => T[]) | undefined;
+}
+
+/**
+ * Takes the integrations that work against a report out of the list of the
+ * SDK.
+ *
+ * @param integrations The integrations of the SDK.
+ * @returns The integrations that are left.
+ */
+export function withoutConsoleAndDedupe<T extends { name: string }>(integrations: T[]): T[] {
+  const leftOut = ['Console', 'Dedupe'];
+  return integrations.filter((integration) => !leftOut.includes(integration.name));
 }
 
 /**
@@ -165,6 +190,9 @@ export function buildMonitoringOptions(config: MonitoringConfig): MonitoringOpti
     replaysOnErrorSampleRate: 0,
     // The scrubbing runs on every event before it leaves the process.
     beforeSend,
+    // The console of the site stays in the log of the machine, and every
+    // failure that the routes catch is reported.
+    integrations: withoutConsoleAndDedupe,
   };
 }
 
@@ -218,4 +246,26 @@ export function readMonitoringConfig(source: MonitoringEnvSource): MonitoringCon
     release: release && release.length > 0 ? release : undefined,
     logToConsole: source.nodeEnv !== 'production',
   };
+}
+
+/**
+ * Reads the monitoring configuration from the environment.
+ *
+ * The values are read when the function is called and not when the module is
+ * loaded, so a change of the environment is picked up without a restart. This
+ * is the rule the analytics of M19 follow.
+ *
+ * The browser holds the DSN in a public variable, because a value that is not
+ * public never reaches a browser. The server holds it in the ordinary one.
+ *
+ * @returns The configuration.
+ */
+export function getMonitoringConfig(): MonitoringConfig {
+  const isBrowser = typeof window !== 'undefined';
+
+  return readMonitoringConfig({
+    sentryDsn: isBrowser ? process.env.NEXT_PUBLIC_SENTRY_DSN : process.env.SENTRY_DSN,
+    nodeEnv: process.env.NODE_ENV,
+    release: isBrowser ? process.env.NEXT_PUBLIC_SENTRY_RELEASE : process.env.SENTRY_RELEASE,
+  });
 }

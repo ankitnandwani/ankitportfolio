@@ -373,6 +373,8 @@ function buildEvent() {
         authorization: 'Bearer super-secret-token',
         cookie: 'session=abc',
         'x-api-key': 'key-123',
+        'x-forwarded-for': '203.0.113.5',
+        'x-real-ip': '203.0.113.5',
       },
       data: CHAT_BODY,
     },
@@ -390,6 +392,7 @@ function buildEvent() {
     },
     breadcrumbs: [{ message: 'What are Ankit main technical skills?', category: 'console' }],
     sdk: { name: 'sentry.javascript.nextjs', version: '11.10.0' },
+    fingerprint: ['llm_unavailable', 'chat'],
   };
 }
 
@@ -423,6 +426,22 @@ test('the headers that carry a secret are never sent', () => {
   assert.equal('cookie' in headers, false);
   assert.equal('x-api-key' in headers, false);
   assert.equal(headers['content-type'], 'application/json');
+});
+
+test('the address of the visitor in a header is never sent', () => {
+  const clean = scrubEvent(buildEvent()) as Record<string, unknown>;
+  const request = clean.request as Record<string, unknown>;
+  const headers = request.headers as Record<string, string>;
+
+  assert.equal('x-forwarded-for' in headers, false);
+  assert.equal('x-real-ip' in headers, false);
+  assert.equal(JSON.stringify(clean).includes('203.0.113.5'), false);
+});
+
+test('the fingerprint that groups the reports is kept', () => {
+  const clean = scrubEvent(buildEvent()) as Record<string, unknown>;
+
+  assert.deepEqual(clean.fingerprint, ['llm_unavailable', 'chat']);
 });
 
 test('the personal data of the failure is removed', () => {

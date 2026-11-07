@@ -56,6 +56,12 @@ const PRIVATE_HEADER_NAMES: readonly string[] = [
   'set-cookie',
   'x-api-key',
   'proxy-authorization',
+  // The address of the visitor. The limiter of the routes counts the
+  // requests under it, and a report that carries it would carry a personal
+  // detail of the visitor.
+  'x-forwarded-for',
+  'x-real-ip',
+  'forwarded',
 ];
 
 /**
@@ -89,6 +95,10 @@ const SAFE_EVENT_KEYS: readonly string[] = [
   'stacktrace',
   'breadcrumbs',
   'request',
+  // The fingerprint is what groups the reports. It is a list of the words
+  // that name the kind of the failure and the route, so it holds nothing
+  // private, and without it every failure opens an issue of its own.
+  'fingerprint',
 ];
 
 /**

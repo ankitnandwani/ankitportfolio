@@ -1,7 +1,10 @@
 # Immediate Next Actions
 
-- Begin implementation of M20.03 – Capture the failures of the API routes. The specification is `tasks/M20/03-api-error-capture.md`. The scrubbing of M20.02 is in place, so the safe shape is what the application holds and not only what the SDK receives
+- Begin implementation of M20.04 – Capture the failures of the language model. The specification is `tasks/M20/04-ai-failure-monitoring.md`. The capture of M20.03 is in place, so a failure of the model can be reported with the kind of the failure and the status of the answer
 - The nine specifications of M20 are written and the milestone is in progress. The plan, the order of the tasks, the table of the requirements and the decisions that need a person are in `tasks/M20/README.md`
+- **The browser will need its own client of the SDK.** The capture loads the package with a dynamic import, which is what the server needs. The browser already holds the SDK of M20.01, and M20.07 has to hand that one to the capture through the factory instead of loading the package a second time in the page
+- **The browser may want the integration of the duplicates back.** It was left out of the SDK because it drops the second of two failures that look the same, and every failure has to be reported. A loop of failures in the page is the case the integration is for, and M20.07 decides whether the browser needs it
+- **The delivery of the email of the contact form is not reported yet.** The route answers a 500 when the message could not be sent, but that failure is not caught, so it is not a report. It belongs to M20.05, which is the task of the failures of the external services
 - **The SDK of the browser is loaded on its own, and a failure of the very first moment is not seen.** The import of `instrumentation-client.ts` is a dynamic one, so the hundred and fifty kilobytes of the SDK are not part of the first load of a page and the page never waits for them. The price is that the SDK is ready a moment after the page is there. The boundaries of M20.07 and the capture of M20.03 have to work with that
 - **Four moderate advisories came with the SDK**, all of them in `@sentry/bundler-plugins`, which only runs at the build. The count of the audit went from 24 to 28 and no new serious one came. The serious ones that were already there are in Next.js 16.3.2 itself and are written down in `TODO.md`
 - The findings that M19 left behind are written as specifications in `tasks/M19-followups/`: M19F.01 (one identity for the visitor across the events, so a click can be joined with the conversation and the project counts the visitors and not the sessions), M19F.02 (the page level events of PRD §78: `page_view`, `project_view`, `chat_open` and the click on the contact link) and M19F.03 (the two corrections of M19.06). M19F.03 is done. The other two are worked on after M20, and they are not part of M20
@@ -32,6 +35,22 @@
 - The guardrail patterns are a rule set, not a model. They need a look again once the chat is live, because the questions the visitors really ask are the ones that show whether a pattern is too broad or too narrow.
 - The personal content can wait. `src/data/skills.ts` and `src/data/testimonials.ts` are still empty placeholders, and neither is needed for the remaining M17 tasks. The point at which they become visible to users is the chatbot, which already says that the summary and the snapshot are pending verification. The point at which they become a launch blocker is the resume page, which currently shows "Skills data pending verification against resume." Add them before launch.
 - Replace the remaining `TO_BE_VERIFIED_AGAINST_RESUME` placeholders in `src/data/` with resume-verified content. After filling them in, run `npm run ingest` and then `npm run embed` to pick up the new chunks.
+
+## Completed (M20.03)
+
+- The capture of the failures of the routes was put in place on 2026-11-05. The failures of the model and of the external services arrive with M20.04 and M20.05
+- `src/lib/monitoring/capture.ts` holds the one place where a failure of the site becomes a report. A route that catches a failure hands it over and holds nothing else, so a route that is added later cannot reach the monitoring service by another way
+- The context of a route is built by one helper: the name of the route, the method, the status of the answer, the kind of the failure, the identifier of the query and the moment. The address of the visitor is not part of it and the body never reaches it
+- The report is awaited and it is flushed before the answer of the route goes out, so it is not lost when the instance is put to sleep
+- The line of the local log keeps its shape: the capture writes it with the words each route used, so the person who works on the site reads the log they are used to
+- The report is grouped by the kind of the failure and by the route, so the same failure does not open an issue of its own every time it happens
+- The refusals are not reported. A 400, a 403 and a 429 are the site doing its job, and reporting them would fill the project with the traffic of other sites
+- The answer the visitor receives is exactly the answer of today. The proxy of the analytics lets a failure it does not expect go on the way it would have gone
+- **Three findings came out of the verification on the wire and were fixed.** The allow list of the scrubbing dropped the fingerprint of the SDK, so the grouping of the reports was lost on the way out; the integration of the console wrote the console of the site (the line of the limiter holds the address of a visitor) into the report as a breadcrumb; and the integration of the duplicates dropped the second of two failures that look the same
+- The message of the parser of a body holds the first words of that body, so it is not in the report. The name of the error and the place it happened are kept
+- The headers that carry the address of the visitor (`x-forwarded-for`, `x-real-ip` and `forwarded`) are never sent
+- 18 tests added. The whole suite: 664 tests with 658 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
+- Verified with the dev server running and the real SDK: a request with a body that could not be read was made to the route of the feedback and to the route of the chat. Each one produced exactly one report, the report held the route, the method, the status, the kind, the moment and the fingerprint and nothing else, two failures in a row were both reported, and the refusals produced nothing at all
 
 ## Completed (M20.02)
 

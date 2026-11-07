@@ -5,6 +5,7 @@ import {
   generateClientKey,
   getSessionId,
 } from '@/src/lib/analytics';
+import { buildRouteContext, captureException } from '@/src/lib/monitoring';
 
 /**
  * POST /api/feedback
@@ -24,9 +25,14 @@ export async function POST(request: NextRequest) {
   const analyticsClientKey = generateClientKey(forwardedFor, realIp, userAgent);
   const sessionId = getSessionId(analyticsClientKey);
 
+  // The identifier of the query is held outside the block below, so the
+  // report of a failure carries it when the request got that far.
+  let queryId: string | undefined;
+
   try {
     const body = await request.json();
-    const { messageId, queryId, rating, comment, isRedirect } = body;
+    const { messageId, rating, comment, isRedirect } = body;
+    queryId = body.queryId;
 
     // Validate required fields
     if (!messageId || !queryId || !rating || !['up', 'down'].includes(rating)) {
@@ -50,7 +56,18 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[feedback] Error processing feedback:', error);
+    // The report is sent before the answer goes out, so it is not lost when
+    // the instance is put to sleep. The line of the local log is written by
+    // the capture, so it looks the way it always looked.
+    await captureException(
+      error,
+      buildRouteContext('feedback', request, {
+        status: 500,
+        kind: 'unknown_failure',
+        queryId,
+      })
+    );
+
     return NextResponse.json(
       { error: 'Failed to process feedback' },
       { status: 500 }
