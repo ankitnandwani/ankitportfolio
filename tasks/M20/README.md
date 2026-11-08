@@ -12,7 +12,7 @@ This milestone observes the runtime health of the site: the errors that happen i
 | 4 | M20.04 – Monitor the failures of the language model | M20.02 | Done (2026-11-07) |
 | 5 | M20.05 – Monitor the failures of the external services | M20.02 | Done (2026-11-07) |
 | 6 | M20.06 – Monitor the performance of the requests | M20.02 | Done (2026-11-08) |
-| 7 | M20.07 – Add the error boundaries and the browser error capture | M20.02 | M20.03, M20.04, M20.05, M20.06 |
+| 7 | M20.07 – Add the error boundaries and the browser error capture | M20.02 | Done (2026-11-08) |
 | 8 | M20.08 – Set up the Sentry project, the alerts and the verification script | M20.01, M20.03, M20.04, M20.05, M20.06, M20.07 | – |
 | 9 | M20.09 – Test and verify the monitoring end to end | M20.08 | – |
 
@@ -31,8 +31,8 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | GitHub API failures are monitored | PRD §79, ROADMAP M20 | M20.05 | Complete |
 | Database failures are monitored | PRD §79 | M20.05 | Complete |
 | Performance is monitored | PRD §129, ROADMAP M20 | M20.06 | Complete |
-| Frontend errors are monitored | PRD §79, §129 | M20.07 | Covered |
-| Error boundaries exist | PRD §129 | M20.07 | Covered |
+| Frontend errors are monitored | PRD §79, §129 | M20.07 | Complete |
+| Error boundaries exist | PRD §129 | M20.07 | Complete |
 | Errors are captured and alertable | ROADMAP M20 DoD | M20.08 | Covered |
 | The monitoring is verified end to end | ROADMAP M20 DoD | M20.09 | Covered |
 | Personal data is redacted before it is written | DECISIONS M13 (guardrails), `src/lib/guardrails/piiDetection.ts` | M20.02 | Complete, reused |
@@ -40,7 +40,21 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | The events of the visits are counted | ROADMAP M19 | M19.01–M19.06 | Satisfied |
 | The chat, the analyzer and the contact form are limited | PRD §48 | M17, M19.04 | Satisfied |
 
-M20.01, M20.02, M20.03, M20.04, M20.05 and M20.06 are done (2026-11-05, 2026-11-07 and 2026-11-08). The rest of the milestone is waiting to be implemented.
+M20.01, M20.02, M20.03, M20.04, M20.05, M20.06 and M20.07 are done (2026-11-05, 2026-11-07 and 2026-11-08). The rest of the milestone is waiting to be implemented.
+
+## What the repository holds after M20.07
+
+- **A page that fails shows a page that works.** `app/error.tsx` catches the failure of the page below it and `app/global-error.tsx` catches the failures that it cannot catch, the failure of the layout of the site and the failure of the root itself
+- **Both boundaries show the same page.** `src/components/layout/ErrorBoundaryView.tsx` is a page of the site and not a message of the framework: the colours, the radius, the spacing and the typography are the ones of the design system
+- **The page of the boundary does not depend on the theme of the site.** The boundary of the root replaces the layout, and the provider of the theme lives in that layout. The colours follow the class of the site when it has one, and the colour of the machine when it has none
+- **The message is read out and the way to try again is a real button.** The message is in a region of `role="alert"` with `aria-live="assertive"`, the focus is moved to the button when the page appears, and the button has a visible ring of focus (PRD §71)
+- **The failure is reported with the part of the page and with the digest.** `src/lib/monitoring/boundary.ts` holds the one place where it is reported, the report is grouped by the kind and by the part of the page, and it goes out on its own and is not awaited, so a visitor never waits for a report
+- **The report holds no message of the failure.** The message can hold the text of the page and the value of a field. The name of the error and the frames of the stack are kept, because a name is a name of a class of code and a frame is a place in the code. The line of the local log holds the failure as it came
+- **The digest is its own part of the shape of a failure.** It is cleaned like an identifier, because it is a hash and it cannot hold personal data, and it is only read when it has the shape of a digest
+- **The SDK of the browser is handed to the capture through the factory.** The browser already holds the SDK of M20.01 and the package is never loaded a second time in the page. The decision that was taken in M20.03 is carried out
+- **The failures that nothing catches are reported by the SDK.** The integration of the global handlers is one of the defaults of the SDK and it stays
+- **A failed request of the chat, of the analyzer or of the contact form is not reported as a failure of the browser.** The three catch it and show it to the visitor, so it is a handled failure
+- The verification found a real fault of the chat, which is written down in `TODO.md` and was not fixed here
 
 ## What the repository holds after M20.06
 

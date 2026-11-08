@@ -537,3 +537,23 @@ test('the address of a request without a query is left alone', () => {
 test('the redaction of a text leaves a text without private data alone', () => {
   assert.equal(redactText('nothing private here'), 'nothing private here');
 });
+
+test('the digest of a failure of a page survives the scrubbing, because it is a hash', () => {
+  const event = buildEvent();
+  (event.extra as Record<string, unknown>).digest = '172938475610293847';
+
+  const clean = scrubEvent(event) as Record<string, unknown>;
+
+  assert.equal((clean.extra as Record<string, unknown>).digest, '172938475610293847');
+});
+
+test('a text in the part of the digest is cleaned like any other text', () => {
+  const event = buildEvent();
+  (event.extra as Record<string, unknown>).digest =
+    'the email of the visitor is recruiter@example.com';
+
+  const clean = scrubEvent(event) as Record<string, unknown>;
+  const text = JSON.stringify(clean);
+
+  assert.equal(text.includes('recruiter@example.com'), false);
+});

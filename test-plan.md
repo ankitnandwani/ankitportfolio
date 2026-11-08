@@ -1161,6 +1161,79 @@ Run on 2026-11-05. The verification was done with the dev server running and the
 
 ---
 
+## M20.07 – The Error Boundaries and the Browser Capture
+
+Run on 2026-11-08. The verification was made in a real browser with the real SDK, against a local server that wrote down the body of every envelope. A page was made to fail on purpose, and the layout of the site was made to fail on purpose as well, and both were taken back afterwards.
+
+### The page that a visitor sees
+
+| Case | Expected | Result |
+|------|----------|--------|
+| A page that fails | the visitor sees a page that works | ✅ the boundary of the routes |
+| The layout of the site that fails | the visitor sees a page that works | ✅ the boundary of the root, which renders its own `html` and `body` |
+| The message of the failure | it is never shown to the visitor | ✅ |
+| The text of the page | it is never shown to the visitor | ✅ |
+| The digest of Next.js | it is never shown to the visitor | ✅ |
+| The look of the page | it is a page of the site | ✅ the colours, the radius, the spacing and the typography are the ones of the design system |
+| The way to try again | it is a real `button` | ✅ |
+| The focus | it is moved to the way to try again | ✅ the tree of the page says `focused: true` |
+| The keyboard | the way to try again can be used with the keyboard | ✅ the key of the return pressed the button and the page was tried again |
+| The ring of the focus | it can be seen | ✅ |
+| The message for a reader of a screen | it is read out | ✅ the region is of `role="alert"` with `aria-live="assertive"` and the heading is of the first level |
+
+### The report of a boundary
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The part of the page it covers | it is in the report | ✅ `scope: routes` and `scope: root` |
+| The digest of Next.js | it is in the report | ✅ `65068468` for the failure of the layout |
+| The message of the failure | it is not in the report | ✅ the report says `A boundary of the page caught a failure.` |
+| The name of the error | it is in the report when it is the name of a class of code | ✅ `TypeError` |
+| The frames of the stack | they are in the report | ✅ the place where it happened |
+| The text of the page | it is not in the report | ✅ |
+| The value of a field | it is not in the report | ✅ |
+| The answer of the chat | it is not in the report | ✅ |
+| The grouping of the reports | one issue for the same boundary | ✅ the fingerprint is `["browser_boundary_failure","routes"]` and `["browser_boundary_failure","root"]` |
+| The level of the report | an error, because the page was not shown | ✅ |
+| The report is not awaited | the visitor does not wait for it | ✅ |
+| The monitoring being off | nothing is sent and nothing throws | ✅ |
+
+### The failures that nothing catches
+
+| Case | Expected | Result |
+|------|----------|--------|
+| A failure in a handler of an event | it is reported by the SDK | ✅ the mechanism is `auto.browser.global_handlers.onerror` |
+| A promise that is rejected with nothing to catch it | it is reported by the SDK | ✅ the fault of the chat was found this way |
+| A failure of the browser that is handled by the site | it is not reported | ✅ |
+| A failed request of the chat | it is not reported as a failure of the browser | ✅ the visitor saw `network error` and the report of the server was the only one |
+| A failed request of the analyzer | it is not reported as a failure of the browser | ✅ the site catches it and shows it |
+| A failed request of the contact form | it is not reported as a failure of the browser | ✅ the site catches it and shows it |
+| A request that the visitor cancels | it is not a failure | ✅ the chat returns without a failure when the request is cancelled |
+
+### The SDK of the browser
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The package of the SDK | it is not loaded a second time in the page | ✅ the browser hands the SDK it loaded to the capture through the factory |
+| The SDK of the browser | it reports the failures nothing catches | ✅ the integration of the global handlers is one of the defaults and it stays |
+
+### The state of the repository
+
+| Command | Result |
+|---------|--------|
+| `npm test` | 732 tests, 726 pass, 0 fail, 6 skipped |
+| `npm run lint` | 0 errors, 58 warnings (the unchanged baseline) |
+| `npm run typecheck` | clean |
+| `npm run build` | succeeds |
+
+### The finding that was left alone
+
+| Case | What was seen |
+|------|---------------|
+| The chat | it reads `metadataPromise` before the promise is built, and every request of the chat leaves a promise that is rejected and that nobody awaits. The SDK reports it. It is written down in `TODO.md` and the chat was not touched, because it is out of the scope of the task |
+
+---
+
 ## M20.06 – The Performance of the Requests
 
 Run on 2026-11-08. The verification was done with the dev server running and the real SDK pointed at a local server that wrote the body of every envelope down. The slow answer was made with a stand-in for the database that waited thirty-two seconds, so the slow report is what was really sent and not a value that a test made up. The fast answer was made against the real database.
@@ -1477,4 +1550,4 @@ The analytics:
 
 5. **M19 follow-ups:** the two findings of M19.06 — ✅ M19F.03 complete, verified on 2026-11-04. M19F.01 (one identity for the visitor) and M19F.02 (the page level events of PRD §78) are written and waiting to be chosen
 
-6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, M20.04 (the failures of the language model) ✅ verified on 2026-11-07, M20.05 (the failures of the external services) ✅ verified on 2026-11-07, and M20.06 (the performance of the requests) ✅ verified on 2026-11-08. The rest of the cases are added here as the tasks are carried out
+6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, M20.04 (the failures of the language model) ✅ verified on 2026-11-07, M20.05 (the failures of the external services) ✅ verified on 2026-11-07, M20.06 (the performance of the requests) ✅ verified on 2026-11-08, and M20.07 (the error boundaries and the browser capture) ✅ verified on 2026-11-08. The rest of the cases are added here as the tasks are carried out

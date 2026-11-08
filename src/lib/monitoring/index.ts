@@ -88,3 +88,15 @@ export type {
   PerformanceReport,
   PerformanceReporter,
 } from './performance.ts';
+
+export {
+  BOUNDARY_FAILURE_KIND,
+  BOUNDARY_FAILURE_MESSAGE,
+  buildBoundaryFailureContext,
+  buildSafeBoundaryError,
+  readBoundaryDigest,
+  readBoundaryErrorName,
+  readBoundaryStackFrames,
+  reportBoundaryFailure,
+} from './boundary.ts';
+export type { BoundaryFailure, BoundaryScope } from './boundary.ts';

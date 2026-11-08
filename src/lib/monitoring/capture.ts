@@ -299,6 +299,7 @@ function buildHint(safe: SafeFailure): MonitoringHint {
   const extra: Record<string, unknown> = { ...safe.extra };
 
   if (safe.queryId) extra.queryId = safe.queryId;
+  if (safe.digest) extra.digest = safe.digest;
   if (safe.timestamp) extra.timestamp = safe.timestamp;
 
   return {

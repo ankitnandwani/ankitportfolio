@@ -448,6 +448,16 @@ export interface FailureContext {
   timestamp?: string | undefined;
   /** The identifier of the query. */
   queryId?: string | undefined;
+  /**
+   * The digest that Next.js gives for a failure of a page.
+   *
+   * It is the short identifier that ties the failure in the browser to the
+   * one on the server. It is an identifier and not a text, so it is cleaned
+   * like one: a digest is a hash and it cannot hold personal data, and the
+   * redaction of the personal data would take it apart, because a digest is
+   * a number and a long number looks like a phone number.
+   */
+  digest?: string | undefined;
   /** The model that was asked, when the failure is of the model. */
   model?: string | undefined;
   /** The stack of the failure. */
@@ -498,6 +508,13 @@ export interface SafeFailure {
   status: number | null;
   timestamp: string | null;
   queryId: string | null;
+  /**
+   * The digest that Next.js gives for a failure of a page.
+   *
+   * It is cleaned like an identifier, because a digest is a hash and it
+   * cannot hold personal data.
+   */
+  digest: string | null;
   /** The model that was asked, when the failure is of the model. */
   model: string | null;
   stack: string | null;
@@ -532,6 +549,7 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
     status: null,
     timestamp: null,
     queryId: null,
+    digest: null,
     model: null,
     stack: null,
     level: null,
@@ -580,6 +598,7 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
     safe.method = cleanIdentifier(context.method);
     safe.timestamp = cleanIdentifier(context.timestamp);
     safe.queryId = cleanIdentifier(context.queryId);
+    safe.digest = cleanIdentifier(context.digest);
     safe.model = cleanIdentifier(context.model);
     safe.stack = clean(context.stack);
 
@@ -626,6 +645,7 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
       status: null,
       timestamp: null,
       queryId: null,
+      digest: null,
       model: null,
       stack: null,
       level: null,
@@ -648,6 +668,28 @@ export function scrubFailure(context: FailureContext, values?: readonly string[]
  * is the name of the SDK and not the name of a recruiter.
  */
 const FREE_FORM_EVENT_KEYS: readonly string[] = ['extra', 'breadcrumbs', 'tags'];
+
+/**
+ * The parts of the extra that are identifiers and not texts.
+ *
+ * The digest that Next.js gives for a failure of a page is a hash of the
+ * failure, and a hash cannot hold personal data. It is a number, though, and
+ * a long number looks like a phone number to the redaction of the personal
+ * data, which would take it apart and with it the tie between the failure in
+ * the browser and the one on the server.
+ *
+ * Only a digest that looks like a digest is treated like an identifier, so a
+ * text that somebody put in that part is cleaned like any other text.
+ */
+const IDENTIFIER_EXTRA_KEYS: readonly string[] = ['digest'];
+
+/**
+ * The shape of a digest.
+ *
+ * It is a number and it can hold the code of the failure after a semicolon.
+ * It holds no space and no sentence, so a text is never a digest.
+ */
+const DIGEST_PATTERN = /^[A-Za-z0-9_.;-]{1,80}$/;
 
 /**
  * The shape of an event whose scrubbing failed.
@@ -732,6 +774,11 @@ export function scrubEvent<T>(event: T, values?: readonly string[]): T {
         continue;
       }
 
+      if (key === 'extra') {
+        clean[key] = scrubExtra(value, secrets);
+        continue;
+      }
+
       const scrubbed = FREE_FORM_EVENT_KEYS.includes(key)
         ? scrubValue(value, secrets, 0)
         : scrubStrings(value, secrets, 0);
@@ -752,6 +799,49 @@ export function scrubEvent<T>(event: T, values?: readonly string[]): T {
       return {} as T;
     }
   }
+}
+
+/**
+ * Cleans the extra parts of an event.
+ *
+ * Every part is cleaned like any other text, except the parts that are
+ * identifiers, which are cleaned of the secrets of the environment and of
+ * nothing else.
+ *
+ * @param extra The extra parts of the event.
+ * @param secrets The values of the secrets to remove.
+ * @returns The clean extra parts.
+ */
+function scrubExtra(extra: unknown, secrets: readonly string[]): unknown {
+  if (!extra || typeof extra !== 'object' || Array.isArray(extra)) {
+    return scrubValue(extra, secrets, 0);
+  }
+
+  const source = extra as Record<string, unknown>;
+  const clean: Record<string, unknown> = {};
+
+  for (const [name, value] of Object.entries(source)) {
+    // A part that holds what a visitor wrote is left out by its name, the
+    // same way it is left out everywhere else.
+    if (isPrivateFieldName(name)) continue;
+
+    if (IDENTIFIER_EXTRA_KEYS.includes(name) && typeof value === 'string') {
+      if (DIGEST_PATTERN.test(value)) {
+        const cleaned = redactSecrets(value, secrets);
+        if (cleaned) {
+          clean[name] = cleaned;
+        }
+      }
+      continue;
+    }
+
+    const cleaned = scrubValue(value, secrets, 0);
+    if (cleaned !== undefined) {
+      clean[name] = cleaned;
+    }
+  }
+
+  return clean;
 }
 
 /**

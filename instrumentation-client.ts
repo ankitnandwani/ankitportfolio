@@ -3,6 +3,7 @@ import {
   readMonitoringConfig,
   readMonitoringSecrets,
 } from './src/lib/monitoring/config';
+import { setMonitoringClientFactory } from './src/lib/monitoring/capture';
 import { setMonitoringSecrets } from './src/lib/monitoring/scrub';
 
 /**
@@ -33,9 +34,26 @@ if (config.enabled) {
   // before the page becomes interactive and does not await the import, so the
   // chunk is fetched while the page is being made and the SDK is ready a
   // moment later. When there is no DSN the chunk is never fetched at all.
-  void import('@sentry/nextjs').then((module) => {
-    sentry = module;
-    module.init(buildMonitoringOptions(config));
+  const ready = import('@sentry/nextjs').then((sdk) => {
+    sentry = sdk;
+    sdk.init(buildMonitoringOptions(config));
+    return sdk;
+  });
+
+  // The SDK of the browser is handed to the capture of the site, so the
+  // package is never loaded a second time in the page. The boundary of the
+  // page reports through the capture, and the capture uses the SDK that is
+  // already here.
+  setMonitoringClientFactory(async () => {
+    const sdk = await ready;
+
+    return {
+      captureException: (error, hint) => sdk.captureException(error, hint),
+      captureMessage: (message, hint) => sdk.captureMessage(message, hint),
+      flush: async () => {
+        await sdk.flush(5000);
+      },
+    };
   });
 }
 
