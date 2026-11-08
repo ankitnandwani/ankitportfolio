@@ -1161,6 +1161,69 @@ Run on 2026-11-05. The verification was done with the dev server running and the
 
 ---
 
+## M20.06 – The Performance of the Requests
+
+Run on 2026-11-08. The verification was done with the dev server running and the real SDK pointed at a local server that wrote the body of every envelope down. The slow answer was made with a stand-in for the database that waited thirty-two seconds, so the slow report is what was really sent and not a value that a test made up. The fast answer was made against the real database.
+
+### The classification of a slow operation
+
+| Case | Expected | Result |
+|------|----------|--------|
+| An operation that is under its threshold | nothing is reported | ✅ no report on the wire |
+| An operation that is over its threshold | one report | ✅ one report on the wire |
+| The time of the operation | it is the time that was measured | ✅ `durationMs: 33412` for the retrieval, `34239` for the chat |
+| The threshold it was measured against | it is in the report | ✅ `thresholdMs: 10000` for the retrieval, `30000` for the chat |
+| The level of the report | a warning, because the site still answered | ✅ `level: warning` |
+| The report of a monitoring that is off | nothing is sent | ✅ |
+| A failure of the measurement | it never reaches the visitor | ✅ the measurement is wrapped and it never throws |
+
+### What the report holds
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The name of the operation | it is in the report | ✅ `operation: retrieval`, `operation: chat` |
+| The name of the route | it is in the report when there is one | ✅ `route: chat` |
+| The identifier of the query | it is in the report | ✅ the identifier of the query, the same one as the failures of the model |
+| The question of the visitor | it is not in the report | ✅ |
+| The answer of the model | it is not in the report | ✅ |
+| The description of a job | it is not in the report | ✅ |
+| The form of the contact | it is not in the report | ✅ |
+
+### The grouping of the reports
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The fingerprint of a report | the name of the operation alone | ✅ `["retrieval"]`, `["chat"]` |
+| A slow answer every day | one issue and not one issue per answer | ✅ the duration is not in the fingerprint |
+| The model and the database | they are reported apart | ✅ the two reports came with two fingerprints |
+
+### The thresholds
+
+| Case | Expected | Result |
+|------|----------|--------|
+| A threshold that is not in the environment | the default of the code is used | ✅ 30 000 for the chat, 10 000 for the retrieval, 25 000 for the generation, 5 000 for the form and for the fetch of GitHub, 30 000 for the analyzer |
+| A threshold in the environment | it is used | ✅ the value of `PERFORMANCE_CHAT_THRESHOLD_MS` replaces the default |
+| A threshold that is not a number | it is ignored and the default is used | ✅ the site still starts, a wrong value cannot stop the site |
+| A threshold of zero or of a negative number | it is ignored and the default is used | ✅ |
+
+### The state of the repository
+
+| Command | Result |
+|---------|--------|
+| `npm test` | 713 tests, 707 pass, 0 fail, 6 skipped |
+| `npm run lint` | 0 errors, 58 warnings (the unchanged baseline) |
+| `npm run typecheck` | clean |
+| `npm run build` | succeeds |
+
+### The two findings that were left alone
+
+| Case | What was seen |
+|------|---------------|
+| The thresholds of the code | they are guesses; they must be checked against the real times of the site after the first week of the reports |
+| The copy of the environment | `src/lib/env.js` is an old copy of `src/lib/env.ts` that nothing reads and that now stands further from it |
+
+---
+
 ## M20.05 – The Failures of the External Services
 
 Run on 2026-11-07. The GitHub service was called for real, with a token that is wrong, and the database was a stand-in that answers with an error. The reports were read on the wire, out of the envelope that the SDK sent.
@@ -1414,4 +1477,4 @@ The analytics:
 
 5. **M19 follow-ups:** the two findings of M19.06 — ✅ M19F.03 complete, verified on 2026-11-04. M19F.01 (one identity for the visitor) and M19F.02 (the page level events of PRD §78) are written and waiting to be chosen
 
-6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, M20.04 (the failures of the language model) ✅ verified on 2026-11-07, and M20.05 (the failures of the external services) ✅ verified on 2026-11-07. The rest of the cases are added here as the tasks are carried out
+6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, M20.04 (the failures of the language model) ✅ verified on 2026-11-07, M20.05 (the failures of the external services) ✅ verified on 2026-11-07, and M20.06 (the performance of the requests) ✅ verified on 2026-11-08. The rest of the cases are added here as the tasks are carried out

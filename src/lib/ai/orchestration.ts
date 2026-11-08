@@ -20,6 +20,7 @@ import type {
 } from '../llm/provider.ts';
 import { buildAiFailureContext } from '../monitoring/aiFailures.ts';
 import { captureException } from '../monitoring/capture.ts';
+import { readPerformanceThreshold, reportSlowOperation } from '../monitoring/performance.ts';
 import type {
   ChatOrchestrationOptions,
   ChatOrchestrationResult,
@@ -133,6 +134,11 @@ export async function processChatMessage(
   };
   const retrievalResult = await retrieveChunks(inputResult.query, retrievalOptions, supabase);
   metrics.retrievalMs = Date.now() - retrievalStartedAt;
+  // The retrieval is measured apart from the generation, so the owner can
+  // tell whether to look at the database or at the model.
+  reportSlowOperation('retrieval', metrics.retrievalMs, readPerformanceThreshold('retrieval'), {
+    queryId,
+  });
   metrics.chunksRetrieved = retrievalResult.chunks.length;
   metrics.averageSimilarity = retrievalResult.averageSimilarity;
 
@@ -166,6 +172,11 @@ export async function processChatMessage(
     throw error;
   }
   metrics.generationMs = Date.now() - generationStartedAt;
+  // The generation is measured apart from the retrieval, so the owner can
+  // tell whether to look at the model or at the database.
+  reportSlowOperation('generation', metrics.generationMs, readPerformanceThreshold('generation'), {
+    queryId,
+  });
   metrics.tokenUsage = generationResult.tokenUsage;
 
   // 5. Output guardrails
@@ -273,6 +284,11 @@ export async function* processChatMessageStream(
   };
   const retrievalResult = await retrieveChunks(inputResult.query, retrievalOptions, supabase);
   metrics.retrievalMs = Date.now() - retrievalStartedAt;
+  // The retrieval is measured apart from the generation, so the owner can
+  // tell whether to look at the database or at the model.
+  reportSlowOperation('retrieval', metrics.retrievalMs, readPerformanceThreshold('retrieval'), {
+    queryId,
+  });
   metrics.chunksRetrieved = retrievalResult.chunks.length;
   metrics.averageSimilarity = retrievalResult.averageSimilarity;
 
@@ -357,6 +373,11 @@ export async function* processChatMessageStream(
   }
 
   metrics.generationMs = Date.now() - generationStartedAt;
+  // The generation is measured apart from the retrieval, so the owner can
+  // tell whether to look at the model or at the database.
+  reportSlowOperation('generation', metrics.generationMs, readPerformanceThreshold('generation'), {
+    queryId,
+  });
   metrics.tokenUsage = tokenUsage;
 
   // 5. Output guardrails on complete response
@@ -469,6 +490,11 @@ export function createOrchestrationService(provider: LLMProvider) {
       };
       const retrievalResult = await retrieveChunks(inputResult.query, retrievalOptions, supabase);
       metrics.retrievalMs = Date.now() - retrievalStartedAt;
+      // The retrieval is measured apart from the generation, so the owner can
+      // tell whether to look at the database or at the model.
+      reportSlowOperation('retrieval', metrics.retrievalMs, readPerformanceThreshold('retrieval'), {
+        queryId,
+      });
       metrics.chunksRetrieved = retrievalResult.chunks.length;
       metrics.averageSimilarity = retrievalResult.averageSimilarity;
 
@@ -497,6 +523,14 @@ export function createOrchestrationService(provider: LLMProvider) {
         throw error;
       }
       metrics.generationMs = Date.now() - generationStartedAt;
+      // The generation is measured apart from the retrieval, so the owner can
+      // tell whether to look at the model or at the database.
+      reportSlowOperation(
+        'generation',
+        metrics.generationMs,
+        readPerformanceThreshold('generation'),
+        { queryId }
+      );
       metrics.tokenUsage = generationResult.tokenUsage;
 
       // Output guardrails
@@ -597,6 +631,11 @@ export function createOrchestrationService(provider: LLMProvider) {
       };
       const retrievalResult = await retrieveChunks(inputResult.query, retrievalOptions, supabase);
       metrics.retrievalMs = Date.now() - retrievalStartedAt;
+      // The retrieval is measured apart from the generation, so the owner can
+      // tell whether to look at the database or at the model.
+      reportSlowOperation('retrieval', metrics.retrievalMs, readPerformanceThreshold('retrieval'), {
+        queryId,
+      });
       metrics.chunksRetrieved = retrievalResult.chunks.length;
       metrics.averageSimilarity = retrievalResult.averageSimilarity;
 
@@ -675,6 +714,14 @@ export function createOrchestrationService(provider: LLMProvider) {
       }
 
       metrics.generationMs = Date.now() - generationStartedAt;
+      // The generation is measured apart from the retrieval, so the owner can
+      // tell whether to look at the model or at the database.
+      reportSlowOperation(
+        'generation',
+        metrics.generationMs,
+        readPerformanceThreshold('generation'),
+        { queryId }
+      );
       metrics.tokenUsage = tokenUsage;
 
       // Output guardrails

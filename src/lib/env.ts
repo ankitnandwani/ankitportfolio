@@ -1,5 +1,22 @@
 import { z } from "zod";
 
+/**
+ * An optional number of milliseconds.
+ *
+ * A value that is not a number is ignored, the same way the limits of the
+ * chat ignore one, so a wrong value in the environment does not stop the
+ * site from booting: the default of the code is used instead.
+ */
+const optionalMilliseconds = z.preprocess((value) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}, z.number().int().positive().optional());
+
 // Variables that must be present in every environment (server and browser).
 const publicEnvSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().nonempty(),
@@ -62,6 +79,16 @@ const serverEnvSchema = publicEnvSchema.extend({
   EMAIL_TO: z.string().email().optional(),
   EMAIL_FROM: z.string().nonempty().optional(),
   EMAIL_REPLY_TO: z.string().email().optional(),
+  // The thresholds of the monitoring of the performance. They are optional
+  // and they are the time an operation may take before it is reported. A
+  // missing one means the default of the code is used, which is written next
+  // to the code that measures the operation.
+  PERFORMANCE_CHAT_THRESHOLD_MS: optionalMilliseconds,
+  PERFORMANCE_JOB_FIT_THRESHOLD_MS: optionalMilliseconds,
+  PERFORMANCE_CONTACT_THRESHOLD_MS: optionalMilliseconds,
+  PERFORMANCE_GITHUB_FETCH_THRESHOLD_MS: optionalMilliseconds,
+  PERFORMANCE_RETRIEVAL_THRESHOLD_MS: optionalMilliseconds,
+  PERFORMANCE_GENERATION_THRESHOLD_MS: optionalMilliseconds,
 });
 
 export type Env = z.infer<typeof serverEnvSchema>;

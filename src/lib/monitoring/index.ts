@@ -73,3 +73,18 @@ export type {
   ExternalFailureSignal,
   ExternalServiceName,
 } from './externalFailures.ts';
+
+export {
+  DEFAULT_PERFORMANCE_THRESHOLDS,
+  readPerformanceThreshold,
+  reportSlowOperation,
+  startPerformanceMeasurement,
+} from './performance.ts';
+export type {
+  PerformanceClock,
+  PerformanceMeasurement,
+  PerformanceOperation,
+  PerformanceOptions,
+  PerformanceReport,
+  PerformanceReporter,
+} from './performance.ts';

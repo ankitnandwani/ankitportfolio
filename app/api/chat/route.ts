@@ -21,6 +21,10 @@ import {
 } from '@/src/lib/analytics';
 import type { InputGuardrailResult, OutputGuardrailResult } from '@/src/lib/guardrails/pipeline.ts';
 import { buildRouteContext, captureException, classifyFailure } from '@/src/lib/monitoring';
+import {
+  readPerformanceThreshold,
+  startPerformanceMeasurement,
+} from '@/src/lib/monitoring/performance.ts';
 
 /**
  * The message a visitor sees when the limit is reached.
@@ -193,6 +197,13 @@ export async function POST(request: NextRequest) {
   // report of a failure carries it.
   const queryId = crypto.randomUUID();
 
+  // The whole request is measured. The answer of the model takes seconds, so
+  // the threshold is long and only the answers that are wrong are reported.
+  const measurement = startPerformanceMeasurement('chat', readPerformanceThreshold('chat'), {
+    queryId,
+    route: 'chat',
+  });
+
   try {
     const body = await request.json();
     const { message, history, stream = true, retrievalLimit, minSimilarity, temperature, maxTokens } = body;
@@ -334,6 +345,10 @@ export async function POST(request: NextRequest) {
           } catch (error) {
             console.error('Streaming orchestration error:', error);
             controller.error(error);
+          } finally {
+            // The answer of the stream is the work of the request, so the
+            // measurement ends when the stream ends.
+            measurement.end();
           }
         },
       });
@@ -349,6 +364,9 @@ export async function POST(request: NextRequest) {
     } else {
       // Non-streaming response using the orchestration layer
       const result = await processChatMessage(message, options);
+
+      // The answer is ready, so the measurement of the request ends here.
+      measurement.end();
 
       // Track message sent
       const mappedInput = mapInputGuardrailToAnalytics(result.inputGuardrails);
@@ -421,6 +439,9 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
+    // The request failed, so the measurement of it ends here.
+    measurement.end();
+
     const kind = classifyFailure(error);
     const status = kind === 'unknown_failure' ? 500 : 503;
 

@@ -2,6 +2,7 @@ import { env } from './env.ts';
 import type { GitHubRepoData, GitHubRepoIdentifier } from './types.ts';
 import { parseGitHubUrl } from './githubUrl.ts';
 import { classifyExternalFailure, reportExternalFailure } from './monitoring/externalFailures.ts';
+import { readPerformanceThreshold, startPerformanceMeasurement } from './monitoring/performance.ts';
 
 /**
  * Simple in-memory cache with TTL.
@@ -142,6 +143,15 @@ export async function fetchGitHubRepoData(
   }
 
   // Fetch from GitHub API
+  //
+  // The time of the fetch is measured apart from the time of the cache: a
+  // cache that answers in a moment and an API that takes long are two
+  // different problems.
+  const measurement = startPerformanceMeasurement(
+    'github-fetch',
+    readPerformanceThreshold('github-fetch')
+  );
+
   try {
     const response = await fetch(
       `https://api.github.com/repos/${owner}/${repo}`,
@@ -194,5 +204,8 @@ export async function fetchGitHubRepoData(
     console.error(`Error fetching GitHub repo ${cacheKey}:`, error);
     reportGitHubFailure(cacheKey, null, error);
     return null;
+  } finally {
+    // The fetch is done, in every path.
+    measurement.end();
   }
 }

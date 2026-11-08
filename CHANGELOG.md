@@ -1,3 +1,23 @@
+## [0.1.153] - 2026-11-08
+- Implemented M20.06 – Monitor the performance of the requests
+- Added `src/lib/monitoring/performance.ts`, the one place where an operation that is too slow is reported
+  - `startPerformanceMeasurement(operation, thresholdMs, options)` starts a measurement and the caller ends it. The measurement is two reads of the clock and nothing else, so it adds no work to the path of a request
+  - `reportSlowOperation(operation, durationMs, thresholdMs, options)` reports a duration that is already known, for the places that measure their work already
+  - The clock and the reporter are injected, so a test can say that an operation took two thousand milliseconds without waiting two seconds
+  - The report holds the name of the operation, the duration, the threshold it was measured against, the identifier of the query when there is one and the name of the route when there is one. It holds no question, no answer, no description of a job and no form
+  - The report is grouped by the name of the operation, so a slow answer every day is one issue and not a hundred
+  - The report goes out on its own and is not awaited, so a slow request does not become a slower request. It never throws and it does nothing when the monitoring is off
+- The operations that are measured are `chat`, `job-fit`, `contact`, `github-fetch`, `retrieval` and `generation`
+- **The chat route measures the whole request**, and the answer of the stream is the work of the request, so the measurement ends when the stream ends
+- **The analyzer of a job description and the contact form measure the whole request** as well, in every path: the answer or the failure
+- **The generation is measured apart from the retrieval** in the orchestration, so the owner can tell whether to look at the model or at the database. Both numbers were already there; they are reported now
+- **The fetch of the GitHub service is measured apart from the time of the cache**, because a cache that answers in a moment and an API that takes long are two different problems
+- **The thresholds are optional in the environment.** Six new variables, `PERFORMANCE_CHAT_THRESHOLD_MS`, `PERFORMANCE_JOB_FIT_THRESHOLD_MS`, `PERFORMANCE_CONTACT_THRESHOLD_MS`, `PERFORMANCE_GITHUB_FETCH_THRESHOLD_MS`, `PERFORMANCE_RETRIEVAL_THRESHOLD_MS` and `PERFORMANCE_GENERATION_THRESHOLD_MS`, are in `src/lib/env.ts` and in `.env.example`. A missing one and one that holds something that is not a number both mean the default of the code is used, and a wrong value does not stop the site from booting
+- The defaults are the values the site is comfortable with: thirty seconds for the chat and for the analyzer, which answer with the model; twenty-five for the generation; ten for the retrieval; five for the contact form and for the fetch of GitHub
+- **The tracing of the SDK stays off.** The threshold is the recommendation of the specification, and the reason is written in `DECISIONS.md`. Turning the tracing on is a change of the configuration of the SDK and not a change of the code of the site
+- 10 tests added in `src/lib/monitoring/performance.test.mts`. The whole suite was run again: 713 tests with 707 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
+- **Verified on the wire with the real SDK.** The database was made slow on purpose and it answered after thirty-two seconds: the request took 34.2 seconds and produced two reports, `The retrieval took 33412 ms, which is longer than the threshold of 10000 ms.` and `The chat took 34239 ms, which is longer than the threshold of 30000 ms.`, with the same identifier of the query, and neither of them held the question or the answer. A request that took 3.6 seconds produced no report of a slow operation at all
+
 ## [0.1.152] - 2026-11-07
 - Implemented M20.05 – Monitor the failures of the external services
 - Added `src/lib/monitoring/externalFailures.ts`, the one place where a failure of a service outside the site is reported

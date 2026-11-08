@@ -13,6 +13,10 @@ import {
   reportRateLimitExceeded,
 } from '@/src/lib/analytics';
 import { buildRouteContext, captureException, classifyFailure } from '@/src/lib/monitoring';
+import {
+  readPerformanceThreshold,
+  startPerformanceMeasurement,
+} from '@/src/lib/monitoring/performance.ts';
 
 /**
  * The message a visitor sees when the limit is reached.
@@ -156,6 +160,13 @@ export async function POST(request: NextRequest) {
   }
 
   const queryId = crypto.randomUUID();
+
+  // The whole request is measured. The analysis answers with the model, so
+  // the threshold is long and only the analyses that are wrong are reported.
+  const measurement = startPerformanceMeasurement('job-fit', readPerformanceThreshold('job-fit'), {
+    queryId,
+    route: 'job-fit',
+  });
 
   try {
     let body: unknown;
@@ -359,5 +370,8 @@ export async function POST(request: NextRequest) {
       { error: 'Something went wrong while analysing the job description. Please try again.' },
       { status: 500, headers: { ...rateLimitHeaders, 'Cache-Control': 'no-store' } }
     );
+  } finally {
+    // The request is done, in every path: the answer or the failure.
+    measurement.end();
   }
 }

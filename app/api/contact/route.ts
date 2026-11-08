@@ -16,6 +16,10 @@ import {
   type ContactFormSubmissionProperties,
 } from '@/src/lib/analytics';
 import { buildRouteContext, captureException } from '@/src/lib/monitoring';
+import {
+  readPerformanceThreshold,
+  startPerformanceMeasurement,
+} from '@/src/lib/monitoring/performance.ts';
 
 /**
  * The message a visitor sees when the limit is reached.
@@ -109,6 +113,13 @@ export async function POST(request: NextRequest) {
   }
 
   const queryId = crypto.randomUUID();
+
+  // The whole request is measured. The form answers in milliseconds when the
+  // delivery of the email is quick, so the threshold is short.
+  const measurement = startPerformanceMeasurement('contact', readPerformanceThreshold('contact'), {
+    queryId,
+    route: 'contact',
+  });
 
   try {
     let body: unknown;
@@ -225,6 +236,9 @@ export async function POST(request: NextRequest) {
       { error: 'Something went wrong. Please try again.' },
       { status: 500, headers: { ...rateLimitHeaders, 'Cache-Control': 'no-store' } }
     );
+  } finally {
+    // The request is done, in every path: the answer or the failure.
+    measurement.end();
   }
 }
 

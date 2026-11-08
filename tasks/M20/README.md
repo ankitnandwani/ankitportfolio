@@ -11,7 +11,7 @@ This milestone observes the runtime health of the site: the errors that happen i
 | 3 | M20.03 – Capture the failures of the API routes | M20.02 | Done (2026-11-05) |
 | 4 | M20.04 – Monitor the failures of the language model | M20.02 | Done (2026-11-07) |
 | 5 | M20.05 – Monitor the failures of the external services | M20.02 | Done (2026-11-07) |
-| 6 | M20.06 – Monitor the performance of the requests | M20.02 | M20.03, M20.04, M20.05 |
+| 6 | M20.06 – Monitor the performance of the requests | M20.02 | Done (2026-11-08) |
 | 7 | M20.07 – Add the error boundaries and the browser error capture | M20.02 | M20.03, M20.04, M20.05, M20.06 |
 | 8 | M20.08 – Set up the Sentry project, the alerts and the verification script | M20.01, M20.03, M20.04, M20.05, M20.06, M20.07 | – |
 | 9 | M20.09 – Test and verify the monitoring end to end | M20.08 | – |
@@ -30,7 +30,7 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | AI failures are monitored | PRD §79, §129, ROADMAP M20 | M20.04 | Complete |
 | GitHub API failures are monitored | PRD §79, ROADMAP M20 | M20.05 | Complete |
 | Database failures are monitored | PRD §79 | M20.05 | Complete |
-| Performance is monitored | PRD §129, ROADMAP M20 | M20.06 | Covered |
+| Performance is monitored | PRD §129, ROADMAP M20 | M20.06 | Complete |
 | Frontend errors are monitored | PRD §79, §129 | M20.07 | Covered |
 | Error boundaries exist | PRD §129 | M20.07 | Covered |
 | Errors are captured and alertable | ROADMAP M20 DoD | M20.08 | Covered |
@@ -40,7 +40,21 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | The events of the visits are counted | ROADMAP M19 | M19.01–M19.06 | Satisfied |
 | The chat, the analyzer and the contact form are limited | PRD §48 | M17, M19.04 | Satisfied |
 
-M20.01, M20.02, M20.03, M20.04 and M20.05 are done (2026-11-05 and 2026-11-07). The rest of the milestone is waiting to be implemented.
+M20.01, M20.02, M20.03, M20.04, M20.05 and M20.06 are done (2026-11-05, 2026-11-07 and 2026-11-08). The rest of the milestone is waiting to be implemented.
+
+## What the repository holds after M20.06
+
+- **The requests that are too slow are reported in one place.** `src/lib/monitoring/performance.ts` holds `startPerformanceMeasurement()`, `reportSlowOperation()` and `readPerformanceThreshold()`. The measurement is two reads of the clock and nothing else, so it adds no work to the path of a request
+- **The clock and the reporter are injected.** The rule of the limiter of the chat, whose store is injected for the same reason, is the model. A test says that an operation took two thousand milliseconds without waiting two seconds
+- **The report goes out on its own and is not awaited.** A slow request does not become a slower request, and a failure of the monitoring never reaches the visitor
+- **The report holds the operation, the duration, the threshold, the identifier of the query and the name of the route.** It holds no question, no answer, no description of a job and no form
+- **The report is grouped by the name of the operation alone.** A slow answer every day is one issue and not a hundred, and it is of the level "warning", because a report of the level "info" cannot be alerted on
+- **The operations that are measured are `chat`, `job-fit`, `contact`, `github-fetch`, `retrieval` and `generation`.** The chat route, the analyzer of a job description and the contact form measure the whole request, and the answer of the stream of the chat ends the measurement of the chat, because the answer is the work of the request
+- **The generation and the retrieval are reported apart.** The orchestrator knows both numbers already, and reporting them apart tells the owner whether to look at the model or at the database
+- **The fetch of the GitHub service is measured apart from the time of the cache.** A cache that answers in a moment and an API that takes long are two different problems
+- **The tracing of the SDK stays off.** The threshold was the recommendation of the specification, and the reason is in `DECISIONS.md`. Turning the tracing on is a change of the configuration of the SDK and not a change of the code of the site
+- **The six thresholds are optional in the environment** and are in `.env.example`. A missing one and one that holds something that is not a number both mean the default of the code is used, and a wrong value does not stop the site from booting
+- Two things were found and left alone, and they are written down in `TODO.md`: the thresholds of the code are guesses and they have to be checked against the real times of the site after the first week of the reports; and `src/lib/env.js` is an old copy of `src/lib/env.ts` that nothing reads and that now stands further from it
 
 ## What the repository holds after M20.05
 
@@ -125,7 +139,7 @@ They are recorded in `DECISIONS.md` as the milestone is carried out.
 These are not settled by the planning and are marked in the task that carries them.
 
 1. **Which Sentry package.** **Answered by M20.01:** `@sentry/nextjs` 11.10.0. It is the one package that covers the browser, the server and the edge, and it is the only one that uses the `instrumentation.ts` hook of Next.js 16 on its own. The version was chosen by reading the support that the package declares, not by taking the newest number on the page.
-2. **Whether the performance is watched with a threshold or with tracing.** A threshold ("this request was slower than three seconds") is cheap on the free tier and enough for a site with low traffic. Full tracing costs a span per request and would need a decision about the sample rate. The threshold is the recommendation. Carried by M20.06.
+2. **Whether the performance is watched with a threshold or with tracing.** A threshold ("this request was slower than three seconds") is cheap on the free tier and enough for a site with low traffic. Full tracing costs a span per request and would need a decision about the sample rate. The threshold is the recommendation. **Answered by M20.06:** the threshold, and the tracing of the SDK stays off. The reason is in `DECISIONS.md`.
 3. **Whether the local machine reports to the same project as the live site.** The same reasoning as the analytics of M19: a project of its own for the machine keeps the numbers of the site clean. This needs an account action. Carried by M20.08.
 4. **How the alerts reach the owner.** The email alerts of Sentry are free and need nothing else. A chat channel would need another service. The email is the recommendation. Carried by M20.08.
 
