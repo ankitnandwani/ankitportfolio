@@ -1161,6 +1161,83 @@ Run on 2026-11-05. The verification was done with the dev server running and the
 
 ---
 
+## M20.08 – The Sentry Project, the Alerts and the Verification Script
+
+Run on 2026-11-09. The verification was made against the running site, with the script `scripts/verifyMonitoring.mts` and the command `npm run verify:monitoring`.
+
+### The cases and the rules
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The cases of the monitoring | they are written down | ✅ 16 cases, from the failure of a route to the edges |
+| The report that a failure produces | it is built by the capture of the site | ✅ the payload is the one the service would receive |
+| The report is caught before it is sent | nothing leaves the machine | ✅ the address of the service is a fake one while the cases run |
+| The rules of the privacy | they are checked on every payload | ✅ 248 rules on the whole run |
+| An address of a mailbox in a report | the rule fails | ✅ |
+| A number of a phone in a report | the rule fails | ✅ in the written form and as a run of digits |
+| A question in a report | the rule fails | ✅ the question is put in the failure of the parser of the body |
+| An answer in a report | the rule fails | ✅ the answer is put in the failure of a boundary |
+| A description of a job in a report | the rule fails | ✅ the description is put in the failure of the database |
+| A form in a report | the rule fails | ✅ the form is put in the failure of the parser of the feedback |
+| A key, a token or the address of the service in a report | the rule fails | ✅ |
+| A secret of the environment in a report | the rule fails | ✅ |
+| The value that a rule found | it is never written | ✅ the rule prints its name and a short description |
+
+### The answers of the site
+
+| Case | Expected | Result |
+|------|----------|--------|
+| A body of the chat that cannot be read | the site answers with the message of today and reports the failure | ✅ 500 and `An error occurred processing your request` |
+| A body of the feedback that cannot be read | the site answers with the message of today and reports the failure | ✅ 500 and `Failed to process feedback` |
+| A body of the contact form that cannot be read | the site refuses it and reports nothing | ✅ 400 and `Invalid JSON body` |
+| A body of the analyzer that cannot be read | the site refuses it and reports nothing | ✅ 400 and `Invalid JSON body` |
+| An event from another site | the site refuses it and reports nothing | ✅ 403 |
+| The monitoring that is off | nothing is reported | ✅ |
+| A report that cannot be sent | the site stays quiet | ✅ the capture does not throw |
+| The answer of a failure | it never holds the reason of the failure | ✅ |
+| The failure of the server | it is caught by the site | ✅ the line of the local log was read out of the file of the server |
+
+### The script
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The whole run | every rule is met and the code is 0 | ✅ 16 cases, 248 rules, 248 passed, the code is 0 |
+| The server is not running | the code is not 0 and the reason is said | ✅ the code is 1 and the reason is printed |
+| A rule that is broken on purpose | the code is not 0 and the name of the rule is in the output | ✅ the code is 1 and `expected_status: Expected 418, got 500` was printed |
+| The one real report | it is marked and it is sent when the credentials are there | ✅ it was skipped, because the address in `.env.local` is still the placeholder |
+| The live part of the model | it is only run when the flag is given | ✅ it was skipped and the note says so |
+| A secret in the output of the script | there is none | ✅ the output holds the names of the rules and nothing else |
+
+### The setup of the project
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The project of the organization | it is created when it is not there | ✅ the script `npm run setup:sentry` does it |
+| The platform of the project | it is the one of Next.js | ✅ |
+| The rule of the new issue | it is on and it sends a mail | ✅ it is turned on when the project is made |
+| The address of the service | it goes into `.env.local` and nowhere else | ✅ the script writes it and never prints it |
+| The token | it is never in the chat and never in the repository | ✅ it is read from `.env.local` |
+| The environments | they are named by the site | ✅ `production` and `development` |
+| The second rule of the alerts | a failure that repeats reaches the owner | ⚠️ it is made by hand in the page of the project, and it is the owner's |
+
+### The state of the repository
+
+| Command | Result |
+|---------|--------|
+| `npm test` | 741 tests, 735 pass, 0 fail, 6 skipped |
+| `npm run lint` | 0 errors, 58 warnings (the unchanged baseline) |
+| `npm run typecheck` | clean |
+| `npm run build` | succeeds |
+
+### What is left to the owner
+
+| Case | What is left |
+|------|--------------|
+| The account of Sentry | the token in `.env.local`, the command `npm run setup:sentry`, and the rule of the alerts in the page of the project |
+| The deployment | the four variables: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_RELEASE` and `NEXT_PUBLIC_SENTRY_RELEASE` |
+
+---
+
 ## M20.07 – The Error Boundaries and the Browser Capture
 
 Run on 2026-11-08. The verification was made in a real browser with the real SDK, against a local server that wrote down the body of every envelope. A page was made to fail on purpose, and the layout of the site was made to fail on purpose as well, and both were taken back afterwards.
@@ -1550,4 +1627,4 @@ The analytics:
 
 5. **M19 follow-ups:** the two findings of M19.06 — ✅ M19F.03 complete, verified on 2026-11-04. M19F.01 (one identity for the visitor) and M19F.02 (the page level events of PRD §78) are written and waiting to be chosen
 
-6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, M20.04 (the failures of the language model) ✅ verified on 2026-11-07, M20.05 (the failures of the external services) ✅ verified on 2026-11-07, M20.06 (the performance of the requests) ✅ verified on 2026-11-08, and M20.07 (the error boundaries and the browser capture) ✅ verified on 2026-11-08. The rest of the cases are added here as the tasks are carried out
+6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, M20.04 (the failures of the language model) ✅ verified on 2026-11-07, M20.05 (the failures of the external services) ✅ verified on 2026-11-07, M20.06 (the performance of the requests) ✅ verified on 2026-11-08, M20.07 (the error boundaries and the browser capture) ✅ verified on 2026-11-08, and M20.08 (the Sentry project, the alerts and the verification script) ✅ verified on 2026-11-09, the account action is left to the owner. The rest of the cases are added here as the tasks are carried out

@@ -13,7 +13,7 @@ This milestone observes the runtime health of the site: the errors that happen i
 | 5 | M20.05 – Monitor the failures of the external services | M20.02 | Done (2026-11-07) |
 | 6 | M20.06 – Monitor the performance of the requests | M20.02 | Done (2026-11-08) |
 | 7 | M20.07 – Add the error boundaries and the browser error capture | M20.02 | Done (2026-11-08) |
-| 8 | M20.08 – Set up the Sentry project, the alerts and the verification script | M20.01, M20.03, M20.04, M20.05, M20.06, M20.07 | – |
+| 8 | M20.08 – Set up the Sentry project, the alerts and the verification script | M20.01, M20.03, M20.04, M20.05, M20.06, M20.07 | Done (2026-11-09), the account is left to the owner |
 | 9 | M20.09 – Test and verify the monitoring end to end | M20.08 | – |
 
 M20.03 to M20.07 all write to the same modules, so they are listed in order. M20.04, M20.05, M20.06 and M20.07 touch different files from each other and may be worked on in parallel by different people once M20.02 is done.
@@ -33,14 +33,27 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | Performance is monitored | PRD §129, ROADMAP M20 | M20.06 | Complete |
 | Frontend errors are monitored | PRD §79, §129 | M20.07 | Complete |
 | Error boundaries exist | PRD §129 | M20.07 | Complete |
-| Errors are captured and alertable | ROADMAP M20 DoD | M20.08 | Covered |
+| Errors are captured and alertable | ROADMAP M20 DoD | M20.08 | Covered — the code is done, the account action is the owner's |
 | The monitoring is verified end to end | ROADMAP M20 DoD | M20.09 | Covered |
 | Personal data is redacted before it is written | DECISIONS M13 (guardrails), `src/lib/guardrails/piiDetection.ts` | M20.02 | Complete, reused |
 | A secret is removed from every message | DECISIONS M13 (provider) | M20.02 | Complete, reused |
 | The events of the visits are counted | ROADMAP M19 | M19.01–M19.06 | Satisfied |
 | The chat, the analyzer and the contact form are limited | PRD §48 | M17, M19.04 | Satisfied |
 
-M20.01, M20.02, M20.03, M20.04, M20.05, M20.06 and M20.07 are done (2026-11-05, 2026-11-07 and 2026-11-08). The rest of the milestone is waiting to be implemented.
+M20.01, M20.02, M20.03, M20.04, M20.05, M20.06, M20.07 and M20.08 are done (2026-11-05, 2026-11-07, 2026-11-08 and 2026-11-09). The rest of the milestone is waiting to be implemented.
+
+## What the repository holds after M20.08
+
+- **The monitoring can be checked against the running site.** `src/lib/monitoring/fixtures/monitoringFixtures.ts` holds the sixteen cases and the rules that are checked on them, and it is the model of `src/lib/analytics/fixtures/analyticsFixtures.ts`
+- **The report is built by the capture of the site and caught before it is sent.** The rules are checked against the very payload that the service would receive, and the address of the service is a fake one while the cases run, so nothing leaves the machine
+- **The rules of the privacy of PRD §79 are checked on every payload.** No address of a mailbox, no number of a phone, no question, no answer, no description of a job, no form, no key, no token, no address of the service and no address of a visitor
+- **The phrases that try to smuggle something into a report are made up.** The question is put in the failure of the parser of the body, the answer in the failure of a boundary, the description of a job in the failure of the database, and the form in the failure of the parser of the feedback
+- **The script never writes the value it found.** A rule that fails prints the name of the rule and a short description of what it found
+- `scripts/verifyMonitoring.mts` and `npm run verify:monitoring` check the status and the answer of every endpoint, check that the answer holds the safe message of the site, and read the failures the server caught out of the file of the server when `SERVER_LOG` is given. The script exits with a non-zero code when a rule fails and when the server is not running
+- **One real report is sent to the project when the credentials are configured**, marked with the tag `verification: true`
+- **The live part of the failures of the model is opt-in** with `LIVE_LLM_TESTS=1`, the same way the live tests of the model are opt-in
+- `scripts/setupSentry.mts` and `npm run setup:sentry` create the project of the organization and write the address of the service into `.env.local` and nowhere else. The token is never in the chat and never in the repository
+- **The account is the owner's.** The token, the command and the rule of the alerts in the page of the project are written down in `TODO.md`
 
 ## What the repository holds after M20.07
 
@@ -154,7 +167,7 @@ These are not settled by the planning and are marked in the task that carries th
 
 1. **Which Sentry package.** **Answered by M20.01:** `@sentry/nextjs` 11.10.0. It is the one package that covers the browser, the server and the edge, and it is the only one that uses the `instrumentation.ts` hook of Next.js 16 on its own. The version was chosen by reading the support that the package declares, not by taking the newest number on the page.
 2. **Whether the performance is watched with a threshold or with tracing.** A threshold ("this request was slower than three seconds") is cheap on the free tier and enough for a site with low traffic. Full tracing costs a span per request and would need a decision about the sample rate. The threshold is the recommendation. **Answered by M20.06:** the threshold, and the tracing of the SDK stays off. The reason is in `DECISIONS.md`.
-3. **Whether the local machine reports to the same project as the live site.** The same reasoning as the analytics of M19: a project of its own for the machine keeps the numbers of the site clean. This needs an account action. Carried by M20.08.
+3. **Whether the local machine reports to the same project as the live site.** The same reasoning as the analytics of M19: a project of its own for the machine keeps the numbers of the site clean. This needs an account action. **Answered by M20.08:** a project of its own for the machine, and the script of the setup makes one. The account action itself is the owner's, and the steps are in `TODO.md`.
 4. **How the alerts reach the owner.** The email alerts of Sentry are free and need nothing else. A chat channel would need another service. The email is the recommendation. Carried by M20.08.
 
 ## Notes for the tasks
