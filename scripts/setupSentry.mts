@@ -21,9 +21,9 @@
  *
  * - `SENTRY_ORG` – the slug of the organization.
  * - `SENTRY_PROJECT` – the slug of the project.
- * - `SENTRY_AUTH_TOKEN` – a token with the rights `project:read` and
- *   `project:write`. It is made in the page of the account of Sentry, under
- *   the API tokens.
+ * - `SENTRY_AUTH_TOKEN` – a token with the rights `org:read`,
+ *   `project:read`, `project:write` and `project:releases`. It is made in
+ *   the page of the account of Sentry, under the API tokens.
  *
  * Usage:
  *   npm run setup:sentry
@@ -214,8 +214,9 @@ async function main(): Promise<void> {
 
   if (!process.env.SENTRY_AUTH_TOKEN) {
     console.log('ERROR: SENTRY_AUTH_TOKEN is not set.');
-    console.log('A token with the rights project:read and project:write is made in the page');
-    console.log('of the account of Sentry, under the API tokens.');
+    console.log('A token with the rights org:read, project:read, project:write and');
+    console.log('project:releases is made in the page of the account of Sentry, under');
+    console.log('the API tokens.');
     process.exit(1);
   }
 
@@ -247,10 +248,14 @@ async function main(): Promise<void> {
   console.log('  2. Add a second rule: an issue happens more than ten times in ten');
   console.log('     minutes. A failure that repeats is the one that matters, and a');
   console.log('     mail for every occurrence of the same issue is noise.');
-  console.log('  3. The variables of the deployment: SENTRY_DSN,');
-  console.log('     NEXT_PUBLIC_SENTRY_DSN, SENTRY_RELEASE and');
+  console.log('  3. The variables of the deployment, for the running of the site:');
+  console.log('     SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, SENTRY_RELEASE and');
   console.log('     NEXT_PUBLIC_SENTRY_RELEASE.');
-  console.log('  4. Run the verification: npm run verify:monitoring');
+  console.log('  4. The variables of the build, so the maps of the source are');
+  console.log('     uploaded: SENTRY_ORG, SENTRY_PROJECT and SENTRY_AUTH_TOKEN.');
+  console.log('     The build of the site sends the maps of the browser by itself,');
+  console.log('     and a failure in the production is read with them.');
+  console.log('  5. Run the verification: npm run verify:monitoring');
   console.log('     It sends one report marked with verification: true.');
 }
 

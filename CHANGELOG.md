@@ -16,6 +16,8 @@
 - 9 tests added in `src/lib/monitoring/fixtures/monitoringFixtures.test.mts`. The whole suite was run again: 741 tests with 735 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
 - **Verified against the running site**: sixteen cases, 248 rules, 248 passed, and the exit code 0. The server was stopped and the script exited with 1, and a rule was broken on purpose and the script exited with 1 and the name of the rule in the output
 - **What is left to the owner is the account**: the token of Sentry in `.env.local`, the command `npm run setup:sentry`, and the rule of the alerts in the page of the project. The address of the service in `.env.local` is still the placeholder of `.env.example`, so the one real report of the script was skipped
+- **The alerts reach the owner by mail, for a new issue and for a failure that repeats.** The rule for a new issue is on by default, and the second rule is for a failure that happens more than ten times in ten minutes. There is no mail for every occurrence of the same issue
+- **The repository of the site is not connected to the service, and that is the decision.** The monitoring does not need it: the maps of the source are uploaded by the build itself, because `next.config.ts` holds the organization, the project and the key. What the connection would add is the commit and the author next to a frame of the stack
 
 ## [0.1.154] - 2026-11-08
 - Implemented M20.07 – Add the error boundaries and the browser error capture

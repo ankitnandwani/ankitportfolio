@@ -1219,6 +1219,8 @@ Run on 2026-11-09. The verification was made against the running site, with the 
 | The token | it is never in the chat and never in the repository | ✅ it is read from `.env.local` |
 | The environments | they are named by the site | ✅ `production` and `development` |
 | The second rule of the alerts | a failure that repeats reaches the owner | ⚠️ it is made by hand in the page of the project, and it is the owner's |
+| The mail of a new issue | one mail, and not one for every occurrence | ✅ the decision of the owner: one mail for a new issue, and one mail when an issue happens more than ten times in ten minutes |
+| The connection of the repository | it is not needed | ✅ the maps of the source are uploaded by the build itself, and the connection would only add the commit and the author next to a frame |
 
 ### The state of the repository
 
