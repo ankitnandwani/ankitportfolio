@@ -1161,6 +1161,90 @@ Run on 2026-11-05. The verification was done with the dev server running and the
 
 ---
 
+## M20.09 – The Verification of the Monitoring End to End
+
+Run on 2026-11-11. It is the last task of the milestone and it changes no code. The reports were fired for real against a small forwarding server that wrote the body of every envelope down and answered with 200, the way M19.06 did it with the analytics, so the bytes the service would receive could be read at the same time.
+
+### The script
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The script against the running site | every rule is met and the code is 0 | ✅ 16 cases, 260 rules, 260 passed, the code is 0 |
+| A rule broken on purpose | the code is not 0 and the rule is named | ✅ the code is 1 and `expected_status: Expected 418, got 500` was printed |
+| The case put back afterwards | the file is byte for byte the file of the repository | ✅ the sum of its bytes was the same before and after |
+| The server stopped | the code is not 0 and the reason is printed | ✅ the code is 1 and the reason was printed |
+
+### The kinds of report that were really sent
+
+| Case | Expected | Result |
+|------|----------|--------|
+| The failure of the chat | a report with the grouping of the route | ✅ `["unknown_failure","chat"]`, the level `error` |
+| The failure of the feedback | a report with the grouping of the route | ✅ `["unknown_failure","feedback"]` |
+| The failure of the model | a report with the grouping of the kind | ✅ `["configuration"]`, the level `error` |
+| The failure of the database | a report with the grouping of the service | ✅ `["supabase","unavailable"]` |
+| The failure of the service of GitHub | a report with the grouping of the service | ✅ `["github","unknown"]`, the level `warning` |
+| The slow retrieval | a report with the grouping of the operation | ✅ `["retrieval"]`, 32788 ms against a threshold of 10000 ms |
+| The slow chat | a report with the grouping of the operation | ✅ `["chat"]`, 33388 ms against a threshold of 30000 ms |
+| The failure of a boundary of the page | a report with the grouping of the boundary | ✅ `["browser_boundary_failure","routes"]` |
+| The report of the verification | it is marked and it is sent | ✅ the tag `verification: true`, the level `info` |
+| The report of the server | it is the failure of the framework | ✅ it came with the hook of `onRequestError` of Next.js |
+| The environment of every report | it is the name the site gives it | ✅ `development` in every one |
+| The refusals | they are not failures and nothing is reported | ✅ the contact form, the analyzer and the proxy of another site reported nothing |
+
+### The audit of the private data, on what the service really received
+
+| Case | Expected | Result |
+|------|----------|--------|
+| An address of a mailbox | it is in no report | ✅ |
+| A number of a phone in the written form | it is in no report | ✅ |
+| A run of ten digits on its own | it is in no report | ✅ the timestamp of the SDK is left out of the audit, because it is the bookkeeping of the service and not the content of a report |
+| An address of a computer | it is in no report | ✅ |
+| The address of the service | it is in no report | ✅ |
+| A key or a token | it is in no report | ✅ the six values of the environment that are not placeholders were looked for in every report |
+| The question of the chat | it is in no report | ✅ it was really sent to the site |
+| The description of a job | it is in no report | ✅ |
+| The report of the failure of the model | it holds the kind and the status and nothing else | ✅ the tags are the kind, the model and the status, and the extra parts are the identifier of the query and the time |
+| The report of an external service | it holds the name of the service and the kind and nothing private | ✅ |
+| The name of a repository | it is public and it is expected | ✅ the repositories of the site are on the site and on GitHub |
+
+The audit was 280 checks and 0 failures over the eighteen reports that were really sent.
+
+### The state of the repository
+
+| Command | Result |
+|---------|--------|
+| `npm test` | 741 tests, 735 pass, 0 fail, 6 skipped |
+| `npm run lint` | 0 errors, 58 warnings (the unchanged baseline) |
+| `npm run typecheck` | clean |
+| `npm run build` | succeeds, with the server stopped |
+| The secrets of the environment | none of them is in a tracked file | ✅ the six values that are not placeholders were looked for in the 468 tracked files, and the only one of them that is in a file is the name of the model, which is not a secret |
+| The values that look like a credential | they are all fixtures | ✅ three of them, the samples of the shapes of the tests of the rules |
+
+### The boundaries, checked in a browser
+
+| Case | Expected | Result |
+|------|----------|--------|
+| A page that fails on purpose | the visitor sees the page of the boundary | ✅ "Something went wrong" and the way to try again |
+| The focus | it is on the way to try again | ✅ the ring of the focus was there |
+| The report of the boundary | it is on the wire with the scope and the fixed sentence | ✅ `scope: routes` and "A boundary of the page caught a failure." |
+
+### The findings that were left alone
+
+| Case | What was found |
+|------|---------------|
+| The same failure of a page | it is reported twice, once by the server and once by the boundary of the browser, and the two are two issues |
+| The report of the server | it holds the message of the failure as it came, and the scrubbing removes the personal data and the secrets but nothing else |
+| The service of GitHub | it sends one report per repository, and the page of the home shows eight of the projects |
+| The rule of the number of a phone | it catches the timestamp of the SDK, so the audit has to look at the content of a report and not at the bookkeeping of the service |
+
+### What the account of Sentry holds back
+
+| Case | What is left |
+|------|--------------|
+| The list of the issues of the real project | it could not be read, because the address of the service in `.env.local` is still the placeholder. The steps are in `TODO.md` |
+
+---
+
 ## M20.08 – The Sentry Project, the Alerts and the Verification Script
 
 Run on 2026-11-09. The verification was made against the running site, with the script `scripts/verifyMonitoring.mts` and the command `npm run verify:monitoring`.
@@ -1629,4 +1713,4 @@ The analytics:
 
 5. **M19 follow-ups:** the two findings of M19.06 — ✅ M19F.03 complete, verified on 2026-11-04. M19F.01 (one identity for the visitor) and M19F.02 (the page level events of PRD §78) are written and waiting to be chosen
 
-6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, M20.04 (the failures of the language model) ✅ verified on 2026-11-07, M20.05 (the failures of the external services) ✅ verified on 2026-11-07, M20.06 (the performance of the requests) ✅ verified on 2026-11-08, M20.07 (the error boundaries and the browser capture) ✅ verified on 2026-11-08, and M20.08 (the Sentry project, the alerts and the verification script) ✅ verified on 2026-11-09, the account action is left to the owner. The rest of the cases are added here as the tasks are carried out
+6. **Milestone 20:** Monitoring (ROADMAP Milestone 20) — in progress. M20.01 (the foundation of the monitoring) ✅ verified on 2026-11-04, M20.02 (the scrubbing of the failures) ✅ verified on 2026-11-04, M20.03 (the capture of the failures of the routes) ✅ verified on 2026-11-05, M20.04 (the failures of the language model) ✅ verified on 2026-11-07, M20.05 (the failures of the external services) ✅ verified on 2026-11-07, M20.06 (the performance of the requests) ✅ verified on 2026-11-08, M20.07 (the error boundaries and the browser capture) ✅ verified on 2026-11-08, and M20.08 (the Sentry project, the alerts and the verification script) ✅ verified on 2026-11-09, the account action is left to the owner, and M20.09 (the verification of the monitoring end to end) ✅ verified on 2026-11-11. **The milestone is complete.** The rest of the cases are added here as the tasks are carried out

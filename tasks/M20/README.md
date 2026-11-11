@@ -14,7 +14,7 @@ This milestone observes the runtime health of the site: the errors that happen i
 | 6 | M20.06 – Monitor the performance of the requests | M20.02 | Done (2026-11-08) |
 | 7 | M20.07 – Add the error boundaries and the browser error capture | M20.02 | Done (2026-11-08) |
 | 8 | M20.08 – Set up the Sentry project, the alerts and the verification script | M20.01, M20.03, M20.04, M20.05, M20.06, M20.07 | Done (2026-11-09), the account is left to the owner |
-| 9 | M20.09 – Test and verify the monitoring end to end | M20.08 | – |
+| 9 | M20.09 – Test and verify the monitoring end to end | M20.08 | Done (2026-11-11) |
 
 M20.03 to M20.07 all write to the same modules, so they are listed in order. M20.04, M20.05, M20.06 and M20.07 touch different files from each other and may be worked on in parallel by different people once M20.02 is done.
 
@@ -33,14 +33,24 @@ M20.03 to M20.07 all write to the same modules, so they are listed in order. M20
 | Performance is monitored | PRD §129, ROADMAP M20 | M20.06 | Complete |
 | Frontend errors are monitored | PRD §79, §129 | M20.07 | Complete |
 | Error boundaries exist | PRD §129 | M20.07 | Complete |
-| Errors are captured and alertable | ROADMAP M20 DoD | M20.08 | Covered — the code is done, the account action is the owner's |
-| The monitoring is verified end to end | ROADMAP M20 DoD | M20.09 | Covered |
+| Errors are captured and alertable | ROADMAP M20 DoD | M20.08 | Complete — the code is done, the account action is the owner's |
+| The monitoring is verified end to end | ROADMAP M20 DoD | M20.09 | Complete |
 | Personal data is redacted before it is written | DECISIONS M13 (guardrails), `src/lib/guardrails/piiDetection.ts` | M20.02 | Complete, reused |
 | A secret is removed from every message | DECISIONS M13 (provider) | M20.02 | Complete, reused |
 | The events of the visits are counted | ROADMAP M19 | M19.01–M19.06 | Satisfied |
 | The chat, the analyzer and the contact form are limited | PRD §48 | M17, M19.04 | Satisfied |
 
-M20.01, M20.02, M20.03, M20.04, M20.05, M20.06, M20.07 and M20.08 are done (2026-11-05, 2026-11-07, 2026-11-08 and 2026-11-09). The rest of the milestone is waiting to be implemented.
+M20.01, M20.02, M20.03, M20.04, M20.05, M20.06, M20.07, M20.08 and M20.09 are done (2026-11-05, 2026-11-07, 2026-11-08, 2026-11-09 and 2026-11-11). **The milestone is complete.**
+
+## What the repository holds after M20.09
+
+- **The monitoring is verified end to end.** The script was run against the running site and every rule was met: 16 cases, 260 rules, 260 passed, the exit code 0. It was run with a rule broken on purpose and the exit code was 1 with the name of the rule in the output, and the case was put back and the file was byte for byte the file of the repository. It was run with the server stopped and the exit code was 1
+- **Every kind of report was fired for real and the bytes were read on the wire.** A small forwarding server wrote the body of every envelope down, the way M19.06 did it with the analytics, and eighteen reports of ten kinds were seen: the failure of the chat, of the feedback, of the model, of the database, of the service of GitHub, the slow retrieval, the slow chat, the failure of a boundary of the page, the report of the verification and the report of the server
+- **Every kind of report is grouped the way it has to be.** The fingerprint of the failure of the chat is `["unknown_failure","chat"]`, of the feedback `["unknown_failure","feedback"]`, of the model `["configuration"]`, of the database `["supabase","unavailable"]`, of the service of GitHub `["github","unknown"]`, of the slow retrieval `["retrieval"]`, of the slow chat `["chat"]` and of the boundary `["browser_boundary_failure","routes"]`
+- **The audit of the private data was made on what the service really received**: 280 checks and nothing private
+- **The boundaries of M20.07 were checked in a browser**, the way they were designed
+- **Three findings were left alone**, because this task checks and the fix of a finding is a change of its own. They are written down in `TODO.md`
+- **What the account of Sentry holds back**: the list of the issues of the real project could not be read, because the address of the service in `.env.local` is still the placeholder. The steps are in `TODO.md`
 
 ## What the repository holds after M20.08
 
