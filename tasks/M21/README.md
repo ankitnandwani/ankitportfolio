@@ -13,7 +13,7 @@ Performance: 90+, Accessibility: 95+, Best Practices: 95+, SEO: 95+
 
 | Order | Task                                                                          | Depends On                             | Parallel                         |
 | ----- | ----------------------------------------------------------------------------- | -------------------------------------- | -------------------------------- |
-| 1     | M21.01 – Measure the site and write the performance budgets                   | M20                                    | –                                |
+| 1     | M21.01 – Measure the site and write the performance budgets                   | M20                                    | Done (2026-11-13)                |
 | 2     | M21.04 – Keep one icon library                                                | M21.01                                 | Yes, with M21.05, M21.06, M21.07 |
 | 3     | M21.05 – Load only the font family that the page uses                         | M21.01                                 | Yes, with M21.04, M21.06, M21.07 |
 | 4     | M21.06 – Give the site the images and the metadata it promises                | M21.01                                 | Yes, with M21.04, M21.05, M21.07 |
@@ -24,6 +24,8 @@ Performance: 90+, Accessibility: 95+, Best Practices: 95+, SEO: 95+
 | 9     | M21.09 – Run Lighthouse against the built site and check the four targets     | M21.02, M21.08                         | –                                |
 
 M21.01 comes first because every other task is judged against the numbers it writes down. M21.04, M21.05, M21.06 and M21.07 touch four different sets of files and may be worked on in parallel once M21.01 is done. M21.03 and M21.02 are listed in order because both of them change how the components of the pages are loaded and would touch the same files if they ran at the same time.
+
+**M21.01 is done (2026-11-13).** M21.02 to M21.09 are not started.
 
 ## Traceability Table
 
@@ -51,6 +53,21 @@ M21.01 comes first because every other task is judged against the numbers it wri
 | The slow requests are watched                                       | PRD §129                      | M20.06                 | Satisfied                                                                                                   |
 | The failures are watched                                            | PRD §79, §129                 | M20.01–M20.09          | Satisfied                                                                                                   |
 | The animation library is the one of the decision                    | DECISIONS (animation library) | M21.03                 | Satisfied — the decision is respected, and the removal of the library is a decision that needs a person     |
+
+## What the repository holds after M21.01
+
+- **The site is measured and the numbers are written down.** `scripts/measurePerformance.mts` and `npm run perf:budget` read the output of a build, start the production server on the port 3111, ask it for the HTML of every page and for the headers of the files of `public/`, and print what they found: 60 measures, 60 rules, 60 passed, the exit code 0
+- **The measurement reads the build and not the source.** The JavaScript of the first load of a page is taken from the scripts that the HTML of the page names, so that the chunks that are loaded later are not counted as if they were part of the first load
+- **The budget is a ceiling and not a number.** `src/lib/performance/budgets.ts` holds a rule for every measure, with a note that says where its number came from and when it was read. A rule of the kind `atMost` fails when the value is over its ceiling and a rule of the kind `atLeast` fails when the value is under its floor, so that the cache of a file has a floor and the answer of the API has a ceiling of zero
+- **A measure that is new is reported and is not a failure.** The budget grows on purpose, and a measure that nobody thought of never breaks the pipeline by accident
+- **The script exits with a non-zero code and names the rule.** A ceiling that is broken on purpose gave `✗ first-load-js:home: 1.27 MB (1336092 bytes) — the ceiling is 1000 bytes` and the exit code 1, and the file was put back afterwards and the sum of its bytes was checked
+- **The script exits with a non-zero code when the build is missing.** It says where it looked, and the test of the rule checks it
+- **The page that is made on every request is not measured and it is not guessed.** `/projects/[slug]` is written down as not measured, with the reason
+- **The answers of the API are asked for with an empty body**, so that the route refuses them before it does any work: no question reaches the model and no form is sent
+- **The baseline is a document that a person reads.** `docs/performance-baseline.md` holds the numbers of the build, the numbers of the six pages, the table of the cache and the reading of them, and it names the three heaviest things and the task that moves each of them
+- **The measurement costs the site nothing.** Nothing of `src/lib/performance/` is imported by the site, and it is not in the bundle of the browser
+- **One finding was left alone**, because this task measures and the fix of a finding is a change of its own. The answers of the chat and of the feedback carry no cache header at all. It is written down in `TODO.md` and the task that fixes it is M21.07
+- 13 tests added. The whole suite: 754 tests with 748 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
 
 ## What the repository holds today
 

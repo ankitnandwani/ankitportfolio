@@ -1,3 +1,23 @@
+## [0.1.158] - 2026-11-13
+- Implemented M21.01 – Measure the site and write the performance budgets. It is the first task of Milestone 21 and the one that every other task of the milestone is judged against
+- Added `scripts/measurePerformance.mts` and the command `npm run perf:budget`. It reads the output of a build, starts the production server on the port 3111, asks it for the HTML of every page and for the headers of the files of `public/`, and prints what it found
+- **The measurement reads the build and not the source.** The JavaScript of the first load of a page is taken from the scripts that the HTML of the page names, so that the chunks that are loaded later are not counted as if they were part of the first load
+- It measures, for every page, the JavaScript of the first load, the CSS, the fonts that are preloaded, the HTML compressed and not, and the number of the pictures. It measures, for the whole build, the JavaScript, the biggest chunk, the CSS and the fonts
+- It reads the cache of the pages, of the files of `public/` and of the answers of the API, and it says which of them are not cached the way they are used
+- Added `src/lib/performance/budgets.ts`, which holds a rule for every measure with a note that says where its number came from and when it was read. A rule of the kind `atMost` fails when the value is over its ceiling and a rule of the kind `atLeast` fails when the value is under its floor, so that the cache of a file has a floor and the answer of the API has a ceiling of zero
+- **A measure that is new is reported and is not a failure.** The budget grows on purpose, and a measure that nobody thought of never breaks the pipeline by accident
+- **The script exits with a non-zero code and names the rule.** A ceiling that is broken on purpose gave `✗ first-load-js:home: 1.27 MB (1336092 bytes) — the ceiling is 1000 bytes` and the exit code 1, and the file was put back afterwards and the sum of its bytes was checked
+- **The script exits with a non-zero code when the build is missing**, and it says where it looked. It is checked by a test
+- **`/projects/[slug]` is not measured and it is not guessed.** The script writes it down as not measured, with the reason
+- **The answers of the API are asked for with an empty body**, so that the route refuses them before it does any work: no question reaches the model and no form is sent
+- Added `docs/performance-baseline.md`, with the numbers of the build, the numbers of the six pages, the table of the cache and the reading of them
+- **What the numbers are**: the home page sends 1,336,092 bytes of JavaScript in fifteen files in its first load, the CSS is one file of 38,760 bytes, two fonts of 52,396 bytes are preloaded on every page and the HTML is 121,855 bytes and 18,911 compressed. The whole build holds 1,965,463 bytes of client JavaScript in twenty-seven files, the biggest chunk is the SDK of the monitoring at 483,541 bytes and the fonts are 146,464 bytes in eleven files
+- **The three heaviest things are named in the baseline**: the runtime of the animation library (136 kB in the first load of every page, the task of M21.03), the chat and the command palette (the task of M21.02) and the one icon of `lucide-react` (40 kB, the task of M21.04)
+- **Nothing of the measurement is imported by the site**, and it is not in the bundle of the browser
+- 13 tests added in `src/lib/performance/budgets.test.mts`. The whole suite: 754 tests with 748 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
+- **One finding was left alone**, because this task measures and the fix of a finding is a change of its own: the answers of the chat and of the feedback carry no cache header at all, while the answers of the contact, of the analyzer and of the analytics carry `no-store`. It is written down in `TODO.md` and the task that fixes it is M21.07
+- The next task is M21.02 – Lazy-load the chat, the palette and the sections below the fold
+
 ## [0.1.157] - 2026-11-12
 - **Planned Milestone 21 – Performance Optimisation.** The nine task specifications were written in `tasks/M21/`. **No application code was implemented and no dependency was installed**: the milestone is planned and not started
 - Added `tasks/M21/README.md` with the order of the tasks, the table of the requirements, the decisions that this milestone takes and the five decisions that need a person

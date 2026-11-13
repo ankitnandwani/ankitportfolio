@@ -17,6 +17,7 @@
     "verify:contact": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifyContact.mts",
     "verify:analytics": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifyAnalytics.mts",
     "verify:monitoring": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifyMonitoring.mts",
+    "perf:budget": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/measurePerformance.mts",
     "setup:sentry": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/setupSentry.mts",
     "env:check": "node -e \"require('./src/lib/env')\""
   },
