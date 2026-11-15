@@ -71,13 +71,25 @@ export function ChatPanel({
     if (isOpen) {
       previousActiveElement.current = document.activeElement as HTMLElement;
       // Focus the panel for keyboard navigation
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         panelRef.current?.focus();
       }, 0);
-    } else if (previousActiveElement.current) {
-      previousActiveElement.current.focus();
+
+      return () => window.clearTimeout(timer);
     }
+
+    return undefined;
   }, [isOpen]);
+
+  // The panel is taken out of the page when the chat is closed, because it is
+  // loaded on demand. The focus goes back to the element that had it before
+  // the chat was opened, the same way it went back when the panel was only
+  // hidden.
+  useEffect(() => {
+    return () => {
+      previousActiveElement.current?.focus();
+    };
+  }, []);
 
   // Handle keyboard events - Escape to close, Tab for focus trap
   const handleKeyDown = useCallback(

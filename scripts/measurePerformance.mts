@@ -47,6 +47,11 @@ import {
   formatBytes,
   formatSeconds,
 } from '../src/lib/performance/budgets.ts';
+import {
+  evaluateFirstLoadRules,
+  getFirstLoadRulesForRoute,
+  type FirstLoadFailure,
+} from '../src/lib/performance/firstLoad.ts';
 
 /**
  * The root of the repository, so that the build and the files of `public/`
@@ -110,6 +115,8 @@ interface PageMeasurement {
   images: { source: string; bytes: number | null }[];
   /** The header of the cache of the answer. */
   cacheControl: string;
+  /** The rules of the first load that were not met on this page. */
+  firstLoadFailures: FirstLoadFailure[];
 }
 
 /**
@@ -406,9 +413,22 @@ async function measurePage(baseUrl: string, route: string): Promise<PageMeasurem
     images.push({ source: src, bytes: file ? sizeOfFile(file) : null });
   }
 
+  const firstLoadChunks = js
+    .map((file) => {
+      try {
+        return { name: path.basename(file.file), content: readFileSync(file.file, 'utf8') };
+      } catch {
+        return null;
+      }
+    })
+    .filter((chunk): chunk is { name: string; content: string } => chunk !== null);
+
+  const firstLoad = evaluateFirstLoadRules(firstLoadChunks, getFirstLoadRulesForRoute(route));
+
   return {
     route,
     status: answer.status,
+    firstLoadFailures: firstLoad.failures,
     htmlBytes: Buffer.byteLength(html, 'utf8'),
     htmlGzipBytes: gzipSync(Buffer.from(html, 'utf8')).length,
     js,
@@ -656,6 +676,19 @@ function printMeasurement(measurement: Measurement): void {
   }
   console.log('');
 
+  const firstLoadFailures = measurement.pages.flatMap((page) => page.firstLoadFailures);
+  console.log('=== First load ===');
+  if (firstLoadFailures.length === 0) {
+    console.log('  every rule of the first load is met');
+  } else {
+    for (const failure of firstLoadFailures) {
+      console.log(
+        `  ✗ ${failure.name}: expected ${failure.expectation}, found ${failure.found} — ${failure.note}`
+      );
+    }
+  }
+  console.log('');
+
   if (measurement.skipped.length > 0) {
     console.log('=== Not measured ===');
     for (const entry of measurement.skipped) {
@@ -721,6 +754,8 @@ async function main(): Promise<void> {
 
     const evaluation = evaluateBudgets(measurement.measures, PERFORMANCE_BUDGETS);
     const checked = Object.keys(PERFORMANCE_BUDGETS).filter((name) => name in measurement.measures);
+    const firstLoadFailures = measurement.pages.flatMap((page) => page.firstLoadFailures);
+    const firstLoadChecked = measurement.pages.length;
 
     console.log('=== SUMMARY ===');
     console.log(`Measures read: ${Object.keys(measurement.measures).length}`);
@@ -728,6 +763,8 @@ async function main(): Promise<void> {
     console.log(`Rules passed: ${checked.length - evaluation.failures.length}`);
     console.log(`Rules failed: ${evaluation.failures.length}`);
     console.log(`Measures without a budget: ${evaluation.withoutBudget.length}`);
+    console.log(`First load rules checked: ${firstLoadChecked}`);
+    console.log(`First load rules failed: ${firstLoadFailures.length}`);
 
     if (evaluation.withoutBudget.length > 0) {
       console.log('');
@@ -759,7 +796,7 @@ async function main(): Promise<void> {
       }
     }
 
-    process.exit(evaluation.failures.length > 0 ? 1 : 0);
+    process.exit(evaluation.failures.length > 0 || firstLoadFailures.length > 0 ? 1 : 0);
   } finally {
     stop?.();
   }

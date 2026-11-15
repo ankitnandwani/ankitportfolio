@@ -19,13 +19,15 @@ Performance: 90+, Accessibility: 95+, Best Practices: 95+, SEO: 95+
 | 4     | M21.06 – Give the site the images and the metadata it promises                | M21.01                                 | Yes, with M21.04, M21.05, M21.07 |
 | 5     | M21.07 – Cache the pages and the assets the way they are used                 | M21.01                                 | Yes, with M21.04, M21.05, M21.06 |
 | 6     | M21.03 – Stop shipping the animation library to the pages that do not animate | M21.01, M21.04                         | –                                |
-| 7     | M21.02 – Lazy-load the chat, the palette and the sections below the fold      | M21.01, M21.03                         | –                                |
+| 7     | M21.02 – Lazy-load the chat, the palette and the sections below the fold      | M21.01, M21.03                         | Done (2026-11-15)                |
 | 8     | M21.08 – Put the build and the budget in the CI                               | M21.01, M21.04, M21.05, M21.06, M21.07 | –                                |
 | 9     | M21.09 – Run Lighthouse against the built site and check the four targets     | M21.02, M21.08                         | –                                |
 
 M21.01 comes first because every other task is judged against the numbers it writes down. M21.04, M21.05, M21.06 and M21.07 touch four different sets of files and may be worked on in parallel once M21.01 is done. M21.03 and M21.02 are listed in order because both of them change how the components of the pages are loaded and would touch the same files if they ran at the same time.
 
-**M21.01 is done (2026-11-13).** M21.02 to M21.09 are not started.
+**M21.01 and M21.02 are done (2026-11-13 and 2026-11-15).** M21.03 to M21.09 are not started.
+
+**What M21.02 found, and what it changed.** The chat and the command palette are loaded on demand now, because they render nothing when they are closed and no content of the site is lost by loading them late. The sections of the home page are not: the measurement of the task says that `next/dynamic` with the server rendering on does not take the code of a section out of the first load, and that turning the server rendering off takes the content of the seven sections out of the HTML (121,855 bytes → 15,156 bytes). PRD §75 does not allow that, so the sections keep their content and their code, and the two ways of going further are written down in `TODO.md` for the owner.
 
 ## Traceability Table
 
@@ -53,6 +55,18 @@ M21.01 comes first because every other task is judged against the numbers it wri
 | The slow requests are watched                                       | PRD §129                      | M20.06                 | Satisfied                                                                                                   |
 | The failures are watched                                            | PRD §79, §129                 | M20.01–M20.09          | Satisfied                                                                                                   |
 | The animation library is the one of the decision                    | DECISIONS (animation library) | M21.03                 | Satisfied — the decision is respected, and the removal of the library is a decision that needs a person     |
+
+## What the repository holds after M21.02
+
+- **The panel of the chat and the body of the command palette are loaded when they are opened.** The launcher of the chat, the key of the palette and the state of both are in the first load of every page, and the two heavy parts are fetched on demand
+- **The first load of every page is 19,690 bytes lighter**: the home page went from 1,336,092 to **1,316,402 bytes**, and the same 19,690 bytes went off the pages of the contact, of the design system, of the projects and of the resume
+- **The code is fetched before the visitor asks for it, without competing with the content.** The code of the panel and the code of the palette are fetched when the pointer is on the button, when the button is pressed or when the keyboard is on it, and two seconds after the page has settled
+- **The content of the site is not lost.** The panel of the chat and the body of the palette render nothing when they are closed, so nothing of the HTML of the page changed because of them
+- **The focus goes back where it was.** The panel is taken out of the page when the chat is closed, and the element that had the focus before the chat was opened gets it back, the same way it did when the panel was only hidden
+- **The chat and the palette were opened in a browser** on 2026-11-15: the chat opens on the first click with its heading, its prompts and its input, and the key opens the palette on the first press with its list of the commands. The console holds nothing but the two warnings of the GitHub of M20
+- **The rule of the first load is in the measurement.** `src/lib/performance/firstLoad.ts` holds four rules — the hero and the launcher of the chat have to be in the first load, the panel of the chat and the body of the palette have not to be — and `npm run perf:budget` checks them on the build and fails when one of them is not met
+- 6 tests added. The whole suite: 760 tests with 754 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
+- **The plan of the sections below the fold did not work, and the task says so.** The measurements are in `docs/performance-baseline.md` and in `tasks/M21/02-lazy-loading.md`: the server rendering on does not take the code out of the first load, and the server rendering off takes the content of the page out of the HTML. The sections keep their content and their code, and the decision of how to go further is the owner's
 
 ## What the repository holds after M21.01
 

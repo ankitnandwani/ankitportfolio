@@ -1,3 +1,17 @@
+## [0.1.159] - 2026-11-15
+- Implemented M21.02 – Lazy-load the chat, the palette and the sections below the fold
+- **The panel of the chat and the body of the command palette are loaded when they are opened.** The launcher of the chat, the key of the palette and the state of both stay in the first load of every page, and the two heavy parts are fetched on demand
+- **Nothing of the content of the site was lost.** The panel of the chat and the body of the palette render nothing when they are closed, so no content leaves the HTML of the page
+- **The code is fetched before the visitor asks for it.** It is fetched when the pointer is on the button, when the button is pressed or when the keyboard is on it, and two seconds after the page has settled, so the chat opens at once and the code never competes with the content of the page
+- **The focus goes back where it was.** The panel is taken out of the page when the chat is closed, and the element that had the focus before the chat was opened gets it back
+- **The first load of every page is 19,690 bytes lighter.** The home page went from 1,336,092 to **1,316,402 bytes**, and the same went off the pages of the contact, of the design system, of the analyzer, of the projects and of the resume
+- Added `src/components/command-palette/CommandPaletteDialog.tsx`, the body of the palette, and made `CommandPalette.tsx` the shell that keeps the key and the state
+- The chat and the palette were opened in a browser on 2026-11-15: the chat opens on the first click with its heading, its prompts and its input, and the key opens the palette on the first press with its list of the commands. The console holds nothing but the two warnings of the GitHub of M20
+- Added four rules of the first load to the measurement of M21.01, in `src/lib/performance/firstLoad.ts`: the hero and the launcher of the chat have to be in the first load, and the panel of the chat and the body of the palette have not to be. `npm run perf:budget` checks them on the build and fails when one of them is not met
+- 6 tests added in `src/lib/performance/firstLoad.test.mts`. The whole suite: 760 tests with 754 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
+- **The plan of the sections below the fold did not work, and the task says so.** `next/dynamic` with the server rendering on does not take the code of a section out of the first load (the home page went from 1,304.8 kB to 1,308.3 kB), and turning the server rendering off behind a viewport gate saves 319 kB but takes the content of the seven sections out of the HTML (121,855 bytes → 15,156 bytes), which PRD §75 does not allow. The sections keep their content and their code, the measurement is in `docs/performance-baseline.md`, and the two ways of going further are a decision of the owner, written down in `TODO.md`
+- The next task is M21.03 – Stop shipping the animation library to the pages that do not animate
+
 ## [0.1.158] - 2026-11-13
 - Implemented M21.01 – Measure the site and write the performance budgets. It is the first task of Milestone 21 and the one that every other task of the milestone is judged against
 - Added `scripts/measurePerformance.mts` and the command `npm run perf:budget`. It reads the output of a build, starts the production server on the port 3111, asks it for the HTML of every page and for the headers of the files of `public/`, and prints what it found

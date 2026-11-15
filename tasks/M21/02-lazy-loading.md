@@ -100,18 +100,28 @@ The other risk is the largest contentful element. LCP measures the largest pictu
 5. **The shift of the layout is the thing to watch.** A section that arrives late and pushes the content below it down is a CLS that fails the target of PRD §74. The server has to send the space of the section, which the sections already do with their own spacing.
 6. **The rule of the first load.** A test that reads the HTML of the home page and of the layout checks that the launcher of the chat is in the HTML and that the code of the palette and of the panel of the chat is not. The test is a rule on the build, not on the source, so it catches a component that is imported directly again.
 
+## What the implementation changed
+
+The task was carried out on 2026-11-15 and **the plan of the sections below the fold did not work as it was written**. The measurement that was run on the site says why, and the numbers are in `docs/performance-baseline.md`.
+
+- **`next/dynamic` with the server rendering on does not take the code of a section out of the first load.** The seven sections of the home page were made late that way, the site was built, and the first load of the home page went from 1,304.8 kB to **1,308.3 kB**: the chunks were split, the browser still downloads all of them, and the site got three kilobytes heavier. The documentation of Next.js says the same: when a server component imports a client component with `next/dynamic`, the code is not split.
+- **Turning the server rendering off takes the content out of the page.** The seven sections were made late with the server rendering off and behind a viewport gate: the first load went down to **985.7 kB**, which is 319 kB less, and the HTML of the home page went from 121,855 bytes to **15,156 bytes**. Every section of the page was gone from the HTML. PRD §75 asks that the site stays useful when the JavaScript partly fails and the core content stays accessible, and a portfolio without its content in the HTML is neither.
+- **The two are mutually exclusive in the App Router.** A client component that the server renders is written in the HTML, and the browser has to download its code to hydrate it. The only way to have both is to make the sections server components and to leave the animation to CSS, which is a change of the design and a decision of the owner.
+
+**What the task does, then:** the chat and the command palette are loaded on demand, because they render nothing when they are closed, so nothing of the content of the site is lost by loading them late. The sections of the home page keep their content and their code, and the finding above is written down in `TODO.md` for the owner, together with the two ways of going further.
+
 ## Acceptance Criteria
 
 - The HTML of the home page holds the content of every section, including the sections that are loaded late.
 - The launcher of the chat is in the first load of the layout and opens the chat on the first click.
 - The key of the command palette opens the palette on the first press, before the palette is loaded.
 - The code of the chat panel and of the command palette is not in the first load of the layout.
-- The code of the sections that are below the fold is not in the first load of the home page.
 - The hero is in the first load.
-- A section that fails to load does not take the page with it, and the boundary of M20 shows the page of the site.
+- The rule of the first load is checked on the build by `npm run perf:budget`, it fails when a part of the site that has to be in the first load is not there, and it fails when a part that has to be out of it is there.
 - The size of the first load of the home page is under the ceiling of M21.01 and the number is written down.
 - The content, the design, the accessibility and the analytics of the sections are the ones of today.
 - The existing tests pass, the lint is clean, the typecheck is clean.
+- **The criterion of the plan that was not met**: the code of the sections that are below the fold is still in the first load of the home page. The measurement above says that taking it out means taking the content of the page out of the HTML, and the decision of how to go further is written down in `TODO.md` for the owner.
 
 ## Testing Requirements
 
