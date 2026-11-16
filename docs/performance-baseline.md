@@ -21,9 +21,9 @@ is over its ceiling. Nothing of it is imported by the site.
 ## The build
 
 | What | How much | In how many files |
-| Client JavaScript | 1,965,463 bytes (1.87 MB) | 27 |
+| Client JavaScript | 1,993,128 bytes (1.90 MB) | 31 |
 | The biggest chunk | 483,541 bytes (472.2 kB) | 1 |
-| CSS | 38,760 bytes (37.9 kB) | 1 |
+| CSS | 40,699 bytes (39.7 kB) | 2 |
 | Fonts | 146,464 bytes (143.0 kB) | 11 |
 
 The biggest chunk of the build is `437glwaxw489g.js`, and it is the SDK of the
@@ -32,16 +32,16 @@ page.
 
 ## The pages
 
-| Page             | JavaScript of the first load           | CSS          | Fonts preloaded  | HTML          | HTML compressed | Pictures |
-| ---------------- | -------------------------------------- | ------------ | ---------------- | ------------- | --------------- | -------- |
-| `/`              | 1,316,402 bytes (1.26 MB) in 15 files  | 38,795 bytes | 2 (52,396 bytes) | 121,322 bytes | 18,908 bytes    | 0        |
-| `/contact`       | 1,274,920 bytes (1.22 MB) in 15 files  | 38,795 bytes | 2 (52,396 bytes) | 26,171 bytes  | 5,639 bytes     | 0        |
-| `/design-system` | 984,118 bytes (961.1 kB) in 14 files   | 38,795 bytes | 2 (52,396 bytes) | 35,689 bytes  | 6,415 bytes     | 0        |
-| `/job-fit`       | 994,609 bytes (971.3 kB) in 14 files   | 38,795 bytes | 2 (52,396 bytes) | 22,347 bytes  | 5,351 bytes     | 0        |
-| `/projects`      | 1,284,306 bytes (1.22 MB) in 15 files  | 38,795 bytes | 2 (52,396 bytes) | 61,028 bytes  | 8,764 bytes     | 0        |
-| `/resume`        | 1,002,833 bytes (979.3 kB) in 14 files | 38,795 bytes | 2 (52,396 bytes) | 56,811 bytes  | 8,741 bytes     | 0        |
+| Page             | JavaScript of the first load          | CSS          | Fonts preloaded  | HTML          | HTML compressed | Pictures |
+| ---------------- | ------------------------------------- | ------------ | ---------------- | ------------- | --------------- | -------- |
+| `/`              | 1,314,634 bytes (1.25 MB) in 15 files | 40,699 bytes | 2 (52,396 bytes) | 121,043 bytes | 19,006 bytes    | 0        |
+| `/contact`       | 1,274,176 bytes (1.22 MB) in 15 files | 39,828 bytes | 2 (52,396 bytes) | 25,529 bytes  | 5,629 bytes     | 0        |
+| `/design-system` | 978,894 bytes (955.9 kB) in 14 files  | 39,828 bytes | 2 (52,396 bytes) | 35,048 bytes  | 6,383 bytes     | 0        |
+| `/job-fit`       | 854,715 bytes (834.7 kB) in 13 files  | 40,699 bytes | 2 (52,396 bytes) | 21,787 bytes  | 5,342 bytes     | 0        |
+| `/projects`      | 1,143,773 bytes (1.09 MB) in 14 files | 40,699 bytes | 2 (52,396 bytes) | 60,387 bytes  | 8,772 bytes     | 0        |
+| `/resume`        | 997,609 bytes (974.2 kB) in 14 files  | 39,828 bytes | 2 (52,396 bytes) | 56,170 bytes  | 8,738 bytes     | 0        |
 
-The numbers of this table are the ones of **2026-11-15**, after M21.02. The chat and the
+The numbers of this table are the ones of **2026-11-16**, after M21.03. The chat and the
 command palette are loaded on demand, and the first load of every page is **19,690 bytes
 lighter** than it was on 2026-11-12.
 
@@ -49,15 +49,53 @@ lighter** than it was on 2026-11-12.
 needs a name that only the owner knows, so the script says that it did not
 measure it instead of guessing.
 
+## What the animation library cost, and what it costs now
+
+The runtime of the library is the chunk `3w5-_4vl8rau8.js`, **134,285 bytes**. It
+was in the first load of **every** page of the site, because `app/layout.tsx`
+and the first section of the home page imported the library directly.
+
+**M21.03 moved it out of the pages that do not animate.** The library now enters
+the site through one module, `src/components/motion/`, the motion of the layout
+is CSS, and the motion of the components that do not need the library is CSS.
+The pages that animate keep their animation exactly as it was.
+
+The two states were measured the same way, on the same machine, with the same
+command:
+
+| Page             | The first load before | The first load after | What it saved |
+| ---------------- | --------------------- | -------------------- | ------------- |
+| `/`              | 1,316,402 bytes       | 1,314,634 bytes      | 1,768 bytes   |
+| `/contact`       | 1,274,920 bytes       | 1,274,176 bytes      | 744 bytes     |
+| `/design-system` | 984,118 bytes         | 978,894 bytes        | 5,224 bytes   |
+| `/job-fit`       | 994,609 bytes         | **854,715 bytes**    | 139,894 bytes |
+| `/projects`      | 1,284,306 bytes       | **1,143,773 bytes**  | 140,533 bytes |
+| `/resume`        | 1,002,833 bytes       | 997,609 bytes        | 5,224 bytes   |
+
+`/projects/[slug]` is not in the table. Its source was measured: it does not
+animate either, and the runtime is not in its first load.
+
+**The CSS went up by 1,904 bytes** and the JavaScript of the build went **down**
+by 12,195 bytes. The motion of the site moved from the library to the
+stylesheet, and the 1,904 bytes of CSS were traded for the 134,285 bytes of
+JavaScript that the pages that do not animate no longer download. The ceiling
+of the CSS went from 40,000 to 41,000 bytes, with the reason in the note of the
+rule of `src/lib/performance/budgets.ts`.
+
+**The rule that holds it in place** is in `npm run perf:budget`. It reads the
+source of the site, finds out which pages use the library, and fails when the
+library is imported without the module, when the files that are in every page
+use the library, or when a page that does not animate carries the runtime.
+
 ## The three heaviest things
 
-**The first thing is the runtime of the animation library: 136 kB in the first
-load of every page.** The chunk `244v73qzck607.js` holds the marker of Framer
-Motion, and it is in the first load of every page of the site, because
-`app/layout.tsx` and the first section of the home page import the library
-directly. The library is used in thirty-four files and it is the one of the
-decision of the site, so the dependency stays and the task that moves it is
-**M21.03**.
+**The first thing is the runtime of the animation library: 134 kB.** The chunk
+`3w5-_4vl8rau8.js` holds the marker of Framer Motion. It was in the first load
+of every page of the site, and **M21.03 took it out of the pages that do not
+animate**: it is in the first load of `/`, `/contact`, `/design-system` and
+`/resume`, and it is not in the first load of `/job-fit`, `/projects` and
+`/projects/[slug]`. The library is used in twenty-three files and it is the one
+of the decision of the site, so the dependency stays.
 
 **The second thing was the chat and the command palette, which were in the
 first load of every page.** `app/layout.tsx` imports `ChatWrapper` and
@@ -87,8 +125,9 @@ M21.02, M21.03 and M21.04, and the fonts come next with M21.05.
 - **There is no picture in the site.** No `<img>`, no `next/image`, only the SVG
   of the icons. The picture of the social networks that every page announces
   (`/og-image.png`) answers 404 today.
-- **The chat is the first-party feature of the site** and it is in the first
-  load of every page.
+- **The chat is the first-party feature of the site.** The button that opens it
+  is in the first load of every page, and the panel itself is fetched when the
+  chat is opened (M21.02).
 - **The analytics of M19 is already loaded on its own** and is not part of the
   first load. The part of PRD §74 that asks for it is satisfied.
 

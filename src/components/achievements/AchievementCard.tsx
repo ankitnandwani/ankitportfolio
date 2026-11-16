@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/src/components/motion';
 import { Card } from '@/src/components/ui/Card';
 import { useTheme } from '@/design/themeContext';
 import { Achievement } from '@/src/data/achievements';

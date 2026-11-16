@@ -30,3 +30,116 @@ body {
   white-space: nowrap;
   border: 0;
 }
+
+/* ---------------------------------------------------------------------------
+   The motion of the layout of the site.
+
+   These are the four motions that the layout of the site needs: the
+   transition of the change of the page, the button of the chat, the links of
+   the footer and the menu of the phone. They are CSS and not the library of
+   the animation, so that the runtime of the library is not in the first load
+   of every page of the site.
+
+   The rule of the reduced motion of PRD §131 is honoured here: a visitor who
+   asked for no motion gets no motion.
+   --------------------------------------------------------------------------- */
+
+/* The fade that the library of the animation used by default. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* The transition of the change of the page: the same fade of 0.3 s that the
+   library of the animation did. */
+.page-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+/* The button of the chat: it turns into a cross when the chat is open. The
+   scale and the rotation are two properties of their own, so that the hover
+   and the press of the pointer change the scale without touching the
+   rotation, the same way the library did. */
+.chat-launcher {
+  scale: 1;
+  rotate: 0deg;
+
+  transition:
+    scale 0.2s cubic-bezier(0.34, 1.4, 0.64, 1),
+    rotate 0.2s cubic-bezier(0.34, 1.4, 0.64, 1),
+    box-shadow 0.2s ease;
+}
+
+.chat-launcher[data-state='open'] {
+  scale: 0.95;
+  rotate: 45deg;
+}
+
+.chat-launcher:hover {
+  scale: 1.05;
+}
+
+.chat-launcher:active {
+  scale: 0.9;
+}
+
+/* The icon of the button turns with the button, so that the cross of the open
+   chat is at the right angle. */
+.chat-launcher-icon {
+  transition: rotate 0.2s ease;
+}
+
+.chat-launcher-icon[data-state='open'] {
+  rotate: 45deg;
+}
+
+/* The links of the footer: they grow a little when the pointer is on them.
+   The colour of the link keeps the transition of 0.2 s that it had. */
+.social-link {
+  transition:
+    scale 0.2s ease,
+    color 0.2s ease;
+}
+
+.social-link:hover {
+  scale: 1.1;
+}
+
+.social-link:active {
+  scale: 0.9;
+}
+
+/* The menu of the phone: it comes from above. */
+@keyframes mobile-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-menu {
+  animation: mobile-menu-in 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-fade-in,
+  .mobile-menu {
+    animation: none;
+  }
+
+  .chat-launcher,
+  .chat-launcher-icon,
+  .social-link {
+    transition: none;
+  }
+}

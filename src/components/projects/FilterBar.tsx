@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
+import '@/src/components/motion/motion.css';
 import { Button } from '@/src/components/ui/Button';
 import type { ComponentProps } from 'react';
 
@@ -35,28 +35,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   options,
   className = '',
 }) => {
-  // Hook to detect if user prefers reduced motion
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleChange = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  const tapVariant = {
-    whileTap: { scale: 0.95, transition: { duration: 0.2 } },
-  };
-
   return (
     <div
       role="radiogroup"
@@ -75,12 +53,9 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           children: option.label
         };
         return (
-          <motion.div
-            key={option.value}
-            whileTap={prefersReducedMotion ? undefined : tapVariant.whileTap}
-          >
+          <div key={option.value} className="filter-button">
             <Button {...(buttonProps as ComponentProps<typeof Button>)} />
-          </motion.div>
+          </div>
         );
       })}
     </div>

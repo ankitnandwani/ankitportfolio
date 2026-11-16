@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import '@/src/components/motion/motion.css';
 import { Card } from '@/src/components/ui/Card';
 import { Project } from '@/src/data/projects';
 import { fetchGitHubRepoData } from '@/src/lib/githubService';
@@ -18,10 +18,6 @@ interface ProjectCardProps {
    */
   tokens: typeof tokensObj;
   /**
-   * Whether the user prefers reduced motion.
-   */
-  prefersReducedMotion: boolean;
-  /**
    * Optional additional className for styling.
    */
   className?: string;
@@ -30,7 +26,6 @@ interface ProjectCardProps {
 export default function ProjectCard({
   project,
   tokens,
-  prefersReducedMotion,
   className = '',
 }: ProjectCardProps) {
   // State for GitHub data
@@ -64,28 +59,9 @@ export default function ProjectCard({
 
   const borderColor = project.featured ? accentColor : primaryColor;
 
-  // Animation variants
-  const hoverVariant = {
-    whileHover: { 
-      scale: 1.02, 
-      transition: { duration: 0.2 } 
-    },
-    whileTap: { scale: 0.98 },
-  };
-
-  const focusVariant = {
-    whileFocus: { 
-      scale: 1.02, 
-      transition: { duration: 0.2 } 
-    },
-  };
-
   return (
-    <motion.article
-      whileHover={prefersReducedMotion ? undefined : hoverVariant.whileHover}
-      whileTap={prefersReducedMotion ? undefined : hoverVariant.whileTap}
-      whileFocus={prefersReducedMotion ? undefined : focusVariant.whileFocus}
-      className={`w-full flex flex-col justify-between p-4 sm:p-5 md:p-6 transition-all ${className} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary`}
+    <article
+      className={`project-card w-full flex flex-col justify-between p-4 sm:p-5 md:p-6 ${className} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary`}
     >
       <Card
         elevation="md"
@@ -334,6 +310,6 @@ export default function ProjectCard({
           </div>
         </div>
       </Card>
-    </motion.article>
+    </article>
   );
 }

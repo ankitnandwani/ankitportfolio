@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Card } from '@/src/components/ui/Card';
 import { useTheme } from '@/design/themeContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/src/components/motion';
 import { CareerTimelineEntry } from '@/src/data/careerTimeline';
 
 interface CompanyCardProps {

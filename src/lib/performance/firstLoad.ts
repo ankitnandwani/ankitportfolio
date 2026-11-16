@@ -159,3 +159,95 @@ export function getFirstLoadRulesForRoute(
 
   return rules.filter((rule) => rule.scope === 'every');
 }
+
+/**
+ * The words of the code that only the runtime of the library of the animation
+ * has.
+ *
+ * The runtime is the big part of the library: the part that reads the motion
+ * of the elements and puts them on the screen. The words are the ones of the
+ * library itself, so that they are in the runtime and in nothing else.
+ */
+export const MOTION_RUNTIME_MARKERS: string[] = ['framerAppearId'];
+
+/** One page of the site and the first load of it. */
+export interface PageFirstLoad {
+  /** The route of the page. */
+  route: string;
+  /** Whether the first load of the page uses the animation of the library. */
+  animates: boolean;
+  /** The files of the first load of the page. */
+  chunks: FirstLoadChunk[];
+}
+
+/** A rule of the runtime of the library that was not met. */
+export interface MotionRuntimeFailure {
+  /** The route of the page. */
+  route: string;
+  /** The file of the first load that holds the runtime of the library. */
+  chunk: string;
+  /** Why the rule is what it is. */
+  note: string;
+}
+
+/** The result of the check of the runtime of the library. */
+export interface MotionRuntimeEvaluation {
+  /** The number of the pages that were checked. */
+  checked: number;
+  /** The pages that do not animate and carry the runtime of the library. */
+  failures: MotionRuntimeFailure[];
+  /** The pages that animate and carry the runtime of the library. */
+  animating: string[];
+}
+
+/**
+ * Finds the files that hold the runtime of the library of the animation.
+ *
+ * @param chunks The files of a first load.
+ * @returns The files that hold the runtime of the library.
+ */
+export function findMotionRuntimeChunks(chunks: FirstLoadChunk[]): FirstLoadChunk[] {
+  return chunks.filter((chunk) =>
+    MOTION_RUNTIME_MARKERS.some((marker) => chunk.content.includes(marker))
+  );
+}
+
+/**
+ * Checks that the runtime of the library is not in the first load of a page
+ * that does not animate.
+ *
+ * A page that animates carries the runtime of the library, because the
+ * animation of the page needs it. A page that does not animate must not carry
+ * it: the library of the animation is 134 kB that a page has no use for.
+ *
+ * @param pages The pages of the site and their first load.
+ * @returns The number of the pages that were checked and the pages that carry
+ *   the runtime and do not animate.
+ */
+export function evaluateMotionRuntimeRule(pages: PageFirstLoad[]): MotionRuntimeEvaluation {
+  const failures: MotionRuntimeFailure[] = [];
+  const animating: string[] = [];
+
+  for (const page of pages) {
+    const runtime = findMotionRuntimeChunks(page.chunks);
+
+    if (runtime.length === 0) {
+      continue;
+    }
+
+    if (page.animates) {
+      animating.push(page.route);
+      continue;
+    }
+
+    for (const chunk of runtime) {
+      failures.push({
+        route: page.route,
+        chunk: chunk.name,
+        note: 'The page does not animate, so the runtime of the library of the animation is not needed in its first load',
+      });
+    }
+  }
+
+  return { checked: pages.length, failures, animating };
+}

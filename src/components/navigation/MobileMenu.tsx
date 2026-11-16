@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -9,6 +8,14 @@ interface MobileMenuProps {
   links: Array<{ href: string; label: string }>;
 }
 
+/**
+ * The menu of the phone.
+ *
+ * The motion of the menu is CSS and not the library of the animation: the
+ * navigation is in the first load of every page of the site, and the runtime
+ * of the library is 134 kB that a page that does not animate has no use for.
+ * The rules of the CSS are in `app/globals.css`.
+ */
 export const MobileMenu = ({ links }: MobileMenuProps) => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -28,12 +35,8 @@ export const MobileMenu = ({ links }: MobileMenuProps) => {
       </button>
 
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="md:hidden absolute top-full left-0 right-0 mt-2 p-4 bg-background border border-border rounded-md shadow-md z-50"
+        <div
+          className="mobile-menu md:hidden absolute top-full left-0 right-0 mt-2 p-4 bg-background border border-border rounded-md shadow-md z-50"
         >
           <nav className="space-y-2">
             {links.map((link) => (
@@ -51,7 +54,7 @@ export const MobileMenu = ({ links }: MobileMenuProps) => {
               </Link>
             ))}
           </nav>
-        </motion.div>
+        </div>
       )}
     </>
   );

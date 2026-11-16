@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ResponsiveContainer } from '@/src/components/layout';
-import { motion } from 'framer-motion';
+import { motion } from '@/src/components/motion';
 import { Button } from '@/src/components/ui/Button';
 import { ResumeSummary } from '@/src/components/resume/ResumeSummary';
 import { ResumeExperience } from '@/src/components/resume/ResumeExperience';

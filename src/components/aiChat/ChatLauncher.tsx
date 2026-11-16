@@ -1,10 +1,9 @@
 'use client';
 
 import React, { forwardRef } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
 import { useTheme } from '@/design/themeContext';
 
-interface ChatLauncherProps extends Omit<HTMLMotionProps<'button'>, 'children' | 'onClick'> {
+interface ChatLauncherProps extends React.ComponentPropsWithoutRef<'button'> {
   onClick: () => void;
   isOpen: boolean;
   className?: string;
@@ -15,8 +14,13 @@ interface ChatLauncherProps extends Omit<HTMLMotionProps<'button'>, 'children' |
  * Chat launcher button component.
  *
  * A floating action button (FAB) that opens the chat interface.
- * Uses NeoPOP button styling with Framer Motion animations.
- * Respects reduced motion preferences.
+ * Uses NeoPOP button styling.
+ *
+ * The motion of the button is CSS and not the library of the animation: the
+ * button is in the first load of every page of the site, and the runtime of
+ * the library is 134 kB that a page that does not animate has no use for.
+ * The rules of the CSS are in `app/globals.css`, and they honour the reduced
+ * motion of PRD §131.
  */
 export const ChatLauncher = forwardRef<HTMLButtonElement, ChatLauncherProps>(
   (
@@ -30,10 +34,6 @@ export const ChatLauncher = forwardRef<HTMLButtonElement, ChatLauncherProps>(
     ref
   ) => {
     const { theme } = useTheme();
-    const prefersReducedMotion = React.useMemo(
-      () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-      []
-    );
 
     // Determine colors based on theme
     const buttonStyle: React.CSSProperties = {
@@ -47,42 +47,33 @@ export const ChatLauncher = forwardRef<HTMLButtonElement, ChatLauncherProps>(
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      boxShadow: theme === 'dark'
-        ? '0 8px 20px rgba(255,255,255,0.15), 0 3px 14px rgba(255,255,255,0.12), 0 5px 5px -3px rgba(255,255,255,0.2)'
-        : '0 8px 20px rgba(0,0,0,0.15), 0 3px 14px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2)',
+      boxShadow:
+        theme === 'dark'
+          ? '0 8px 20px rgba(255,255,255,0.15), 0 3px 14px rgba(255,255,255,0.12), 0 5px 5px -3px rgba(255,255,255,0.2)'
+          : '0 8px 20px rgba(0,0,0,0.15), 0 3px 14px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2)',
       backgroundColor: theme === 'dark' ? '#0D47A1' : '#0D47A1',
       color: '#FFFFFF',
       border: 'none',
       cursor: 'pointer',
-      transition: prefersReducedMotion ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease',
     };
 
     return (
-      <motion.button
+      <button
         ref={ref}
+        type="button"
         role="button"
         aria-label={ariaLabel}
         aria-expanded={isOpen}
         aria-controls="chat-panel"
+        data-state={isOpen ? 'open' : 'closed'}
         onClick={onClick}
-        className={className}
+        className={`chat-launcher ${className}`}
         style={buttonStyle}
-        initial={false}
-        animate={{
-          scale: isOpen ? 0.95 : 1,
-          rotate: isOpen ? 45 : 0,
-        }}
-        transition={{
-          duration: prefersReducedMotion ? 0 : 0.2,
-          type: prefersReducedMotion ? undefined : 'spring',
-          stiffness: 260,
-          damping: 20,
-        }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.9 }}
         {...props}
       >
         <svg
+          className="chat-launcher-icon"
+          data-state={isOpen ? 'open' : 'closed'}
           width="28"
           height="28"
           viewBox="0 0 24 24"
@@ -92,14 +83,10 @@ export const ChatLauncher = forwardRef<HTMLButtonElement, ChatLauncherProps>(
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
-          style={{
-            transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
-            transition: prefersReducedMotion ? 'none' : 'transform 0.2s ease',
-          }}
         >
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
-      </motion.button>
+      </button>
     );
   }
 );

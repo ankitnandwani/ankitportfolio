@@ -3,7 +3,10 @@ import test from 'node:test';
 
 import {
   FIRST_LOAD_RULES,
+  MOTION_RUNTIME_MARKERS,
   evaluateFirstLoadRules,
+  evaluateMotionRuntimeRule,
+  findMotionRuntimeChunks,
   getFirstLoadRulesForRoute,
   type FirstLoadChunk,
 } from './firstLoad.ts';
@@ -102,4 +105,62 @@ test('the hero is checked on the home page and the rest on every page', () => {
   assert.ok(contact.length < home.length);
   assert.ok(contact.every((rule) => rule.scope === 'every'));
   assert.ok(!contact.some((rule) => rule.name === 'hero'));
+});
+
+test('a page that does not animate and carries the runtime of the library fails', () => {
+  const evaluation = evaluateMotionRuntimeRule([
+    {
+      route: '/projects',
+      animates: false,
+      chunks: [{ name: 'runtime.js', content: '/* framerAppearId */' }],
+    },
+  ]);
+
+  assert.equal(evaluation.checked, 1);
+  assert.equal(evaluation.failures.length, 1);
+  assert.equal(evaluation.failures[0].route, '/projects');
+  assert.equal(evaluation.failures[0].chunk, 'runtime.js');
+});
+
+test('a page that does not animate and does not carry the runtime passes', () => {
+  const evaluation = evaluateMotionRuntimeRule([
+    {
+      route: '/projects',
+      animates: false,
+      chunks: [{ name: 'page.js', content: '/* the page */' }],
+    },
+  ]);
+
+  assert.equal(evaluation.checked, 1);
+  assert.equal(evaluation.failures.length, 0);
+});
+
+test('a page that animates carries the runtime of the library without failing', () => {
+  const evaluation = evaluateMotionRuntimeRule([
+    {
+      route: '/',
+      animates: true,
+      chunks: [{ name: 'runtime.js', content: '/* framerAppearId */' }],
+    },
+  ]);
+
+  assert.equal(evaluation.failures.length, 0);
+  assert.deepEqual(evaluation.animating, ['/']);
+});
+
+test('the runtime of the library is found in the files of a first load', () => {
+  const runtime = findMotionRuntimeChunks([
+    { name: 'page.js', content: '/* the page */' },
+    { name: 'runtime.js', content: '/* framerAppearId */' },
+  ]);
+
+  assert.equal(runtime.length, 1);
+  assert.equal(runtime[0].name, 'runtime.js');
+});
+
+test('the words of the runtime of the library are the ones of the library', () => {
+  assert.ok(MOTION_RUNTIME_MARKERS.length > 0);
+  for (const marker of MOTION_RUNTIME_MARKERS) {
+    assert.ok(marker.length > 0, 'a word of the runtime is empty');
+  }
 });

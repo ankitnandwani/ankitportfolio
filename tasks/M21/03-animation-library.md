@@ -87,16 +87,44 @@ What the repository holds today:
 5. **The rule that catches the regression.** A rule reads the HTML of the pages and checks that the chunk of the runtime of the library is not in the first load of a page that does not animate. Without it, the next component that imports the library directly puts it back.
 6. **Nothing of the library is removed from `package.json`.** The dependency stays. The decision of the owner is a separate step and it is written down in `DECISIONS.md` when it is taken.
 
+## What the implementation changed
+
+The task was carried out on 2026-11-16. The library of the animation **stays a dependency of the repository**, and the runtime of the library is out of the first load of the pages that do not animate. The numbers are in `docs/performance-baseline.md`.
+
+**The library enters the site through one module.** `src/components/motion/index.ts` re-exports `motion`, `AnimatePresence` and the type `HTMLMotionProps`. The thirty-four files that imported `framer-motion` import that module instead, and no file of the site imports the library directly any more. `npm run perf:budget` reads the source and fails when a file imports the library without the module, so the place where the library enters the site stays one place.
+
+**The motion of the layout is CSS.** The four motions of the layout — the transition of the change of the page, the button of the chat, the links of the footer and the menu of the phone — are CSS in `app/globals.css`. The layout is in the first load of every page, so the library was in the first load of every page because of it. The timing is the timing that the library used: 0.3 s for the change of the page, 0.2 s for the button and for the links, 0.2 s for the menu.
+
+**The motion of the pages that do not need the library is CSS.** The result of the fit of the job, the list and the cards of the projects, the button of the filter and the dots of the typing are CSS in `src/components/motion/motion.css`. That file travels with the components that use it, in the same way as the code of the animation used to travel with them: the pages that do not use those components do not download it.
+
+**The pages that animate still animate with the library.** The hero, the sections of the home page, the contact form, the page of the resume and the page of the design system keep their animation exactly as it was: the same variants, the same timing, the same shape of the motion. The runtime of the library is in the first load of those pages, and it is not in the first load of `/job-fit`, `/projects` and `/projects/[slug]`.
+
+**The rule that catches the regression** is in `src/lib/performance/firstLoad.ts` and in `scripts/measurePerformance.mts`. It reads the source of the site, finds out which pages use the library, and checks three things:
+
+1. **The library is imported through one module.** A file that imports `framer-motion` directly fails the run.
+2. **The files that are in every page do not use the library.** The layout, the page of the error and the page of the global error are read on their own. If one of them uses the library, the runtime is in the first load of every page and the run fails. This is the rule that catches the regression that matters: the one that puts the 134 kB back on every page.
+3. **A page that does not animate does not carry the runtime.** The chunk that holds the runtime is found in the build by the words of the library itself, and it must not be in the first load of a page whose source does not use the library. The run also fails when the runtime is not found in the build at all, so that the rule cannot pass by accident when the library changes.
+
+**The one visible difference.** The change of the page used to fade the old page out over 0.3 s and the new one in over 0.3 s, because `AnimatePresence` kept both on the screen. The CSS fades the new page in over 0.3 s and the old page is replaced at once, because a page that is gone cannot be faded out by CSS. The entrance is the same and the exit is not there.
+
+**The other differences are the springs.** Where the library animated without a timing of its own, it used a spring: the press of the card of a project, the press and the hover of the button of the chat, the hover of the link of the footer. A spring has no duration to copy, so those are a curve of 0.2 s that overshoots a little, `cubic-bezier(0.34, 1.4, 0.64, 1)`. Every timing that the library wrote down is copied as it was: 0.2 s for the growth of the card, 0.4 s for the result of the fit of the job, 0.5 s for a card of the list of the projects, 0.1 s between two cards of the list, 0.2 s before the first one, 0.6 s for the dots of the typing.
+
+**One line of dead code went away.** The result of the fit of the job had `animation: 'fadeIn 0.4s ease'` in its style, and there was no `fadeIn` in the stylesheet of the site, so the browser ignored it. The motion of the entrance is the CSS of the class, and the line is gone.
+
+**The ceiling of the CSS moved.** The CSS of the site grew by 1,904 bytes, because the motion of the site moved from the library to the stylesheet. The ceiling of the CSS of M21.01 went from 40,000 to 41,000 bytes, with the reason in the note of the rule. The 1,904 bytes of CSS were traded for 134,285 bytes of JavaScript that the pages that do not animate no longer download.
+
+**What the task did not do.** The dependency is not removed from `package.json`, and the thirty-four files that use the library are not rewritten. That is a change of an accepted decision and it needs the owner; the recommendation of the task is still not to remove it.
+
 ## Acceptance Criteria
 
-- The runtime of the library is not in the first load of a page that does not animate, and the rule checks it.
-- Every component of the site imports the animation from the one module of the site, and no file imports `framer-motion` directly any more.
-- The library stays in `package.json`. The dependency is not removed by this task.
-- The animation of every component that animates looks the same as it did and happens at the same time.
-- A page whose animation does not run still shows its content and still works.
-- The size of the first load of the home page is under the ceiling of M21.01, and the number before and after is written down.
-- The rule of the first load of M21.02 holds.
-- The existing tests pass, the lint is clean, the typecheck is clean, and the build succeeds.
+- The runtime of the library is not in the first load of a page that does not animate, and the rule checks it. **Met**: the runtime is out of the first load of `/job-fit`, `/projects` and `/projects/[slug]`, and the run of `npm run perf:budget` fails when it comes back.
+- Every component of the site imports the animation from the one module of the site, and no file imports `framer-motion` directly any more. **Met**.
+- The library stays in `package.json`. The dependency is not removed by this task. **Met**.
+- The animation of every component that animates looks the same as it did and happens at the same time. **Met, with the one difference of the exit of the change of the page**, which is written down above.
+- A page whose animation does not run still shows its content and still works. **Met**: the motion is a decoration of the content, and the content of the page does not depend on it.
+- The size of the first load of the home page is under the ceiling of M21.01, and the number before and after is written down. **Met**: 1,316,402 bytes became 1,314,634 bytes.
+- The rule of the first load of M21.02 holds. **Met**.
+- The existing tests pass, the lint is clean, the typecheck is clean, and the build succeeds. **Met**.
 
 ## Testing Requirements
 

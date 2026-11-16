@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
+import '@/src/components/motion/motion.css';
 import { useTheme } from '@/design/themeContext';
 import { Project } from '@/src/data/projects';
 import ProjectCard from './ProjectCard';
@@ -42,41 +42,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   const { getThemeTokens } = useTheme();
   const tokens = getThemeTokens();
 
-  // Hook to detect if user prefers reduced motion
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleChange = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-  };
-
   // Apply filters
   let filteredProjects = projects;
   if (filters) {
@@ -112,26 +77,17 @@ export const ProjectList: React.FC<ProjectListProps> = ({
         ) : null}
 
         {/* Projects Grid */}
-        <motion.div
-          className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-          initial={prefersReducedMotion ? undefined : containerVariants.hidden}
-          animate={prefersReducedMotion ? undefined : containerVariants.show}
-        >
-          {filteredProjects.map((project) => (
-            <motion.div
+        <div className="project-list grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredProjects.map((project, index) => (
+            <div
               key={project.id}
-              initial={prefersReducedMotion ? undefined : itemVariants.hidden}
-              animate={prefersReducedMotion ? undefined : itemVariants.show}
+              className="project-list-item"
+              style={{ '--item-index': index } as React.CSSProperties}
             >
-              <ProjectCard
-                key={project.id}
-                project={project}
-                tokens={tokens}
-                prefersReducedMotion={prefersReducedMotion}
-              />
-            </motion.div>
+              <ProjectCard project={project} tokens={tokens} />
+            </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

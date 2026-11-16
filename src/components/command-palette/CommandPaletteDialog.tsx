@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { useClickOutside } from '@/src/hooks/useClickOutside';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/src/components/motion';
 import { COMMAND_ITEMS } from './commandItems';
 import { CommandItem } from './types';
 

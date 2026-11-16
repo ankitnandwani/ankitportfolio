@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import ProjectCard from '@/src/components/projects/ProjectCard';
 import { ProjectList } from '@/src/components/projects/ProjectList';
 import { Project } from '@/src/data/projects';
@@ -32,34 +32,12 @@ export default function ProjectDetailContent({
   const { getThemeTokens } = useTheme();
   const tokens = getThemeTokens();
 
-  // Hook to detect if user prefers reduced motion
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleChange = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
   return (
     <>
       {/* Main Content */}
       <div className="space-y-8">
         <Suspense fallback={<ProjectCardLoading />}>
-          <ProjectCard
-            project={project}
-            tokens={tokens}
-            prefersReducedMotion={prefersReducedMotion}
-          />
+          <ProjectCard project={project} tokens={tokens} />
         </Suspense>
 
         {/* Related Projects */}

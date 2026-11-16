@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/src/components/motion';
 import { testimonials } from '@/src/data/testimonials';
 import { TestimonialCard } from './TestimonialCard';
 import { useTheme } from '@/design/themeContext';

@@ -1,0 +1,109 @@
+/* ---------------------------------------------------------------------------
+   The motion of the components of the site.
+
+   These are the motions of the components that do not use the library of the
+   animation: the result of the fit of the job, the list and the cards of the
+   projects, the button of the filter and the dots of the typing. They are CSS
+   and not the library of the animation, so that the runtime of the library is
+   not in the first load of the pages that do not animate.
+
+   The file travels with the components that use it, in the same way as the
+   code of the animation used to travel with them.
+
+   The timing of each one is the timing that the library used, and the easing
+   is the easing that the library used by default: `ease-out` for the tweens
+   and `cubic-bezier(0.25, 0.1, 0.35, 1)` for the fade of the container of the
+   projects.
+
+   The rule of the reduced motion of PRD §131 is honoured here: a visitor who
+   asked for no motion gets no motion.
+   --------------------------------------------------------------------------- */
+
+/* The entrance that the library used: the same fade, with the twenty pixels
+   that the content came from. */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The result of the fit of the job: it comes in once, over 0.4 s. */
+.job-fit-results {
+  animation: fade-in-up 0.4s ease-out both;
+}
+
+/* The list of the projects: the container fades in, and the cards come one
+   after the other. The library waited 0.2 s before the first card and gave
+   each card 0.1 s more than the one before it. */
+.project-list {
+  animation: fade-in 0.3s cubic-bezier(0.25, 0.1, 0.35, 1) both;
+}
+
+.project-list-item {
+  animation: fade-in-up 0.5s ease-out both;
+  animation-delay: calc(0.2s + var(--item-index, 0) * 0.1s);
+}
+
+/* The card of a project: it grows a little under the pointer and it goes
+   down a little when it is pressed. The library used 0.2 s for the growth and
+   a spring for the press. */
+.project-card {
+  transition: scale 0.2s ease-out;
+}
+
+.project-card:hover {
+  scale: 1.02;
+}
+
+.project-card:active {
+  scale: 0.98;
+}
+
+.project-card:focus-visible {
+  scale: 1.02;
+}
+
+/* The button of the filter: it goes down a little when it is pressed. */
+.filter-button {
+  transition: scale 0.2s ease-out;
+}
+
+.filter-button:active {
+  scale: 0.95;
+}
+
+/* The dots of the typing: they grow and come back, once every 0.6 s. */
+@keyframes typing-dot {
+  0%,
+  100% {
+    scale: 1;
+  }
+
+  50% {
+    scale: 1.3;
+  }
+}
+
+.typing-dot {
+  animation: typing-dot 0.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .job-fit-results,
+  .project-list,
+  .project-list-item,
+  .typing-dot {
+    animation: none;
+  }
+
+  .project-card,
+  .filter-button {
+    transition: none;
+  }
+}

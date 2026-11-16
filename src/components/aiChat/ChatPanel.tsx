@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/src/components/motion';
 import { useTheme } from '@/design/themeContext';
 import type { ChatMessage } from './hooks/useChatState';
 import { ChatMessageComponent } from './ChatMessage';

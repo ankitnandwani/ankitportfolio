@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTheme } from '@/design/themeContext';
-import { motion } from 'framer-motion';
+import '@/src/components/motion/motion.css';
 import { AlignmentBars } from './AlignmentBars';
 import { Card } from '@/src/components/ui/Card';
 import { PRIVACY_NOTICE, AI_DISCLAIMER } from './notices';
@@ -76,7 +76,6 @@ export function JobFitResults({
     flexDirection: 'column',
     gap: 24,
     width: '100%',
-    animation: prefersReducedMotion ? 'none' : 'fadeIn 0.4s ease',
   };
 
   const headingStyle: React.CSSProperties = {
@@ -245,11 +244,9 @@ export function JobFitResults({
   };
 
   return (
-    <motion.div
+    <div
+      className="job-fit-results"
       style={containerStyle}
-      initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-      animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-      transition={{ duration: prefersReducedMotion ? 0 : 0.4 }}
       role="region"
       aria-live="polite"
       aria-label="Job fit analysis results"
@@ -425,6 +422,6 @@ export function JobFitResults({
           <p style={noticeStyle}>{AI_DISCLAIMER}</p>
         </div>
       </section>
-    </motion.div>
+    </div>
   );
 }

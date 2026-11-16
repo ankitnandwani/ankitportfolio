@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/src/components/ui/Card';
-import { motion } from 'framer-motion';
+import { motion } from '@/src/components/motion';
 import { socialLinks } from '@/src/data/socialLinks';
 
 // Import icons from react-icons

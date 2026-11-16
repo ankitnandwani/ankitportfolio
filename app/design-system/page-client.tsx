@@ -4,7 +4,7 @@ import { useTheme } from '@/design/themeContext';
 import { ResponsiveContainer } from '@/src/components/layout';
 
 import { motionVariants } from '@/design/motion';
-import { motion } from 'framer-motion';
+import { motion } from '@/src/components/motion';
 import { Button } from '@/src/components/ui/Button';
 import { Card } from '@/src/components/ui/Card';
 import { Badge } from '@/src/components/ui/Badge';

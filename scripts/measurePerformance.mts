@@ -49,9 +49,19 @@ import {
 } from '../src/lib/performance/budgets.ts';
 import {
   evaluateFirstLoadRules,
+  evaluateMotionRuntimeRule,
+  findMotionRuntimeChunks,
   getFirstLoadRulesForRoute,
+  MOTION_RUNTIME_MARKERS,
   type FirstLoadFailure,
+  type PageFirstLoad,
 } from '../src/lib/performance/firstLoad.ts';
+import {
+  MOTION_MODULE,
+  findAnimationImports,
+  type AnimationImportReport,
+  type SourceTree,
+} from '../src/lib/performance/motionImports.ts';
 
 /**
  * The root of the repository, so that the build and the files of `public/`
@@ -74,6 +84,18 @@ const STATIC_DIR = path.join(BUILD_DIR, 'static');
 
 /** The folder of the files the site serves by hand. */
 const PUBLIC_DIR = path.join(REPO_ROOT, 'public');
+
+/** The folders of the source of the site. */
+const SOURCE_DIRS = [path.join(REPO_ROOT, 'src'), path.join(REPO_ROOT, 'app')];
+
+/**
+ * The files of the site that are in every page: the layout of the site and
+ * the pages of the error.
+ *
+ * They are the files that decide whether the runtime of the library of the
+ * animation is in the first load of every page of the site.
+ */
+const SHELL_FILES = ['app/layout.tsx', 'app/error.tsx', 'app/global-error.tsx'];
 
 /** The port the server of the script listens on when the script starts it. */
 const DEFAULT_PORT = 3111;
@@ -117,6 +139,24 @@ interface PageMeasurement {
   cacheControl: string;
   /** The rules of the first load that were not met on this page. */
   firstLoadFailures: FirstLoadFailure[];
+  /** Whether the first load of the page uses the animation of the library. */
+  animates: boolean;
+  /** The files of the first load of the page. */
+  chunks: { name: string; content: string }[];
+}
+
+/** What the source of the site says about the animation of the pages. */
+interface AnimationReport {
+  /** Whether the files that are in every page use the animation of the library. */
+  shellAnimates: boolean;
+  /** The files that are in every page and that use the animation. */
+  shellAnimationImports: string[];
+  /** Whether each page uses the animation of the library in its first load. */
+  pages: { route: string; animates: boolean; file: string | null }[];
+  /** The files that import the library without the module of the site. */
+  directLibraryImports: string[];
+  /** The files that are loaded later and that bring the animation with them. */
+  lazyAnimationImports: string[];
 }
 
 /**
@@ -141,6 +181,79 @@ interface Measurement {
   siteFiles: { file: string; cacheControl: string; maxAge: number }[];
   /** The cache of the routes of the API. */
   apiCache: { route: string; status: number; cacheControl: string; maxAge: number }[];
+  /** What the source of the site says about the animation of the pages. */
+  animation: AnimationReport;
+  /** The pages that do not animate and carry the runtime of the library. */
+  motionRuntimeFailures: { route: string; chunk: string; note: string }[];
+  /** The files of the whole build that hold the runtime of the library. */
+  motionRuntimeChunks: string[];
+  /** The pages that animate and carry the runtime of the library. */
+  animatingPages: string[];
+}
+
+/**
+ * Reads the source of the site and finds out which pages use the animation of
+ * the library.
+ *
+ * The files that are in every page of the site are read on their own, and the
+ * page of each route is read with them: a page that does not animate is a
+ * page whose files, and whose files of the layout, do not import the module
+ * of the animation.
+ *
+ * @param routes The routes of the pages of the site.
+ * @returns What the source says about the animation of the pages.
+ */
+function readAnimationReport(routes: string[]): AnimationReport {
+  const shellAnimationImports: string[] = [];
+  let shellAnimates = false;
+
+  for (const file of SHELL_FILES) {
+    const report: AnimationImportReport = findAnimationImports(file, SOURCE_TREE);
+
+    if (report.usesAnimation) {
+      shellAnimates = true;
+      shellAnimationImports.push(...report.directLibraryImports, ...report.motionModuleImports);
+    }
+  }
+
+  const pages = routes.map((route) => {
+    const file = findPageFile(route);
+    const report = file ? findAnimationImports(file, SOURCE_TREE) : null;
+
+    return {
+      route,
+      file,
+      animates: shellAnimates || (report?.usesAnimation ?? false),
+    };
+  });
+
+  const lazyAnimationImports = new Set<string>();
+
+  for (const file of SHELL_FILES) {
+    const report = findAnimationImports(file, SOURCE_TREE);
+    for (const lazy of report.lazyAnimationImports) {
+      lazyAnimationImports.add(lazy);
+    }
+  }
+
+  for (const page of pages) {
+    if (!page.file) {
+      continue;
+    }
+
+    const report = findAnimationImports(page.file, SOURCE_TREE);
+    for (const lazy of report.lazyAnimationImports) {
+      lazyAnimationImports.add(lazy);
+    }
+  }
+
+  return {
+    shellAnimates,
+    shellAnimationImports: [...new Set(shellAnimationImports)].sort(),
+    pages,
+    directLibraryImports: findDirectLibraryImports(),
+    lazyAnimationImports: [...lazyAnimationImports].sort(),
+  };
 }
 
 /**
@@ -181,6 +294,79 @@ function sizeOfFile(file: string): number | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * The source of the site, read by the path of the file from the root of the
+ * repository.
+ */
+const SOURCE_TREE: SourceTree = {
+  read(file: string): string | null {
+    try {
+      return readFileSync(path.join(REPO_ROOT, file), 'utf8');
+    } catch {
+      return null;
+    }
+  },
+};
+
+/**
+ * Finds the file of a page of the site.
+ *
+ * @param route The route of the page, such as `/projects/[slug]`.
+ * @returns The path of the file, from the root of the repository, or null
+ *   when there is no such file.
+ */
+function findPageFile(route: string): string | null {
+  const folder = route === '/' ? 'app' : `app${route}`;
+  const candidates = [path.posix.join(folder, 'page.tsx'), path.posix.join(folder, 'page.ts')];
+
+  for (const candidate of candidates) {
+    if (existsSync(path.join(REPO_ROOT, candidate))) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Finds the files of the site that import the library of the animation
+ * without the module of the site.
+ *
+ * The library is imported through one module, `src/components/motion/`, so
+ * that the place where the library enters the site is one place and not one
+ * per file.
+ *
+ * @returns The paths of the files, from the root of the repository.
+ */
+function findDirectLibraryImports(): string[] {
+  const found: string[] = [];
+
+  for (const directory of SOURCE_DIRS) {
+    for (const file of listFiles(directory)) {
+      if (!/\.(ts|tsx|mts|mjs)$/.test(file)) {
+        continue;
+      }
+
+      const relative = path.relative(REPO_ROOT, file).split(path.sep).join('/');
+
+      if (relative.startsWith(`${MOTION_MODULE}/`)) {
+        continue;
+      }
+
+      // The tests are not part of the site that is sent to a visitor.
+      if (/\.(test|spec)\./.test(relative)) {
+        continue;
+      }
+
+      if (/from\s*['"]framer-motion['"]/.test(readFileSync(file, 'utf8'))) {
+        found.push(relative);
+      }
+    }
+  }
+
+  return found.sort();
 }
 
 /**
@@ -352,9 +538,14 @@ async function startServer(port: number): Promise<{ baseUrl: string; stop: () =>
  *
  * @param baseUrl The address of the server.
  * @param route The route of the page.
+ * @param animates Whether the first load of the page uses the animation of the library.
  * @returns What the page sends, or null when the page could not be asked for.
  */
-async function measurePage(baseUrl: string, route: string): Promise<PageMeasurement | null> {
+async function measurePage(
+  baseUrl: string,
+  route: string,
+  animates: boolean
+): Promise<PageMeasurement | null> {
   let answer: Response;
 
   try {
@@ -429,6 +620,8 @@ async function measurePage(baseUrl: string, route: string): Promise<PageMeasurem
     route,
     status: answer.status,
     firstLoadFailures: firstLoad.failures,
+    animates,
+    chunks: firstLoadChunks,
     htmlBytes: Buffer.byteLength(html, 'utf8'),
     htmlGzipBytes: gzipSync(Buffer.from(html, 'utf8')).length,
     js,
@@ -555,8 +748,11 @@ async function measureSite(baseUrl: string): Promise<Measurement> {
     });
   }
 
+  const animation = readAnimationReport([...pages, ...dynamic]);
+
   for (const route of pages) {
-    const page = await measurePage(baseUrl, route);
+    const animates = animation.pages.find((page) => page.route === route)?.animates ?? false;
+    const page = await measurePage(baseUrl, route, animates);
 
     if (!page) {
       skipped.push({ route, reason: 'the page did not answer' });
@@ -574,6 +770,24 @@ async function measureSite(baseUrl: string): Promise<Measurement> {
     measures[`images:${name}`] = page.images.length;
     measures[`cache-max-age:${name}`] = readMaxAge(page.cacheControl);
   }
+
+  const motionRuntime = evaluateMotionRuntimeRule(
+    pagesMeasured.map(
+      (page): PageFirstLoad => ({
+        route: page.route,
+        animates: page.animates,
+        chunks: page.chunks,
+      })
+    )
+  );
+
+  const motionRuntimeChunks = listFiles(STATIC_DIR)
+    .filter((file) => file.endsWith('.js'))
+    .filter((file) =>
+      findMotionRuntimeChunks([{ name: path.basename(file), content: readFileSync(file, 'utf8') }]).length > 0
+    )
+    .map((file) => path.relative(REPO_ROOT, file).split(path.sep).join('/'))
+    .sort();
 
   const publicCache: { file: string; cacheControl: string; maxAge: number }[] = [];
 
@@ -633,6 +847,10 @@ async function measureSite(baseUrl: string): Promise<Measurement> {
     publicCache,
     apiCache,
     siteFiles,
+    animation,
+    motionRuntimeFailures: motionRuntime.failures,
+    motionRuntimeChunks,
+    animatingPages: motionRuntime.animating,
   };
 }
 
@@ -685,6 +903,45 @@ function printMeasurement(measurement: Measurement): void {
       console.log(
         `  ✗ ${failure.name}: expected ${failure.expectation}, found ${failure.found} — ${failure.note}`
       );
+    }
+  }
+  console.log('');
+
+  console.log('=== Animation ===');
+  console.log(
+    `  the files that are in every page use the animation of the library: ${measurement.animation.shellAnimates ? 'yes' : 'no'}`
+  );
+  if (measurement.animation.shellAnimates) {
+    for (const file of measurement.animation.shellAnimationImports) {
+      console.log(`    ${file}`);
+    }
+  }
+  for (const page of measurement.animation.pages) {
+    console.log(`  ${page.route} — ${page.animates ? 'animates' : 'does not animate'}`);
+  }
+  if (measurement.animation.lazyAnimationImports.length > 0) {
+    console.log('  loaded later, with the animation:');
+    for (const file of measurement.animation.lazyAnimationImports) {
+      console.log(`    ${file}`);
+    }
+  }
+  console.log(
+    `  the library is imported through one module: ${measurement.animation.directLibraryImports.length === 0 ? 'yes' : 'no'}`
+  );
+  for (const file of measurement.animation.directLibraryImports) {
+    console.log(`    ✗ ${file} imports the library without the module of the site`);
+  }
+  console.log(
+    `  the runtime of the library in the build: ${measurement.motionRuntimeChunks.length > 0 ? measurement.motionRuntimeChunks.join(', ') : 'not found'}`
+  );
+  console.log(
+    `  the pages that animate and carry the runtime: ${measurement.animatingPages.length > 0 ? measurement.animatingPages.join(', ') : 'none'}`
+  );
+  if (measurement.motionRuntimeFailures.length === 0) {
+    console.log('  no page that does not animate carries the runtime of the library');
+  } else {
+    for (const failure of measurement.motionRuntimeFailures) {
+      console.log(`  ✗ ${failure.route} carries ${failure.chunk} — ${failure.note}`);
     }
   }
   console.log('');
@@ -756,6 +1013,30 @@ async function main(): Promise<void> {
     const checked = Object.keys(PERFORMANCE_BUDGETS).filter((name) => name in measurement.measures);
     const firstLoadFailures = measurement.pages.flatMap((page) => page.firstLoadFailures);
     const firstLoadChecked = measurement.pages.length;
+    const animationFailures = [
+      ...measurement.motionRuntimeFailures,
+      ...measurement.animation.directLibraryImports.map((file) => ({
+        route: 'the whole site',
+        chunk: file,
+        note: 'The library of the animation is imported through one module, ' + MOTION_MODULE,
+      })),
+    ];
+
+    if (measurement.animation.shellAnimates) {
+      animationFailures.push({
+        route: 'every page',
+        chunk: measurement.animation.shellAnimationImports.join(', '),
+        note: 'The files that are in every page use the library of the animation, so the runtime of the library is in the first load of every page',
+      });
+    }
+
+    if (measurement.motionRuntimeChunks.length === 0) {
+      animationFailures.push({
+        route: 'the whole site',
+        chunk: 'the build',
+        note: `The runtime of the library of the animation was not found in the build. The words that tell it apart are ${MOTION_RUNTIME_MARKERS.join(', ')} and one of them may have changed.`,
+      });
+    }
 
     console.log('=== SUMMARY ===');
     console.log(`Measures read: ${Object.keys(measurement.measures).length}`);
@@ -765,6 +1046,7 @@ async function main(): Promise<void> {
     console.log(`Measures without a budget: ${evaluation.withoutBudget.length}`);
     console.log(`First load rules checked: ${firstLoadChecked}`);
     console.log(`First load rules failed: ${firstLoadFailures.length}`);
+    console.log(`Animation rules failed: ${animationFailures.length}`);
 
     if (evaluation.withoutBudget.length > 0) {
       console.log('');
@@ -796,7 +1078,11 @@ async function main(): Promise<void> {
       }
     }
 
-    process.exit(evaluation.failures.length > 0 || firstLoadFailures.length > 0 ? 1 : 0);
+    process.exit(
+      evaluation.failures.length > 0 || firstLoadFailures.length > 0 || animationFailures.length > 0
+        ? 1
+        : 0
+    );
   } finally {
     stop?.();
   }
