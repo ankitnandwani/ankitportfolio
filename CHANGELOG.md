@@ -1,3 +1,15 @@
+## [0.1.161] - 2026-11-17
+- Implemented M21.04 – Keep one icon library
+- **The site has one library of icons.** The owner decided on 2026-11-17 that `react-icons` stays and `lucide-react` is removed, and the decision is in `DECISIONS.md`. `react-icons` stays because it is the library that is used in three places and the one that will still be there when the site grows
+- **The sun and the moon of the theme button are drawn as SVG by hand.** `src/components/navigation/ThemeToggle.tsx` holds the two icons with the path, the stroke, the width, the height, the colour, the class names and the `aria-hidden` of the library, so that the icon looks exactly as it looked and the control keeps its accessible name "Toggle theme". The icons were compared with the ones of the library in a browser: the rendered SVG is the same
+- **`lucide-react` is not in `package.json` and not in the lock file.** The lock file changed by that removal and by nothing else, and `npm ci` was run with it
+- **The rule of the whole library is in place.** Added `src/lib/performance/iconLibraries.ts`, which knows the libraries of icons of the site and finds the files that import one of them as a whole. `react-icons/fi` is one set of icons and it is allowed; `react-icons` is every set of the library and it is not. `npm run perf:budget` reads the source and fails the run when a file does it
+- **The saving is 800 bytes on every page**, and not the forty kilobytes the plan said. The home page went from 1,314,634 to **1,313,834 bytes**, and every other page went down by the same 800 bytes. The JavaScript of the whole build went from 1,993,128 to 1,992,328 bytes
+- **The plan had the size wrong, and the measurement says so.** The 40 kB chunk of the first load of every page is the chunk of the layout, not the chunk of a library of icons: it holds the colours of the theme and the tokens of the design system (19,010 bytes), the navigation bar and its links (8,147 bytes), the theme button and the icons of the libraries (3,681 bytes) and the rest of the layout (2,353 bytes). The code of `lucide-react` in it was 2,300 bytes. The biggest thing in the first load of every page is now the theme of the design system, and it is an item of `TODO.md` for a later task
+- The reading of the chunk is in `docs/performance-baseline.md`, and the task says what it changed in `tasks/M21/04-one-icon-library.md`
+- 5 tests added in `src/lib/performance/iconLibraries.test.mts`. The whole suite: 783 tests with 777 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
+- The next task is M21.05 – Load only the font family that the page uses
+
 ## [0.1.160] - 2026-11-16
 - Implemented M21.03 – Stop shipping the animation library to the pages that do not animate
 - **The library of the animation enters the site through one module.** Added `src/components/motion/index.ts`, which re-exports `motion`, `AnimatePresence` and the type `HTMLMotionProps`, and the thirty-four files that imported `framer-motion` import that module instead. No file of the site imports the library directly any more

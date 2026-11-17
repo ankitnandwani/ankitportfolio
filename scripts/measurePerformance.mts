@@ -62,6 +62,7 @@ import {
   type AnimationImportReport,
   type SourceTree,
 } from '../src/lib/performance/motionImports.ts';
+import { findWholeLibraryImports } from '../src/lib/performance/iconLibraries.ts';
 
 /**
  * The root of the repository, so that the build and the files of `public/`
@@ -155,6 +156,8 @@ interface AnimationReport {
   pages: { route: string; animates: boolean; file: string | null }[];
   /** The files that import the library without the module of the site. */
   directLibraryImports: string[];
+  /** The files that import a library of icons as a whole. */
+  iconLibraryImports: { file: string; library: string }[];
   /** The files that are loaded later and that bring the animation with them. */
   lazyAnimationImports: string[];
 }
@@ -252,6 +255,7 @@ function readAnimationReport(routes: string[]): AnimationReport {
     shellAnimationImports: [...new Set(shellAnimationImports)].sort(),
     pages,
     directLibraryImports: findDirectLibraryImports(),
+    iconLibraryImports: findIconLibraryImports(),
     lazyAnimationImports: [...lazyAnimationImports].sort(),
   };
 }
@@ -328,6 +332,38 @@ function findPageFile(route: string): string | null {
   }
 
   return null;
+}
+
+/**
+ * Finds the files of the site that import a library of icons as a whole.
+ *
+ * The site has one library of icons, and the icons are imported one set or
+ * one icon at a time. A file that imports a library as a whole brings every
+ * icon of the library with it.
+ *
+ * @returns The files that import a library of icons as a whole.
+ */
+function findIconLibraryImports(): { file: string; library: string }[] {
+  const files: { file: string; source: string }[] = [];
+
+  for (const directory of SOURCE_DIRS) {
+    for (const file of listFiles(directory)) {
+      if (!/\.(ts|tsx|mts|mjs)$/.test(file)) {
+        continue;
+      }
+
+      const relative = path.relative(REPO_ROOT, file).split(path.sep).join('/');
+
+      // The tests are not part of the site that is sent to a visitor.
+      if (/\.(test|spec)\./.test(relative)) {
+        continue;
+      }
+
+      files.push({ file: relative, source: readFileSync(file, 'utf8') });
+    }
+  }
+
+  return findWholeLibraryImports(files);
 }
 
 /**
@@ -772,19 +808,20 @@ async function measureSite(baseUrl: string): Promise<Measurement> {
   }
 
   const motionRuntime = evaluateMotionRuntimeRule(
-    pagesMeasured.map(
-      (page): PageFirstLoad => ({
-        route: page.route,
-        animates: page.animates,
-        chunks: page.chunks,
-      })
-    )
+    pagesMeasured.map((page): PageFirstLoad => ({
+      route: page.route,
+      animates: page.animates,
+      chunks: page.chunks,
+    }))
   );
 
   const motionRuntimeChunks = listFiles(STATIC_DIR)
     .filter((file) => file.endsWith('.js'))
-    .filter((file) =>
-      findMotionRuntimeChunks([{ name: path.basename(file), content: readFileSync(file, 'utf8') }]).length > 0
+    .filter(
+      (file) =>
+        findMotionRuntimeChunks([
+          { name: path.basename(file), content: readFileSync(file, 'utf8') },
+        ]).length > 0
     )
     .map((file) => path.relative(REPO_ROOT, file).split(path.sep).join('/'))
     .sort();
@@ -932,6 +969,12 @@ function printMeasurement(measurement: Measurement): void {
     console.log(`    ✗ ${file} imports the library without the module of the site`);
   }
   console.log(
+    `  no file imports a library of icons as a whole: ${measurement.animation.iconLibraryImports.length === 0 ? 'yes' : 'no'}`
+  );
+  for (const entry of measurement.animation.iconLibraryImports) {
+    console.log(`    ✗ ${entry.file} imports ${entry.library} as a whole`);
+  }
+  console.log(
     `  the runtime of the library in the build: ${measurement.motionRuntimeChunks.length > 0 ? measurement.motionRuntimeChunks.join(', ') : 'not found'}`
   );
   console.log(
@@ -1019,6 +1062,11 @@ async function main(): Promise<void> {
         route: 'the whole site',
         chunk: file,
         note: 'The library of the animation is imported through one module, ' + MOTION_MODULE,
+      })),
+      ...measurement.animation.iconLibraryImports.map((entry) => ({
+        route: 'the whole site',
+        chunk: entry.file,
+        note: `The icons are imported one set or one icon at a time, and not ${entry.library} as a whole`,
       })),
     ];
 

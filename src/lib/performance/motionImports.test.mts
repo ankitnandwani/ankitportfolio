@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-  findModuleSpecifiers,
   resolveModulePath,
   findModuleFile,
   findAnimationImports,
@@ -11,6 +10,7 @@ import {
   MOTION_LIBRARY,
   type SourceTree,
 } from './motionImports.ts';
+import { findModuleSpecifiers } from './moduleImports.ts';
 
 /**
  * A tree of files that is held in the memory.

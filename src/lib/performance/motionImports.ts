@@ -1,3 +1,5 @@
+import { findModuleSpecifiers } from './moduleImports.ts';
+
 /**
  * Where the animation library of the site is imported from.
  *
@@ -46,47 +48,6 @@ export interface AnimationImportReport {
   lazyAnimationImports: string[];
   /** Whether the first load of the tree uses the animation of the library. */
   usesAnimation: boolean;
-}
-
-/** The imports of a file, split by the moment they are loaded. */
-export interface ModuleSpecifiers {
-  /** The imports that are loaded when the file is. */
-  static: string[];
-  /** The imports that are loaded later, with `import()`. */
-  lazy: string[];
-}
-
-/**
- * Reads the modules that a file imports.
- *
- * The imports of the types are left out, because they are not code and they
- * do not bring the library of the animation with them.
- *
- * @param source The source of the file.
- * @returns The modules that the file imports, split by the moment they are
- *   loaded.
- */
-export function findModuleSpecifiers(source: string): ModuleSpecifiers {
-  const staticSpecifiers = new Set<string>();
-  const lazySpecifiers = new Set<string>();
-
-  const staticPatterns = [
-    /^[ \t]*import\s+(?!type\b)[^'"]*from\s*['"]([^'"]+)['"]/gm,
-    /^[ \t]*import\s*['"]([^'"]+)['"]/gm,
-    /^[ \t]*export\s+(?!type\b)(?:\*|\{[^}]*\})\s*from\s*['"]([^'"]+)['"]/gm,
-  ];
-
-  for (const pattern of staticPatterns) {
-    for (const match of source.matchAll(pattern)) {
-      staticSpecifiers.add(match[1]);
-    }
-  }
-
-  for (const match of source.matchAll(/import\(\s*['"]([^'"]+)['"]\s*\)/g)) {
-    lazySpecifiers.add(match[1]);
-  }
-
-  return { static: [...staticSpecifiers], lazy: [...lazySpecifiers] };
 }
 
 /**

@@ -82,16 +82,41 @@ The icons of the site are SVG and nothing else. There is no picture anywhere, so
 5. **The size of the chunk is the proof.** The chunk `2v3vhzx7k47gb.js` is 40 kB and it is in the first load of every page. After the change it is either gone or it is much smaller, and the measurement of M21.01 says so.
 6. **The icons of the site are drawn by the libraries of SVG.** Nothing of this task touches a picture, and nothing of it touches the accessibility of an icon.
 
+## What the implementation changed
+
+The task was carried out on 2026-11-17, and the decision of which library stays was given by the owner: **`react-icons` stays and `lucide-react` is removed.**
+
+**The sun and the moon of the theme button are drawn as SVG by hand.** `src/components/navigation/ThemeToggle.tsx` holds the two icons, with the path, the stroke, the width, the height, the colour, the class names and the `aria-hidden` of the library, so that the icon looks exactly as it looked and the control keeps its accessible name "Toggle theme". The icons are a decoration and the name is on the button.
+
+**The dependency is removed.** `lucide-react` is not in `package.json` and not in the lock file, and the lock file changed by that removal and by nothing else.
+
+**The rule of the whole library is in place.** `src/lib/performance/iconLibraries.ts` knows the libraries of icons of the site and finds the files that import one of them as a whole. `react-icons/fi` is one set of icons and it is allowed; `react-icons` is every set of the library and it is not. The rule has its own tests, and `npm run perf:budget` reads the source and fails the run when a file does it.
+
+**What the measurement found, and what the plan had wrong.** The plan said that the chunk of the layout, 40 kB, was the chunk of `lucide-react`, and that the saving of the task was forty kilobytes. **It was not.** The chunk is the chunk of the layout of the site, and it holds the colours of the theme and the tokens of the design system (19,010 bytes), the navigation bar and its links (8,147 bytes), the theme button and the icons of the two libraries (3,681 bytes) and the rest of the layout (2,353 bytes). The code of `lucide-react` in it was **2,300 bytes**, and the saving of the task is **800 bytes** on every page:
+
+| Page             | The first load before | The first load after | What it saved |
+| ---------------- | --------------------- | -------------------- | ------------- |
+| `/`              | 1,314,634 bytes       | **1,313,834 bytes**  | 800 bytes     |
+| `/contact`       | 1,274,176 bytes       | 1,273,376 bytes      | 800 bytes     |
+| `/design-system` | 978,894 bytes         | 978,094 bytes        | 800 bytes     |
+| `/job-fit`       | 854,715 bytes         | 853,915 bytes        | 800 bytes     |
+| `/projects`      | 1,143,773 bytes       | 1,142,973 bytes      | 800 bytes     |
+| `/resume`        | 997,609 bytes         | 996,809 bytes        | 800 bytes     |
+
+The JavaScript of the whole build went from 1,993,128 to 1,992,328 bytes. The rule of M21.01 holds: the measurement passes every rule.
+
+**The value of the task is the one that is left.** The site has one library of icons instead of two, one package less to audit, and a rule that says that no file brings a whole library of icons with it. The forty kilobytes that the plan expected were never there, and the biggest thing in the first load of every page is the theme of the design system, which is an item of `TODO.md` for a later task of the milestone.
+
 ## Acceptance Criteria
 
-- The site has one library of icons, and the other one is not in `package.json` and not in the lock file.
-- Every icon of the site looks the same as before, with the same size, the same colour and the same accessible name.
-- The decorative icons keep `aria-hidden` and the named icons keep their name.
-- No file imports a library of icons as a whole, and the rule says so.
-- The chunk of the library that is removed is not in the first load of the home page.
-- The size of the first load of the home page is under the ceiling of M21.01, and the number before and after is written down.
-- `npm ci` works with the new lock file, and the CI passes.
-- The existing tests pass, the lint is clean, the typecheck is clean, and the build succeeds.
+- The site has one library of icons, and the other one is not in `package.json` and not in the lock file. **Met**: `lucide-react` is out of both, and the lock file changed by that removal and by nothing else.
+- Every icon of the site looks the same as before, with the same size, the same colour and the same accessible name. **Met**: the two icons of the theme button are drawn with the path, the stroke, the size, the colour and the class names of the library, and the icons of the other files were not touched.
+- The decorative icons keep `aria-hidden` and the named icons keep their name. **Met**: the icons keep `aria-hidden="true"` and the button keeps `aria-label="Toggle theme"`.
+- No file imports a library of icons as a whole, and the rule says so. **Met**: the rule is in `src/lib/performance/iconLibraries.ts`, it has its own tests, and the measurement fails the run when a file does it.
+- The chunk of the library that is removed is not in the first load of the home page. **Met**: the code of `lucide-react` is not in the build any more.
+- The size of the first load of the home page is under the ceiling of M21.01, and the number before and after is written down. **Met**: 1,314,634 bytes became 1,313,834 bytes, and the numbers are in `docs/performance-baseline.md`.
+- `npm ci` works with the new lock file, and the CI passes. **Met**: the lock file is the change of the removal, and `npm ci` was run with it.
+- The existing tests pass, the lint is clean, the typecheck is clean, and the build succeeds. **Met**.
 
 ## Testing Requirements
 

@@ -21,7 +21,7 @@ is over its ceiling. Nothing of it is imported by the site.
 ## The build
 
 | What | How much | In how many files |
-| Client JavaScript | 1,993,128 bytes (1.90 MB) | 31 |
+| Client JavaScript | 1,992,328 bytes (1.90 MB) | 31 |
 | The biggest chunk | 483,541 bytes (472.2 kB) | 1 |
 | CSS | 40,699 bytes (39.7 kB) | 2 |
 | Fonts | 146,464 bytes (143.0 kB) | 11 |
@@ -34,15 +34,15 @@ page.
 
 | Page             | JavaScript of the first load          | CSS          | Fonts preloaded  | HTML          | HTML compressed | Pictures |
 | ---------------- | ------------------------------------- | ------------ | ---------------- | ------------- | --------------- | -------- |
-| `/`              | 1,314,634 bytes (1.25 MB) in 15 files | 40,699 bytes | 2 (52,396 bytes) | 121,043 bytes | 19,006 bytes    | 0        |
-| `/contact`       | 1,274,176 bytes (1.22 MB) in 15 files | 39,828 bytes | 2 (52,396 bytes) | 25,529 bytes  | 5,629 bytes     | 0        |
-| `/design-system` | 978,894 bytes (955.9 kB) in 14 files  | 39,828 bytes | 2 (52,396 bytes) | 35,048 bytes  | 6,383 bytes     | 0        |
-| `/job-fit`       | 854,715 bytes (834.7 kB) in 13 files  | 40,699 bytes | 2 (52,396 bytes) | 21,787 bytes  | 5,342 bytes     | 0        |
-| `/projects`      | 1,143,773 bytes (1.09 MB) in 14 files | 40,699 bytes | 2 (52,396 bytes) | 60,387 bytes  | 8,772 bytes     | 0        |
-| `/resume`        | 997,609 bytes (974.2 kB) in 14 files  | 39,828 bytes | 2 (52,396 bytes) | 56,170 bytes  | 8,738 bytes     | 0        |
+| `/`              | 1,313,834 bytes (1.25 MB) in 15 files | 40,699 bytes | 2 (52,396 bytes) | 121,043 bytes | 19,006 bytes    | 0        |
+| `/contact`       | 1,273,376 bytes (1.21 MB) in 15 files | 39,828 bytes | 2 (52,396 bytes) | 25,529 bytes  | 5,629 bytes     | 0        |
+| `/design-system` | 978,094 bytes (955.2 kB) in 14 files  | 39,828 bytes | 2 (52,396 bytes) | 35,048 bytes  | 6,383 bytes     | 0        |
+| `/job-fit`       | 853,915 bytes (833.9 kB) in 13 files  | 40,699 bytes | 2 (52,396 bytes) | 21,787 bytes  | 5,342 bytes     | 0        |
+| `/projects`      | 1,142,973 bytes (1.09 MB) in 14 files | 40,699 bytes | 2 (52,396 bytes) | 60,387 bytes  | 8,772 bytes     | 0        |
+| `/resume`        | 996,809 bytes (973.4 kB) in 14 files  | 39,828 bytes | 2 (52,396 bytes) | 56,170 bytes  | 8,738 bytes     | 0        |
 
-The numbers of this table are the ones of **2026-11-16**, after M21.03. The chat and the
-command palette are loaded on demand, and the first load of every page is **19,690 bytes
+The numbers of this table are the ones of **2026-11-17**, after M21.04. The chat and the
+command palette are loaded on demand, and the first load of every page is **20,490 bytes
 lighter** than it was on 2026-11-12.
 
 `/projects/[slug]` is not in the table. The page is made on every request and it
@@ -106,10 +106,25 @@ palette are still in the first load, and the panel of the chat and the body of
 the palette are fetched when they are opened. They render nothing when they are
 closed, so no content of the site was lost by loading them late.
 
-**The third thing is one icon: 40 kB.** `lucide-react` is used in exactly one
-file, `src/components/navigation/ThemeToggle.tsx`, and its chunk
-`2v3vhzx7k47gb.js` is 40 kB of the first load of every page. The site has two
-libraries of icons, and the task that leaves one of them is **M21.04**.
+**The third thing was one icon: 40 kB. It was not one icon, and the
+measurement said so.** The baseline of 2026-11-12 named the chunk
+`2v3vhzx7k47gb.js` as the chunk of `lucide-react`, which is used in exactly one
+file, `src/components/navigation/ThemeToggle.tsx`. **M21.04 read the chunk and
+found that it was not the library of icons**: it is the chunk of the layout of
+the site, and it holds
+
+| What is in the chunk                                         | Bytes  |
+| ------------------------------------------------------------ | ------ |
+| The colours of the theme and the tokens of the design system | 19,010 |
+| The navigation bar and its links                             | 8,147  |
+| The theme button and the icons of the two libraries          | 3,681  |
+| The footer, the palette, the chat and the rest of the layout | 2,353  |
+
+The code of `lucide-react` in it was **2,300 bytes**, and removing the library
+saved **800 bytes** on every page and not forty kilobytes. The site has one
+library of icons now, and the biggest thing in the first load of every page is
+the theme of the design system, which is an item of `TODO.md` for a later task
+of the milestone.
 
 The fonts come next: two families are loaded on every page, of which the
 family of the monospaced letters is used in one place in the whole repository,
@@ -118,7 +133,9 @@ family of the monospaced letters is used in one place in the whole repository,
 The planning expected the three heaviest things to be the subjects of M21.03,
 M21.04 and M21.05. The measurement showed that the chat and the palette are
 heavier than the fonts, so the three heaviest things are the subjects of
-M21.02, M21.03 and M21.04, and the fonts come next with M21.05.
+M21.02, M21.03 and M21.04, and the fonts come next with M21.05. The third of
+them turned out to be smaller than the planning said, and the theme of the
+design system took its place.
 
 ## What the site sends to a visitor
 
