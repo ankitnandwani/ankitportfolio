@@ -15,7 +15,7 @@ Performance: 90+, Accessibility: 95+, Best Practices: 95+, SEO: 95+
 | ----- | ----------------------------------------------------------------------------- | -------------------------------------- | -------------------------------- |
 | 1     | M21.01 – Measure the site and write the performance budgets                   | M20                                    | Done (2026-11-13)                |
 | 2     | M21.04 – Keep one icon library                                                | M21.01                                 | Done (2026-11-17)                |
-| 3     | M21.05 – Load only the font family that the page uses                         | M21.01                                 | Yes, with M21.04, M21.06, M21.07 |
+| 3     | M21.05 – Load only the font family that the page uses                         | M21.01                                 | Done (2026-11-17)                |
 | 4     | M21.06 – Give the site the images and the metadata it promises                | M21.01                                 | Yes, with M21.04, M21.05, M21.07 |
 | 5     | M21.07 – Cache the pages and the assets the way they are used                 | M21.01                                 | Yes, with M21.04, M21.05, M21.06 |
 | 6     | M21.03 – Stop shipping the animation library to the pages that do not animate | M21.01, M21.04                         | Done (2026-11-16)                |
@@ -25,7 +25,9 @@ Performance: 90+, Accessibility: 95+, Best Practices: 95+, SEO: 95+
 
 M21.01 comes first because every other task is judged against the numbers it writes down. M21.04, M21.05, M21.06 and M21.07 touch four different sets of files and may be worked on in parallel once M21.01 is done. M21.03 and M21.02 are listed in order because both of them change how the components of the pages are loaded and would touch the same files if they ran at the same time.
 
-**M21.01, M21.02, M21.03 and M21.04 are done (2026-11-13, 2026-11-15, 2026-11-16 and 2026-11-17).** M21.05 to M21.09 are not started.
+**M21.01, M21.02, M21.03, M21.04 and M21.05 are done (2026-11-13, 2026-11-15, 2026-11-16, 2026-11-17 and 2026-11-17).** M21.06 to M21.09 are not started.
+
+**What M21.05 found, and what it changed.** The family of the monospaced letters was loaded by the layout of the site, and the layout is every page, so every page preloaded a family that only two pages draw. The layout loads the family of the text of the site and nothing else now, and the family of the monospaced letters enters the site through `src/lib/fonts.ts`, which the page of the design system and the page of the analyzer of a job import. **The plan said one page and the measurement found two**: the description of a job is printed in a `<pre>`, and the preflight of Tailwind gives the monospaced letters of a `<pre>` the family of the theme. The four pages that do not use the family are 24,961 bytes lighter, and the rule of the preloads is in the measurement.
 
 **What M21.04 found, and what it changed.** The site has one library of icons: the owner decided that `react-icons` stays and `lucide-react` goes, and the sun and the moon of the theme button are drawn as SVG by hand with the path, the stroke, the size, the colour and the class names of the library. The rule that no file imports a library of icons as a whole is in the measurement. **The plan had the size wrong**: the 40 kB chunk of the first load of every page is the chunk of the layout, and the code of `lucide-react` in it was 2.3 kB, so the saving is 800 bytes and not forty kilobytes. The biggest thing in the first load of every page is the theme of the design system, 19 kB, and it is an item of `TODO.md`.
 
@@ -59,6 +61,16 @@ M21.01 comes first because every other task is judged against the numbers it wri
 | The slow requests are watched                                       | PRD §129                      | M20.06                 | Satisfied                                                                                                   |
 | The failures are watched                                            | PRD §79, §129                 | M20.01–M20.09          | Satisfied                                                                                                   |
 | The animation library is the one of the decision                    | DECISIONS (animation library) | M21.03                 | Satisfied — the decision is respected, and the removal of the library is a decision that needs a person     |
+
+## What the repository holds after M21.05
+
+- **The family of the monospaced letters is loaded by the two pages that use it, and by no other page.** `app/layout.tsx` loads `Geist` and nothing else. The family enters the site through `src/lib/fonts.ts`, which the page of the design system and the page of the analyzer of a job import
+- **Four pages of the site are 24,961 bytes lighter in the first load.** `/`, `/contact`, `/projects` and `/resume` preload one font (29,288 bytes) instead of two (52,396 bytes), and their CSS went down by 1,853 bytes because the rules of the family are not in the file of the CSS that every page loads
+- **The family of the site is loaded once and is preloaded as it was.** The layout keeps `Geist`, the variable `--font-geist-sans` and the file `caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2` on every page
+- **The variable keeps its name and its meaning.** `--font-geist-mono` is still the variable of the family, the class `font-mono` of Tailwind still works, and the mapping of the CSS gained a fallback of the system so that a page that asks for the monospaced letters without loading the family still shows monospaced letters
+- **The plan said one page and the measurement found two.** The `<pre>` of the description of a job uses the family through the preflight of Tailwind, so the page of the analyzer keeps it, and the letters of the description look exactly as they looked
+- **The rule of the preloads is in the measurement.** `src/lib/performance/fontPreloads.ts` reads the CSS of the build and the HTML of every page, and `npm run perf:budget` fails the run when a page preloads a family that it does not use, when the shell of a page holds more than one family, or when the family of the site is not preloaded
+- 11 tests added. The whole suite: 794 tests with 788 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
 
 ## What the repository holds after M21.04
 

@@ -8,13 +8,16 @@ import { motion } from '@/src/components/motion';
 import { Button } from '@/src/components/ui/Button';
 import { Card } from '@/src/components/ui/Card';
 import { Badge } from '@/src/components/ui/Badge';
+import { geistMono } from '@/src/lib/fonts';
 
 export default function DesignSystemShowcaseClient() {
   const { theme, toggleTheme, getThemeTokens } = useTheme();
   const currentTokens = getThemeTokens();
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-200 p-8">
+    <div
+      className={`${geistMono.variable} min-h-screen bg-background text-foreground transition-colors duration-200 p-8`}
+    >
       <ResponsiveContainer>
         <header className="mb-12">
           <h1 className="text-4xl font-bold mb-4">Ankit Design System Showcase</h1>

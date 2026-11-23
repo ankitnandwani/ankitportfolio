@@ -93,16 +93,55 @@ The fonts come from `next/font/google`, so they are downloaded at the time of th
 4. **The check is made on the build.** The HTML of the home page names the fonts it preloads, and the rule reads it. The number of the preloaded fonts of the page of the design system is allowed to be three, and the number of every other page is allowed to be two.
 5. **The size of the family is the size of the family.** The monospaced family is about 20 kB of the ten. The saving is that one preloaded font and the bytes of the family on every page, and the number that is written down is the one that the measurement gives.
 
+## What the implementation changed
+
+The task was carried out on 2026-11-17.
+
+**The family of the monospaced letters is loaded by the two pages that use it, and by no other page.** `app/layout.tsx` loads `Geist` and nothing else. The family of the monospaced letters enters the site through `src/lib/fonts.ts`, and the two pages that use it import that module: the page of the design system, that prints the value of a token of the design system in it, and the page of the analyzer of a job, that shows the description of the job in it.
+
+**The plan said one page, and the measurement found two.** The plan named `app/design-system/page-client.tsx:64` as the only place of the whole repository that uses the family. The `<pre>` of `src/components/jobFit/JobFitResults.tsx:257` shows the description of the job that is analysed, and the preflight of Tailwind gives the monospaced letters of a `<pre>` the family of the theme, so that page uses the family as well. **It keeps it**, and the letters of the description of a job look exactly as they looked.
+
+**The family of the site is loaded once, in the layout, and it is preloaded as it was.** The variable `--font-geist-sans` and the file `caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2` are on every page of the site, and no page loads the family of the monospaced letters by another way.
+
+**The variable keeps its name and its meaning.** `--font-geist-mono` is still the variable of the family of the monospaced letters, the class `font-mono` of Tailwind still works, and the rule of the CSS that points at the variable is still `--font-mono`. The mapping gained a fallback, `ui-monospace, monospace`, so that a page that asks for the monospaced letters without loading the family still shows monospaced letters.
+
+**The letters that ask for the monospaced family take the family of the page.** The preflight of Tailwind reads the family of the monospaced letters at the root of the document, where the variable of the family is not there any more, and the family of a page that does not load it was the family of the system. A rule in `app/globals.css`, in the layer of the base, gives `code`, `kbd`, `samp` and `pre` the variable of the page, and a class of Tailwind that asks for another family still wins.
+
+**The rule of the preloads is in place.** `src/lib/performance/fontPreloads.ts` reads the CSS of the build and the HTML of every page, and `npm run perf:budget` fails the run when
+
+- a page preloads a family that neither the shell of the page nor its content uses;
+- the shell of a page — the `html` and the `body` of the layout — holds more than one family of fonts, which is the way the family of the monospaced letters came back into every page;
+- the family of the site is not preloaded by a page.
+
+The rule has its own tests: eleven of them.
+
+**The size that was saved is written down.**
+
+| Page             | The fonts before | The fonts after  | The CSS before | The CSS after | What the first load saved |
+| ---------------- | ---------------- | ---------------- | -------------- | ------------- | ------------------------- |
+| `/`              | 2 — 52,396 bytes | 1 — 29,288 bytes | 40,699 bytes   | 38,846 bytes  | **24,961 bytes**          |
+| `/contact`       | 2 — 52,396 bytes | 1 — 29,288 bytes | 39,828 bytes   | 37,975 bytes  | **24,961 bytes**          |
+| `/design-system` | 2 — 52,396 bytes | 2 — 52,396 bytes | 39,828 bytes   | 40,021 bytes  | —                         |
+| `/job-fit`       | 2 — 52,396 bytes | 2 — 52,396 bytes | 40,699 bytes   | 40,892 bytes  | —                         |
+| `/projects`      | 2 — 52,396 bytes | 1 — 29,288 bytes | 40,699 bytes   | 38,846 bytes  | **24,961 bytes**          |
+| `/resume`        | 2 — 52,396 bytes | 1 — 29,288 bytes | 39,828 bytes   | 37,975 bytes  | **24,961 bytes**          |
+
+The saving of the first load is the font that is not preloaded any more (23,108 bytes) and the CSS of the family that is not in the file that every page loads (1,853 bytes). The JavaScript of the whole build went from 1,992,328 to 1,993,243 bytes, and the CSS of the build went from 40,699 bytes in two files to 40,892 bytes in three files: the rules of the family of the monospaced letters are in the file of the CSS of the two pages that use it and not in the file that every page loads. The ceiling of the CSS did not move.
+
+**The pages were opened and the text was looked at.** The page of the design system shows the value of the token in the family of the monospaced letters, in the same place and with the same size. The home page, the page of the resume and the page of the projects look as they looked. The browser was asked for the fonts of every page: the home page asks for one font and the page of the design system and the page of the analyzer ask for two.
+
+**The value of the task is the one that is left.** Four pages of the site do not download a family they never draw, a rule says that a family belongs to the pages that use it, and the text of the site is the same as it was.
+
 ## Acceptance Criteria
 
-- The family of the monospaced letters is not preloaded and not downloaded on the pages that do not use it.
-- The page of the design system shows the family of the monospaced letters, and the value of the token is printed in it.
-- The variable `--font-geist-mono` keeps its name and the class `font-mono` keeps working.
-- The family of the site is loaded once, in the layout, and is preloaded as it is today.
-- The rule of the preloads holds and fails when a page preloads a family it does not use.
-- The size of the first load of the home page is under the ceiling of M21.01, and the number before and after is written down.
-- The text of the site looks the same as it did, on every page.
-- The existing tests pass, the lint is clean, the typecheck is clean, and the build succeeds.
+- The family of the monospaced letters is not preloaded and not downloaded on the pages that do not use it. **Met**: `/`, `/contact`, `/projects` and `/resume` preload one font and ask the browser for one font. The two pages that use the family preload two.
+- The page of the design system shows the family of the monospaced letters, and the value of the token is printed in it. **Met**: the page was opened on 2026-11-17 and the value of the token is printed in the family of the monospaced letters, in the same place and with the same size.
+- The variable `--font-geist-mono` keeps its name and the class `font-mono` keeps working. **Met**: the variable is still `--font-geist-mono`, the rule of the CSS is still `--font-mono`, and the class of Tailwind still gives the family to the value of the token.
+- The family of the site is loaded once, in the layout, and is preloaded as it is today. **Met**: `app/layout.tsx` loads `Geist` and nothing else, and every page preloads `caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2`.
+- The rule of the preloads holds and fails when a page preloads a family it does not use. **Met**: the rule is in `src/lib/performance/fontPreloads.ts`, it has eleven tests, and the measurement fails the run when a page breaks it.
+- The size of the first load of the home page is under the ceiling of M21.01, and the number before and after is written down. **Met**: the first load of the home page is 24,961 bytes lighter and the number of the preloaded fonts of every page is written down in `docs/performance-baseline.md`.
+- The text of the site looks the same as it did, on every page. **Met**: the home page, the page of the resume and the page of the projects were opened, and the `<pre>` of the description of a job was checked in the browser: it asks for the file of the family of the monospaced letters, so the letters are the same as they were.
+- The existing tests pass, the lint is clean, the typecheck is clean, and the build succeeds. **Met**: 794 tests with 788 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds.
 
 ## Testing Requirements
 

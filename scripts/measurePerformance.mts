@@ -63,6 +63,12 @@ import {
   type SourceTree,
 } from '../src/lib/performance/motionImports.ts';
 import { findWholeLibraryImports } from '../src/lib/performance/iconLibraries.ts';
+import {
+  checkFontPreloads,
+  type FontFamily,
+  type FontPreloadFailure,
+  type PageFontUsage,
+} from '../src/lib/performance/fontPreloads.ts';
 
 /**
  * The root of the repository, so that the build and the files of `public/`
@@ -134,6 +140,8 @@ interface PageMeasurement {
   css: Asset[];
   /** The fonts the page preloads. */
   fonts: Asset[];
+  /** What the HTML of the page says about the fonts. */
+  fontUsage: PageFontUsage;
   /** The pictures of the page. */
   images: { source: string; bytes: number | null }[];
   /** The header of the cache of the answer. */
@@ -186,6 +194,10 @@ interface Measurement {
   apiCache: { route: string; status: number; cacheControl: string; maxAge: number }[];
   /** What the source of the site says about the animation of the pages. */
   animation: AnimationReport;
+  /** The families of the fonts of the build. */
+  fontFamilies: FontFamily[];
+  /** The pages that break the rule of the preloads of the fonts. */
+  fontPreloadFailures: FontPreloadFailure[];
   /** The pages that do not animate and carry the runtime of the library. */
   motionRuntimeFailures: { route: string; chunk: string; note: string }[];
   /** The files of the whole build that hold the runtime of the library. */
@@ -448,6 +460,101 @@ function readTags(html: string, name: string): string[] {
 }
 
 /**
+ * Reads the families of the fonts of the build out of the CSS of the build.
+ *
+ * The CSS of the build says which file of the media belongs to which family,
+ * with the rules of `@font-face`, and it says which class of CSS gives the
+ * variable of the family, with the class of the module of the font.
+ *
+ * @returns The families of the build.
+ */
+function readFontFamilies(): FontFamily[] {
+  const families = new Map<string, FontFamily>();
+  const chunkFiles = listFiles(path.join(STATIC_DIR, 'chunks')).filter((file) =>
+    file.endsWith('.css')
+  );
+
+  for (const file of chunkFiles) {
+    const css = readFileSync(file, 'utf8');
+
+    for (const match of css.matchAll(/@font-face\{([^}]*)\}/g)) {
+      const body = match[1];
+      const name = /font-family:\s*([^;}]+)/.exec(body)?.[1]?.trim();
+      const media = /src:url\([^)]*\/([^/)]+\.woff2)\)/.exec(body)?.[1];
+
+      if (!name || !media) {
+        continue;
+      }
+
+      const family = families.get(name) ?? { name, variable: '', className: '', files: [] };
+      family.files.push(media);
+      families.set(name, family);
+    }
+
+    for (const match of css.matchAll(/\.([\w-]+__variable)\{(--[\w-]+):\s*["']([^"']+)["']/g)) {
+      const [, className, variable, name] = match;
+      const family = families.get(name);
+
+      if (!family) {
+        continue;
+      }
+
+      family.variable = variable;
+      family.className = className;
+    }
+  }
+
+  return [...families.values()].filter(
+    (family) => family.className !== '' && family.files.length > 0
+  );
+}
+
+/**
+ * Reads what the HTML of a page says about the fonts of the page.
+ *
+ * The page says which files of the fonts it preloads, with the links of the
+ * preload, and it says which classes it gives to its elements, with the
+ * class of every tag. The `html` and the `body` belong to the layout of the
+ * site, so their classes are the classes of the shell of the page, and the
+ * classes of the other elements are the classes of the content of the page.
+ *
+ * @param route The route of the page.
+ * @param html The HTML of the page.
+ * @param fonts The fonts that the page preloads.
+ * @returns What the page says about the fonts.
+ */
+function readPageFontUsage(route: string, html: string, fonts: Asset[]): PageFontUsage {
+  const withoutCode = html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '');
+  const shellClasses = new Set<string>();
+  const pageClasses = new Set<string>();
+
+  for (const tag of withoutCode.match(/<[a-zA-Z][^>]*>/g) ?? []) {
+    const value = readAttribute(tag, 'class');
+
+    if (!value) {
+      continue;
+    }
+
+    const shell = /^(html|body)$/.test(tag.slice(1).split(/\s|>/)[0]);
+
+    for (const entry of value.split(/\s+/)) {
+      if (entry) {
+        (shell ? shellClasses : pageClasses).add(entry);
+      }
+    }
+  }
+
+  return {
+    route,
+    preloaded: fonts.map((font) => path.basename(font.file)),
+    shellClasses: [...shellClasses],
+    pageClasses: [...pageClasses],
+  };
+}
+
+/**
  * Reads the number of seconds of the cache of a header.
  *
  * The number of the platform comes first when it is there, because that is
@@ -652,9 +759,12 @@ async function measurePage(
 
   const firstLoad = evaluateFirstLoadRules(firstLoadChunks, getFirstLoadRulesForRoute(route));
 
+  const fontUsage = readPageFontUsage(route, html, fonts);
+
   return {
     route,
     status: answer.status,
+    fontUsage,
     firstLoadFailures: firstLoad.failures,
     animates,
     chunks: firstLoadChunks,
@@ -807,6 +917,12 @@ async function measureSite(baseUrl: string): Promise<Measurement> {
     measures[`cache-max-age:${name}`] = readMaxAge(page.cacheControl);
   }
 
+  const fontFamilies = readFontFamilies();
+  const fontPreloadFailures = checkFontPreloads(
+    fontFamilies,
+    pagesMeasured.map((page) => page.fontUsage)
+  );
+
   const motionRuntime = evaluateMotionRuntimeRule(
     pagesMeasured.map((page): PageFirstLoad => ({
       route: page.route,
@@ -885,6 +1001,8 @@ async function measureSite(baseUrl: string): Promise<Measurement> {
     apiCache,
     siteFiles,
     animation,
+    fontFamilies,
+    fontPreloadFailures,
     motionRuntimeFailures: motionRuntime.failures,
     motionRuntimeChunks,
     animatingPages: motionRuntime.animating,
@@ -940,6 +1058,29 @@ function printMeasurement(measurement: Measurement): void {
       console.log(
         `  ✗ ${failure.name}: expected ${failure.expectation}, found ${failure.found} — ${failure.note}`
       );
+    }
+  }
+  console.log('');
+
+  console.log('=== Fonts ===');
+  for (const family of measurement.fontFamilies) {
+    console.log(
+      `  ${family.name} — ${family.variable} — ${family.files.length} files in the build`
+    );
+  }
+  for (const page of measurement.pages) {
+    const preloaded = page.fontUsage.preloaded
+      .map((file) => measurement.fontFamilies.find((family) => family.files.includes(file)))
+      .filter((family): family is FontFamily => family !== undefined)
+      .map((family) => family.name);
+
+    console.log(`  ${page.route} — ${preloaded.join(', ') || 'no font'}`);
+  }
+  if (measurement.fontPreloadFailures.length === 0) {
+    console.log('  every page preloads a family that it uses, and the family of the site');
+  } else {
+    for (const failure of measurement.fontPreloadFailures) {
+      console.log(`  ✗ ${failure.route} — ${failure.note}`);
     }
   }
   console.log('');
@@ -1095,6 +1236,7 @@ async function main(): Promise<void> {
     console.log(`First load rules checked: ${firstLoadChecked}`);
     console.log(`First load rules failed: ${firstLoadFailures.length}`);
     console.log(`Animation rules failed: ${animationFailures.length}`);
+    console.log(`Font rules failed: ${measurement.fontPreloadFailures.length}`);
 
     if (evaluation.withoutBudget.length > 0) {
       console.log('');
@@ -1127,7 +1269,10 @@ async function main(): Promise<void> {
     }
 
     process.exit(
-      evaluation.failures.length > 0 || firstLoadFailures.length > 0 || animationFailures.length > 0
+      evaluation.failures.length > 0 ||
+        firstLoadFailures.length > 0 ||
+        animationFailures.length > 0 ||
+        measurement.fontPreloadFailures.length > 0
         ? 1
         : 0
     );

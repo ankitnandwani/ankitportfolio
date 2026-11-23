@@ -9,13 +9,35 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* The family of the monospaced letters is loaded by the pages that use it
+     and by no other page, so the variable is not there on every page. The
+     fallback keeps the letters monospaced on a page that asks for the family
+     without loading it. */
+  --font-mono: var(--font-geist-mono, ui-monospace, monospace);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* The letters that ask for the monospaced family take the family of the page
+   that shows them.
+
+   The preflight of Tailwind reads the family of the monospaced letters at the
+   root of the document, where the variable of the family is not there any
+   more: the variable is given to the element of the page that uses the
+   family. A rule that reads the variable on the element itself is needed, and
+   it is in the layer of the base, so that a class of Tailwind that asks for
+   another family still wins. */
+@layer base {
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-geist-mono, ui-monospace, monospace);
+  }
 }
 
 /* Screen reader only utility class */

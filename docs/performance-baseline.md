@@ -21,12 +21,12 @@ is over its ceiling. Nothing of it is imported by the site.
 ## The build
 
 | What | How much | In how many files |
-| Client JavaScript | 1,992,328 bytes (1.90 MB) | 31 |
+| Client JavaScript | 1,993,243 bytes (1.90 MB) | 31 |
 | The biggest chunk | 483,541 bytes (472.2 kB) | 1 |
-| CSS | 40,699 bytes (39.7 kB) | 2 |
+| CSS | 40,892 bytes (39.9 kB) | 3 |
 | Fonts | 146,464 bytes (143.0 kB) | 11 |
 
-The biggest chunk of the build is `437glwaxw489g.js`, and it is the SDK of the
+The biggest chunk of the build is `429_hlqxh59b_.js`, and it is the SDK of the
 monitoring. It is loaded on its own and it is not part of the first load of a
 page.
 
@@ -34,16 +34,17 @@ page.
 
 | Page             | JavaScript of the first load          | CSS          | Fonts preloaded  | HTML          | HTML compressed | Pictures |
 | ---------------- | ------------------------------------- | ------------ | ---------------- | ------------- | --------------- | -------- |
-| `/`              | 1,313,834 bytes (1.25 MB) in 15 files | 40,699 bytes | 2 (52,396 bytes) | 121,043 bytes | 19,006 bytes    | 0        |
-| `/contact`       | 1,273,376 bytes (1.21 MB) in 15 files | 39,828 bytes | 2 (52,396 bytes) | 25,529 bytes  | 5,629 bytes     | 0        |
-| `/design-system` | 978,094 bytes (955.2 kB) in 14 files  | 39,828 bytes | 2 (52,396 bytes) | 35,048 bytes  | 6,383 bytes     | 0        |
-| `/job-fit`       | 853,915 bytes (833.9 kB) in 13 files  | 40,699 bytes | 2 (52,396 bytes) | 21,787 bytes  | 5,342 bytes     | 0        |
-| `/projects`      | 1,142,973 bytes (1.09 MB) in 14 files | 40,699 bytes | 2 (52,396 bytes) | 60,387 bytes  | 8,772 bytes     | 0        |
-| `/resume`        | 996,809 bytes (973.4 kB) in 14 files  | 39,828 bytes | 2 (52,396 bytes) | 56,170 bytes  | 8,738 bytes     | 0        |
+| `/`              | 1,313,834 bytes (1.25 MB) in 15 files | 38,846 bytes | 1 (29,288 bytes) | 120,694 bytes | 18,906 bytes    | 0        |
+| `/contact`       | 1,273,376 bytes (1.21 MB) in 15 files | 37,975 bytes | 1 (29,288 bytes) | 25,168 bytes  | 5,552 bytes     | 0        |
+| `/design-system` | 978,548 bytes (955.6 kB) in 14 files  | 40,021 bytes | 2 (52,396 bytes) | 35,335 bytes  | 6,405 bytes     | 0        |
+| `/job-fit`       | 854,376 bytes (834.4 kB) in 13 files  | 40,892 bytes | 2 (52,396 bytes) | 22,082 bytes  | 5,365 bytes     | 0        |
+| `/projects`      | 1,142,973 bytes (1.09 MB) in 14 files | 38,846 bytes | 1 (29,288 bytes) | 60,038 bytes  | 8,668 bytes     | 0        |
+| `/resume`        | 996,809 bytes (973.4 kB) in 14 files  | 37,975 bytes | 1 (29,288 bytes) | 55,821 bytes  | 8,632 bytes     | 0        |
 
-The numbers of this table are the ones of **2026-11-17**, after M21.04. The chat and the
-command palette are loaded on demand, and the first load of every page is **20,490 bytes
-lighter** than it was on 2026-11-12.
+The numbers of this table are the ones of **2026-11-17**, after M21.05. The chat and the
+command palette are loaded on demand, the first load of every page is **20,490 bytes
+lighter** than it was on 2026-11-12, and **four pages of the site do not download the family
+of the monospaced letters any more**.
 
 `/projects/[slug]` is not in the table. The page is made on every request and it
 needs a name that only the owner knows, so the script says that it did not
@@ -87,6 +88,43 @@ source of the site, finds out which pages use the library, and fails when the
 library is imported without the module, when the files that are in every page
 use the library, or when a page that does not animate carries the runtime.
 
+## What the families of the fonts cost, and what they cost now
+
+Two families are loaded by `next/font/google`: **Geist**, the family of the text of the
+site, and **Geist Mono**, the family of the monospaced letters. The build holds **eleven
+files of fonts, 146,464 bytes**, and the browser downloads **one file of each family**,
+because the other ten files are for the alphabets that the site does not use and the
+browser asks for a file only when a letter of it is on the page.
+
+The layout of the site gave the variable of the family of the monospaced letters to the
+`html`, and the `html` is every page, so **every page of the site preloaded the family of
+the monospaced letters** for the sake of the value of a token of the design system and of
+the description of a job.
+
+**M21.05 moved the family to the pages that use it.** The layout loads `Geist` and nothing
+else, and the family of the monospaced letters enters the site through `src/lib/fonts.ts`,
+which the page of the design system and the page of the analyzer of a job import.
+
+| Page             | The fonts before | The fonts after  | The CSS before | The CSS after | What the first load saved |
+| ---------------- | ---------------- | ---------------- | -------------- | ------------- | ------------------------- |
+| `/`              | 2 — 52,396 bytes | 1 — 29,288 bytes | 40,699 bytes   | 38,846 bytes  | **24,961 bytes**          |
+| `/contact`       | 2 — 52,396 bytes | 1 — 29,288 bytes | 39,828 bytes   | 37,975 bytes  | **24,961 bytes**          |
+| `/design-system` | 2 — 52,396 bytes | 2 — 52,396 bytes | 39,828 bytes   | 40,021 bytes  | —                         |
+| `/job-fit`       | 2 — 52,396 bytes | 2 — 52,396 bytes | 40,699 bytes   | 40,892 bytes  | —                         |
+| `/projects`      | 2 — 52,396 bytes | 1 — 29,288 bytes | 40,699 bytes   | 38,846 bytes  | **24,961 bytes**          |
+| `/resume`        | 2 — 52,396 bytes | 1 — 29,288 bytes | 39,828 bytes   | 37,975 bytes  | **24,961 bytes**          |
+
+The saving is the file of the family of the monospaced letters (23,108 bytes) and the rules
+of the family in the file of the CSS that every page loads (1,853 bytes). The two pages that
+use the family got 193 bytes of CSS heavier, because the rules of the family are in the
+file of the CSS of those two pages now.
+
+**The rule that holds it in place** is in `npm run perf:budget`. It reads the CSS of the
+build and the HTML of every page, and it fails the run when a page preloads a family that
+it does not use, when the shell of a page — the `html` and the `body` of the layout — holds
+more than one family of fonts, or when the family of the site is not preloaded by a page.
+The rule is in `src/lib/performance/fontPreloads.ts`.
+
 ## The three heaviest things
 
 **The first thing is the runtime of the animation library: 134 kB.** The chunk
@@ -126,9 +164,10 @@ library of icons now, and the biggest thing in the first load of every page is
 the theme of the design system, which is an item of `TODO.md` for a later task
 of the milestone.
 
-The fonts come next: two families are loaded on every page, of which the
-family of the monospaced letters is used in one place in the whole repository,
-`app/design-system/page-client.tsx:64`. The task that moves it is **M21.05**.
+The fonts came next, and **M21.05 moved them**: the family of the monospaced letters is
+loaded by the two pages that use it and by no other page, and the four pages that do not
+use it are 24,961 bytes lighter. The family of the text of the site is still loaded in the
+layout and still preloaded on every page.
 
 The planning expected the three heaviest things to be the subjects of M21.03,
 M21.04 and M21.05. The measurement showed that the chat and the palette are

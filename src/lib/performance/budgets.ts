@@ -167,49 +167,50 @@ export const PERFORMANCE_BUDGETS: Record<string, BudgetLimit> = {
     note: 'The page sent the same file of 38,760 bytes on 2026-11-12. The motion of the site moved from the library of the animation to the CSS on 2026-11-16: the file is 39,828 bytes, or 40,699 bytes with the motion of the components, and the 1,904 bytes of CSS were traded for 134,285 bytes of JavaScript that the pages that do not animate no longer download',
   },
 
-  // The fonts that a page preloads. The layout loads two families today and
-  // one of them is used by one page only, which is what M21.05 fixes.
+  // The fonts that a page preloads. The layout holds the family of the text
+  // of the site and the family of the monospaced letters is loaded by the two
+  // pages that use it, since M21.05 on 2026-11-17.
   'preloaded-fonts:home': {
     name: 'preloaded-fonts:home',
     kind: 'atMost',
-    limit: 2,
+    limit: 1,
     unit: 'files',
-    note: 'The home page preloaded two fonts on 2026-11-12',
+    note: 'The home page preloaded two fonts on 2026-11-12 and one font since M21.05 on 2026-11-17: the family of the monospaced letters is not loaded by the home page',
   },
   'preloaded-fonts:contact': {
     name: 'preloaded-fonts:contact',
     kind: 'atMost',
-    limit: 2,
+    limit: 1,
     unit: 'files',
-    note: 'The page of the contact preloaded two fonts on 2026-11-12',
+    note: 'The page of the contact preloaded two fonts on 2026-11-12 and one font since M21.05 on 2026-11-17: the family of the monospaced letters is not loaded by the page of the contact',
   },
   'preloaded-fonts:design-system': {
     name: 'preloaded-fonts:design-system',
     kind: 'atMost',
     limit: 2,
     unit: 'files',
-    note: 'The page of the design system preloaded two fonts on 2026-11-12',
+    note: 'The page of the design system preloaded two fonts on 2026-11-12 and it preloads two fonts since M21.05 on 2026-11-17: the page uses the family of the monospaced letters',
   },
   'preloaded-fonts:job-fit': {
     name: 'preloaded-fonts:job-fit',
     kind: 'atMost',
     limit: 2,
     unit: 'files',
-    note: 'The page of the analyzer preloaded two fonts on 2026-11-12',
+    note: 'The page of the analyzer preloaded two fonts on 2026-11-12 and it preloads two fonts since M21.05 on 2026-11-17: the page shows the description of a job in the family of the monospaced letters',
   },
   'preloaded-fonts:projects': {
     name: 'preloaded-fonts:projects',
     kind: 'atMost',
-    limit: 2,
+    limit: 1,
     unit: 'files',
-    note: 'The page of the projects preloaded two fonts on 2026-11-12',
+    note: 'The page of the projects preloaded two fonts on 2026-11-12 and one font since M21.05 on 2026-11-17: the family of the monospaced letters is not loaded by the page of the projects',
   },
   'preloaded-fonts:resume': {
     name: 'preloaded-fonts:resume',
     kind: 'atMost',
-    limit: 2,
+    limit: 1,
     unit: 'files',
-    note: 'The page of the resume preloaded two fonts on 2026-11-12',
+    note: 'The page of the resume preloaded two fonts on 2026-11-12 and one font since M21.05 on 2026-11-17: the family of the monospaced letters is not loaded by the page of the resume',
   },
 
   // The HTML of every page, and the same HTML compressed.

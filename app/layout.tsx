@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '../design/themeContext.tsx';
 import { NavigationBar } from '@/src/components/navigation';
@@ -13,11 +13,6 @@ import { generateBaseMetadata, generateOrganizationSchema } from '@/src/seo/meta
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
   subsets: ['latin'],
 });
 
@@ -39,7 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <ThemeProvider>
-      <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
         <body className="flex flex-col min-h-screen">
           <a href="#content" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-2">
             Skip to main content

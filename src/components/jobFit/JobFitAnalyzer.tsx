@@ -11,6 +11,7 @@ import {
   MIN_JOB_DESCRIPTION_LENGTH,
 } from '@/src/lib/jobFit/limits';
 import type { JobFitResponse } from '@/src/lib/jobFit/types';
+import { geistMono } from '@/src/lib/fonts';
 
 type AnalyzerState =
   | { status: 'idle' }
@@ -268,7 +269,7 @@ export function JobFitAnalyzer() {
   };
 
   return (
-    <div style={containerStyle} role="main">
+    <div className={geistMono.variable} style={containerStyle} role="main">
       <header style={headerStyle}>
         <h1 style={titleStyle}>Job Description Analyzer</h1>
         <p style={subtitleStyle}>
