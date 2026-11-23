@@ -10,6 +10,7 @@ import { PageTransitions } from '@/src/components/layout';
 import { CommandPalette } from '@/src/components/command-palette';
 import { ChatWrapper } from '@/src/components/aiChat/ChatWrapper';
 import { generateBaseMetadata, generateOrganizationSchema } from '@/src/seo/metadata';
+import { getSiteUrl } from '@/src/siteConfig';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -18,6 +19,9 @@ const geistSans = Geist({
 
 // Base metadata for all pages
 export const metadata: Metadata = {
+  // The base of the metadata is the address of the site, so that every
+  // address of the site that is not written out is resolved against it.
+  metadataBase: getSiteUrl(),
   ...generateBaseMetadata(),
   // Add organization structured data
   // Note: Next.js metadata API doesn't directly support JSON-LD in metadata object

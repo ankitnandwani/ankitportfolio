@@ -21,12 +21,12 @@ is over its ceiling. Nothing of it is imported by the site.
 ## The build
 
 | What | How much | In how many files |
-| Client JavaScript | 1,993,243 bytes (1.90 MB) | 31 |
+| Client JavaScript | 1,991,483 bytes (1.90 MB) | 30 |
 | The biggest chunk | 483,541 bytes (472.2 kB) | 1 |
-| CSS | 40,892 bytes (39.9 kB) | 3 |
+| CSS | 40,850 bytes (39.9 kB) | 3 |
 | Fonts | 146,464 bytes (143.0 kB) | 11 |
 
-The biggest chunk of the build is `429_hlqxh59b_.js`, and it is the SDK of the
+The biggest chunk of the build is `3hpseek1k_oj-.js`, and it is the SDK of the
 monitoring. It is loaded on its own and it is not part of the first load of a
 page.
 
@@ -34,14 +34,14 @@ page.
 
 | Page             | JavaScript of the first load          | CSS          | Fonts preloaded  | HTML          | HTML compressed | Pictures |
 | ---------------- | ------------------------------------- | ------------ | ---------------- | ------------- | --------------- | -------- |
-| `/`              | 1,313,834 bytes (1.25 MB) in 15 files | 38,846 bytes | 1 (29,288 bytes) | 120,694 bytes | 18,906 bytes    | 0        |
-| `/contact`       | 1,273,376 bytes (1.21 MB) in 15 files | 37,975 bytes | 1 (29,288 bytes) | 25,168 bytes  | 5,552 bytes     | 0        |
-| `/design-system` | 978,548 bytes (955.6 kB) in 14 files  | 40,021 bytes | 2 (52,396 bytes) | 35,335 bytes  | 6,405 bytes     | 0        |
-| `/job-fit`       | 854,376 bytes (834.4 kB) in 13 files  | 40,892 bytes | 2 (52,396 bytes) | 22,082 bytes  | 5,365 bytes     | 0        |
-| `/projects`      | 1,142,973 bytes (1.09 MB) in 14 files | 38,846 bytes | 1 (29,288 bytes) | 60,038 bytes  | 8,668 bytes     | 0        |
-| `/resume`        | 996,809 bytes (973.4 kB) in 14 files  | 37,975 bytes | 1 (29,288 bytes) | 55,821 bytes  | 8,632 bytes     | 0        |
+| `/`              | 1,313,298 bytes (1.25 MB) in 14 files | 38,804 bytes | 1 (29,288 bytes) | 119,383 bytes | 18,787 bytes    | 0        |
+| `/contact`       | 1,272,885 bytes (1.21 MB) in 14 files | 37,933 bytes | 1 (29,288 bytes) | 24,273 bytes  | 5,473 bytes     | 0        |
+| `/design-system` | 978,057 bytes (955.1 kB) in 13 files  | 39,979 bytes | 2 (52,396 bytes) | 34,454 bytes  | 6,315 bytes     | 0        |
+| `/job-fit`       | 853,848 bytes (833.8 kB) in 12 files  | 40,850 bytes | 2 (52,396 bytes) | 21,201 bytes  | 5,299 bytes     | 0        |
+| `/projects`      | 1,142,482 bytes (1.09 MB) in 13 files | 38,804 bytes | 1 (29,288 bytes) | 59,115 bytes  | 8,579 bytes     | 0        |
+| `/resume`        | 995,131 bytes (971.8 kB) in 13 files  | 37,933 bytes | 1 (29,288 bytes) | 54,507 bytes  | 8,396 bytes     | 0        |
 
-The numbers of this table are the ones of **2026-11-17**, after M21.05. The chat and the
+The numbers of this table are the ones of **2026-11-24**, after M21.06. The chat and the
 command palette are loaded on demand, the first load of every page is **20,490 bytes
 lighter** than it was on 2026-11-12, and **four pages of the site do not download the family
 of the monospaced letters any more**.
@@ -125,6 +125,20 @@ it does not use, when the shell of a page — the `html` and the `body` of the l
 more than one family of fonts, or when the family of the site is not preloaded by a page.
 The rule is in `src/lib/performance/fontPreloads.ts`.
 
+## What the pictures of the site cost, and what they cost now
+
+**There is no picture in a page of the site.** No `<img>`, no `next/image`, only the SVG of the icons and of the illustrations of the design system. The picture of the social networks is not part of a page: it is fetched by the crawler of a social network when the site is shared, and it is not in the first load of a visitor.
+
+**`public/og-image.png` answers 404 on 2026-11-12, and it answers 200 now.** The picture is **1200 × 630 and 44,216 bytes**, made with the colours and the typeface of the site. Every page announces it in the Open Graph tags and in the Twitter card, and the address of the picture is resolved against the address of the site.
+
+**`public/` held seven files that nothing used.** The five SVG files of the scaffold of Next.js (`file.svg`, `globe.svg`, `next.svg`, `vercel.svg` and `window.svg`), the `README.md` of the folder and the `resume.pdf` of zero bytes. The folder holds **one file now**, the picture of the social networks.
+
+| The file of `public/` | Bytes  | Who asks for it                 |
+| --------------------- | ------ | ------------------------------- |
+| `og-image.png`        | 44,216 | The crawler of a social network |
+
+**The rule of the pictures is in the measurement.** `src/lib/performance/imageRules.ts` reads the files of `app/` and of `src/`, and it fails the run when a page has a raw `<img>` with a file of the source, and when a picture of `next/image` does not say how big it is. The rule was written on 2026-11-24, when there was no picture to complain about, so that the first picture that is added does not become the first complaint.
+
 ## The three heaviest things
 
 **The first thing is the runtime of the animation library: 134 kB.** The chunk
@@ -178,9 +192,11 @@ design system took its place.
 
 ## What the site sends to a visitor
 
-- **There is no picture in the site.** No `<img>`, no `next/image`, only the SVG
-  of the icons. The picture of the social networks that every page announces
-  (`/og-image.png`) answers 404 today.
+- **There is no picture in a page of the site.** No `<img>`, no `next/image`,
+  only the SVG of the icons. The picture of the social networks that every page
+  announces (`/og-image.png`) answers 404 on 2026-11-12 and answers 200 since
+  M21.06 on 2026-11-24. It is 44,216 bytes and it is fetched by the crawler of
+  a social network, not by a visitor.
 - **The chat is the first-party feature of the site.** The button that opens it
   is in the first load of every page, and the panel itself is fetched when the
   chat is opened (M21.02).

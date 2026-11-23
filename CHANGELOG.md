@@ -1,3 +1,17 @@
+## [0.1.163] - 2026-11-24
+- Implemented M21.06 – Give the site the images and the metadata it promises
+- **Everything the site announces exists now.** `public/og-image.png` is the picture of the social networks: 1200 × 630, 44,216 bytes, made with the colours and the typeface of the site. It carries the name, the role and the address of the site, and nothing private — no telephone number, no address of a mailbox, no photograph and no address of a machine
+- **The metadata has a base.** The layout of the site sets `metadataBase` to the address of the site, the picture of the social networks is resolved against it, and the warning of the build about `metadataBase` is gone. The Open Graph tags and the Twitter card of every page name `https://ankitnandwani.com/og-image.png`
+- **A placeholder of the environment does not break the build.** `getSiteUrl()` in `src/siteConfig.ts` reads the address of the site the same way `getSiteHost()` reads the host: a value that is not an address of the web falls back to the known address of the site
+- **The owner decided the CV on 2026-11-24:** the button of the hero opens the page `/resume` and says "View Resume", the empty `public/resume.pdf` is removed, and the button of the page of the resume that downloaded it is gone. Nothing of the content of the CV was written by the task
+- **The owner decided the mark of the site on 2026-11-24:** the site has no mark of its own, so the structured data of the organisation announces no picture. The schema stays valid and the crawler of a search engine reads a schema that is true
+- **The files that nothing used are gone.** `public/` holds one file now: the five SVG files of the scaffold of Next.js, the `README.md` of the folder and the empty PDF were removed with `mavis-trash`
+- **The rule of the pictures is in the measurement.** Added `src/lib/performance/imageRules.ts`, which reads the files of `app/` and of `src/`. `npm run perf:budget` fails the run when a page has a raw `<img>` with a file of the source, and when a picture of `next/image` does not carry `width` and `height`, or `fill`. It says which file and which line, and it was proved on the real build
+- **The first load of every page is a little lighter.** The JavaScript of the first load of the home page went from 1,313,834 bytes in 15 files to 1,313,298 bytes in 14 files, and the HTML from 120,694 to 119,383 bytes
+- 12 tests added. The whole suite: 806 tests with 800 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds without the warning about the metadata
+- The numbers are in `docs/performance-baseline.md`, and the task says what it changed in `tasks/M21/06-images-and-metadata.md`
+- The next task is M21.07 – Cache the pages and the assets the way they are used
+
 ## [0.1.162] - 2026-11-17
 - Implemented M21.05 – Load only the font family that the page uses
 - **The family of the monospaced letters is loaded by the two pages that use it, and by no other page.** `app/layout.tsx` loads `Geist` and nothing else, and the family enters the site through `src/lib/fonts.ts`, which the page of the design system and the page of the analyzer of a job import

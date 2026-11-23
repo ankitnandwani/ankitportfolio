@@ -1,4 +1,4 @@
-import { siteConfig } from '@/src/siteConfig';
+import { getSiteUrl, siteConfig } from '@/src/siteConfig';
 
 /**
  * Generate base metadata tags that are common across all pages
@@ -15,17 +15,17 @@ export function generateBaseMetadata(additionalTitle?: string, additionalDescrip
     description,
     // Canonical URL
     alternates: {
-      canonical: siteConfig.url,
+      canonical: getSiteUrl().href,
     },
     // Open Graph tags
     openGraph: {
       title,
       description,
-      url: siteConfig.url,
+      url: getSiteUrl().href,
       siteName: siteConfig.name,
       images: [
         {
-          url: siteConfig.ogImage,
+          url: siteConfig.defaultOgImage,
           width: 1200,
           height: 630,
           alt: `${siteConfig.name} - ${additionalTitle || ''}`.trim(),
@@ -40,7 +40,7 @@ export function generateBaseMetadata(additionalTitle?: string, additionalDescrip
       title,
       description,
       site: '@ankitnandwani', // Assuming Twitter handle
-      images: [siteConfig.ogImage],
+      images: [siteConfig.defaultOgImage],
     },
     // JSON-LD structured data
     // This will be overridden by route-specific structured data if needed
@@ -56,8 +56,9 @@ export function generateOrganizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: siteConfig.name,
-    url: siteConfig.url,
-    logo: `${siteConfig.url}/logo.png`, // Assuming logo exists
+    url: getSiteUrl().href,
+    // The site has no mark of its own yet, and a picture that is announced
+    // and is not there is worse than no picture at all.
     sameAs: [
       siteConfig.author.email ? `mailto:${siteConfig.author.email}` : '',
       'https://linkedin.com/in/ankitnandwani',
@@ -77,7 +78,7 @@ export function generatePersonSchema() {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: siteConfig.author.name,
-    url: siteConfig.url,
+    url: getSiteUrl().href,
     sameAs: [
       'https://linkedin.com/in/ankitnandwani',
       'https://github.com/ankitnaadwani',

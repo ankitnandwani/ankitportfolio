@@ -43,15 +43,7 @@ export interface BudgetLimit {
 const API_ROUTES = ['chat', 'contact', 'job-fit', 'feedback', 'analytics'] as const;
 
 /** The files of `public/` that the site serves by hand. */
-const PUBLIC_FILES = [
-  'README.md',
-  'file.svg',
-  'globe.svg',
-  'next.svg',
-  'resume.pdf',
-  'vercel.svg',
-  'window.svg',
-] as const;
+const PUBLIC_FILES = ['og-image.png'] as const;
 
 /**
  * The budget of the site.

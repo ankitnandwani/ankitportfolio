@@ -63,6 +63,7 @@ import {
   type SourceTree,
 } from '../src/lib/performance/motionImports.ts';
 import { findWholeLibraryImports } from '../src/lib/performance/iconLibraries.ts';
+import { checkPictures, type PictureFailure } from '../src/lib/performance/imageRules.ts';
 import {
   checkFontPreloads,
   type FontFamily,
@@ -198,6 +199,8 @@ interface Measurement {
   fontFamilies: FontFamily[];
   /** The pages that break the rule of the preloads of the fonts. */
   fontPreloadFailures: FontPreloadFailure[];
+  /** The files that break the rule of the pictures. */
+  pictureFailures: PictureFailure[];
   /** The pages that do not animate and carry the runtime of the library. */
   motionRuntimeFailures: { route: string; chunk: string; note: string }[];
   /** The files of the whole build that hold the runtime of the library. */
@@ -376,6 +379,44 @@ function findIconLibraryImports(): { file: string; library: string }[] {
   }
 
   return findWholeLibraryImports(files);
+}
+
+/**
+ * Reads the source of the files of the site that are sent to a visitor.
+ *
+ * The tests are not part of the site that is sent to a visitor, and they are
+ * left out.
+ *
+ * @returns The files of the site and their source.
+ */
+function readSourceFiles(): { file: string; source: string }[] {
+  const files: { file: string; source: string }[] = [];
+
+  for (const directory of SOURCE_DIRS) {
+    for (const file of listFiles(directory)) {
+      if (!/\.(ts|tsx|mts|mjs)$/.test(file)) {
+        continue;
+      }
+
+      const relative = path.relative(REPO_ROOT, file).split(path.sep).join('/');
+
+      // The tests are not part of the site that is sent to a visitor.
+      if (/\.(test|spec)\./.test(relative)) {
+        continue;
+      }
+
+      // The folder of the measurement is not the site that is sent to a
+      // visitor either, and the rule of the pictures holds the words of the
+      // rule itself.
+      if (relative.startsWith('src/lib/performance/')) {
+        continue;
+      }
+
+      files.push({ file: relative, source: readFileSync(file, 'utf8') });
+    }
+  }
+
+  return files;
 }
 
 /**
@@ -917,6 +958,8 @@ async function measureSite(baseUrl: string): Promise<Measurement> {
     measures[`cache-max-age:${name}`] = readMaxAge(page.cacheControl);
   }
 
+  const pictureFailures = checkPictures(readSourceFiles());
+
   const fontFamilies = readFontFamilies();
   const fontPreloadFailures = checkFontPreloads(
     fontFamilies,
@@ -1003,6 +1046,7 @@ async function measureSite(baseUrl: string): Promise<Measurement> {
     animation,
     fontFamilies,
     fontPreloadFailures,
+    pictureFailures,
     motionRuntimeFailures: motionRuntime.failures,
     motionRuntimeChunks,
     animatingPages: motionRuntime.animating,
@@ -1058,6 +1102,16 @@ function printMeasurement(measurement: Measurement): void {
       console.log(
         `  ✗ ${failure.name}: expected ${failure.expectation}, found ${failure.found} — ${failure.note}`
       );
+    }
+  }
+  console.log('');
+
+  console.log('=== Pictures ===');
+  if (measurement.pictureFailures.length === 0) {
+    console.log('  every picture of the site is a picture of next/image with its sizes');
+  } else {
+    for (const failure of measurement.pictureFailures) {
+      console.log(`  \u2717 ${failure.file}:${failure.line} \u2014 ${failure.note}`);
     }
   }
   console.log('');
@@ -1237,6 +1291,7 @@ async function main(): Promise<void> {
     console.log(`First load rules failed: ${firstLoadFailures.length}`);
     console.log(`Animation rules failed: ${animationFailures.length}`);
     console.log(`Font rules failed: ${measurement.fontPreloadFailures.length}`);
+    console.log(`Picture rules failed: ${measurement.pictureFailures.length}`);
 
     if (evaluation.withoutBudget.length > 0) {
       console.log('');
@@ -1272,7 +1327,8 @@ async function main(): Promise<void> {
       evaluation.failures.length > 0 ||
         firstLoadFailures.length > 0 ||
         animationFailures.length > 0 ||
-        measurement.fontPreloadFailures.length > 0
+        measurement.fontPreloadFailures.length > 0 ||
+        measurement.pictureFailures.length > 0
         ? 1
         : 0
     );

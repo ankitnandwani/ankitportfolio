@@ -106,17 +106,42 @@ What is missing, measured on 2026-11-12:
 5. **The files of the scaffold are removed with `mavis-trash`.** The rule of the repository is that a deletion goes through it and not through `rm`.
 6. **The rule of the pictures is written as a rule on the source.** It reads the files of `app/` and of `src/` and looks for `<img` and for `next/image`. It fails when a raw picture is used, and it says which file and which line.
 
+## What the implementation changed
+
+The task was carried out on 2026-11-24.
+
+**The owner decided, and the task did what the answer said.** The owner was asked two questions, on the same day, and the answer to both was the recommendation of the task:
+
+- the button of the CV of the hero opens the page `/resume` and the empty file is gone;
+- the structured data of the organisation does not announce a picture that is not there.
+
+**The picture of the social networks exists.** `public/og-image.png` is **1200 × 630 and 44,216 bytes**, under the ceiling of 150 kB. It carries the name, the role and the address of the site, and nothing private: no telephone number, no address of a mailbox, no photograph and no address of a machine. It is made with the colours and the typeface of the site — the blue `#0D47A1`, the orange `#FF6F00`, the white and the surface of the design system, the grid of the hero and the typeface Geist — and it was made once and put in the repository, because a picture written by the framework at every request is work on every request and a site with low traffic does not need it.
+
+**The metadata has a base.** `app/layout.tsx` sets `metadataBase` to `getSiteUrl()`, and the warning of the build about `metadataBase` is gone. The picture of the social networks is named by a relative address, `/og-image.png`, and it is resolved against the base: the Open Graph tags and the Twitter card of every page name `https://ankitnandwani.com/og-image.png`. The canonical address and the address of the organisation come from the same place.
+
+**A placeholder of the environment does not break the build.** `getSiteUrl()` in `src/siteConfig.ts` reads the address of the site the same way `getSiteHost()` reads the host: a value that is not an address of the web falls back to the known address of the site. A setting that has not been filled in never makes the build fail.
+
+**The structured data of the organisation announces no picture.** The site has no mark of its own, only the icon of the site, and a picture that is announced and is not there is worse than no picture at all. The schema of the organisation stays valid, and the crawler of a search engine reads a schema that is true.
+
+**The empty file of the CV is gone, and the link of the hero opens the page of the resume.** `src/components/hero/Hero.tsx` links to `/resume` and the button says "View Resume", because the button does not download anything. The button of the page of the resume itself, which downloaded the empty file, is gone too, and with it the motion and the button that it needed. The content of the CV is the owner's and nothing of it was written by this task.
+
+**The files that nothing used are gone.** `public/` holds one file now: the picture of the social networks. The five SVG files of the scaffold of Next.js, the `README.md` of the folder and the empty `resume.pdf` were removed with `mavis-trash`.
+
+**The rule of the pictures is in place.** `src/lib/performance/imageRules.ts` reads the files of `app/` and of `src/` and it fails the run when a page has a raw `<img>` with a file of the source, and when a picture of `next/image` does not carry `width` and `height`, or `fill`. The rule says which file and which line. It has nine tests of its own, and it was proved on the real build: a raw `<img>` put in the hero made the run fail with the file and the line, and the exit code of the measurement was 1.
+
+**The first load of every page is a little lighter.** The JavaScript of the first load of the home page went from 1,313,834 bytes in 15 files to 1,313,298 bytes in 14 files, and the HTML of the home page from 120,694 to 119,383 bytes. The picture of the social networks is not part of it: it is 44,216 bytes that the crawler of a social network asks for and not a visitor.
+
 ## Acceptance Criteria
 
-- `/og-image.png` answers 200, is 1200 × 630 and is under 150 kB.
-- The picture carries the name, the role and the address of the site, and nothing private.
-- The build does not warn about `metadataBase` any more, and the relative pictures resolve against the address of the site.
-- `logo.png` exists and is the picture that the structured data announces, or the structured data announces no picture.
-- The link of the CV of the hero either gives the real PDF of the owner or opens the page `/resume`. The empty file is not linked and is not in the repository.
-- The five SVG files of the scaffold are not in the repository, and nothing in the site asks for them.
-- The rule of the pictures holds and fails on a raw `<img>`.
-- The measurement of M21.01 holds, and the size of the new files is in the baseline.
-- The existing tests pass, the lint is clean, the typecheck is clean, and the build succeeds without the warning.
+- `/og-image.png` answers 200, is 1200 × 630 and is under 150 kB. **Met**: it answers 200 with the type `image/png`, it is 1200 × 630 and it is 44,216 bytes. The picture was opened in the browser on 2026-11-24.
+- The picture carries the name, the role and the address of the site, and nothing private. **Met**: it carries "ANKIT NANDWANI", "Senior SDET / Automation Engineer" and "ankitnandwani.com", and nothing else that names the owner.
+- The build does not warn about `metadataBase` any more, and the relative pictures resolve against the address of the site. **Met**: the build of 2026-11-24 has no warning about it, and the Open Graph tags of the home page name `https://ankitnandwani.com/og-image.png`.
+- `logo.png` exists and is the picture that the structured data announces, or the structured data announces no picture. **Met**: the owner decided on 2026-11-24 that the structured data announces no picture, and the schema of the organisation holds no `logo` any more.
+- The link of the CV of the hero either gives the real PDF of the owner or opens the page `/resume`. The empty file is not linked and is not in the repository. **Met**: the button opens `/resume` and it was followed in the browser on 2026-11-24; `/resume.pdf` answers 404 and the file is not in the repository.
+- The five SVG files of the scaffold are not in the repository, and nothing in the site asks for them. **Met**: they are gone, and `public/` holds one file, the picture of the social networks.
+- The rule of the pictures holds and fails on a raw `<img>`. **Met**: the rule is in `src/lib/performance/imageRules.ts` with nine tests, and it made the measurement fail with the file and the line on a raw `<img>` put in the hero.
+- The measurement of M21.01 holds, and the size of the new files is in the baseline. **Met**: 54 measures and 54 rules pass, and the size of the picture is written down in `docs/performance-baseline.md`.
+- The existing tests pass, the lint is clean, the typecheck is clean, and the build succeeds without the warning. **Met**: 806 tests with 800 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds without the warning about the metadata.
 
 ## Testing Requirements
 

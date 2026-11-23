@@ -237,10 +237,11 @@ export const Hero = ({ className = '' }: HeroProps) => {
 
             {/* Secondary CTAs */}
             <div className="mt-6 flex flex-col sm:flex-row gap-4 w-full">
-              {/* Download Resume */}
-              <Link href="/resume.pdf" prefetch>
+              {/* The CV of the owner is not in the repository yet, so the button
+                  opens the page of the resume, which holds it in full. */}
+              <Link href="/resume" prefetch>
                 <Button variant="secondary" size="lg" className="w-full md:w-auto">
-                  Download Resume
+                  View Resume
                 </Button>
               </Link>
               {/* LinkedIn */}
