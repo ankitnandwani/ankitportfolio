@@ -63,6 +63,7 @@ import {
   type SourceTree,
 } from '../src/lib/performance/motionImports.ts';
 import { findWholeLibraryImports } from '../src/lib/performance/iconLibraries.ts';
+import { checkCacheRules, type CacheRuleFailure } from '../src/lib/performance/cacheRules.ts';
 import { checkPictures, type PictureFailure } from '../src/lib/performance/imageRules.ts';
 import {
   checkFontPreloads,
@@ -201,6 +202,8 @@ interface Measurement {
   fontPreloadFailures: FontPreloadFailure[];
   /** The files that break the rule of the pictures. */
   pictureFailures: PictureFailure[];
+  /** The addresses whose cache is not the way they are used. */
+  cacheRuleFailures: CacheRuleFailure[];
   /** The pages that do not animate and carry the runtime of the library. */
   motionRuntimeFailures: { route: string; chunk: string; note: string }[];
   /** The files of the whole build that hold the runtime of the library. */
@@ -1033,6 +1036,11 @@ async function measureSite(baseUrl: string): Promise<Measurement> {
     measures[`cache-max-age:file/${route.slice(1)}`] = cache.maxAge;
   }
 
+  const cacheRuleFailures = checkCacheRules(
+    pagesMeasured.map((page) => ({ address: page.route, cacheControl: page.cacheControl })),
+    apiCache.map((route) => ({ address: route.route, cacheControl: route.cacheControl }))
+  );
+
   return {
     measures,
     buildJs,
@@ -1047,6 +1055,7 @@ async function measureSite(baseUrl: string): Promise<Measurement> {
     fontFamilies,
     fontPreloadFailures,
     pictureFailures,
+    cacheRuleFailures,
     motionRuntimeFailures: motionRuntime.failures,
     motionRuntimeChunks,
     animatingPages: motionRuntime.animating,
@@ -1102,6 +1111,17 @@ function printMeasurement(measurement: Measurement): void {
       console.log(
         `  ✗ ${failure.name}: expected ${failure.expectation}, found ${failure.found} — ${failure.note}`
       );
+    }
+  }
+  console.log('');
+
+  console.log('=== Cache ===');
+  if (measurement.cacheRuleFailures.length === 0) {
+    console.log('  every page keeps the long cache and lets an old copy be served');
+    console.log('  every answer of the API is marked as not to be kept');
+  } else {
+    for (const failure of measurement.cacheRuleFailures) {
+      console.log(`  \u2717 ${failure.address} \u2014 ${failure.note}`);
     }
   }
   console.log('');
@@ -1292,6 +1312,7 @@ async function main(): Promise<void> {
     console.log(`Animation rules failed: ${animationFailures.length}`);
     console.log(`Font rules failed: ${measurement.fontPreloadFailures.length}`);
     console.log(`Picture rules failed: ${measurement.pictureFailures.length}`);
+    console.log(`Cache rules failed: ${measurement.cacheRuleFailures.length}`);
 
     if (evaluation.withoutBudget.length > 0) {
       console.log('');
@@ -1328,7 +1349,8 @@ async function main(): Promise<void> {
         firstLoadFailures.length > 0 ||
         animationFailures.length > 0 ||
         measurement.fontPreloadFailures.length > 0 ||
-        measurement.pictureFailures.length > 0
+        measurement.pictureFailures.length > 0 ||
+        measurement.cacheRuleFailures.length > 0
         ? 1
         : 0
     );

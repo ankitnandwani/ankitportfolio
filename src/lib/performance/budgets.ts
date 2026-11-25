@@ -419,19 +419,18 @@ export const PERFORMANCE_BUDGETS: Record<string, BudgetLimit> = {
     note: 'The page of the resume was served with s-maxage=31536000 on 2026-11-12',
   },
 
-  // The cache of the files of `public/`. The browser asks for them on every
-  // visit today, and the floor of zero says what the state of today is. The
-  // task of the cache of the milestone sets the rule of the files and raises
-  // this floor on purpose.
+  // The cache of the files of `public/` that never change. The browser asked
+  // for them on every visit until M21.07 on 2026-11-25, and the floor is the
+  // long cache of the code since then.
   ...Object.fromEntries(
     PUBLIC_FILES.map((file) => [
       `cache-max-age:public/${file}`,
       {
         name: `cache-max-age:public/${file}`,
         kind: 'atLeast',
-        limit: 0,
+        limit: 31_536_000,
         unit: 'seconds',
-        note: `The browser kept public/${file} for 0 seconds on 2026-11-12, and asked for it on every visit`,
+        note: `The browser kept public/${file} for 0 seconds on 2026-11-12 and asked for it on every visit, and for a year since M21.07 on 2026-11-25`,
       } satisfies BudgetLimit,
     ])
   ),
@@ -451,14 +450,15 @@ export const PERFORMANCE_BUDGETS: Record<string, BudgetLimit> = {
     ])
   ),
 
-  // The other files of the site. The icon of the site is asked for on every
-  // visit today, and the floor of zero says what the state of today is.
+  // The other files of the site. The icon of the site was asked for on every
+  // visit until M21.07 on 2026-11-25, and the floor is the long cache of the
+  // code since then.
   'cache-max-age:file/favicon.ico': {
     name: 'cache-max-age:file/favicon.ico',
     kind: 'atLeast',
-    limit: 0,
+    limit: 31_536_000,
     unit: 'seconds',
-    note: 'The browser kept the icon of the site for 0 seconds on 2026-11-12, and asked for it on every visit',
+    note: 'The browser kept the icon of the site for 0 seconds on 2026-11-12 and asked for it on every visit, and for a year since M21.07 on 2026-11-25',
   },
 };
 

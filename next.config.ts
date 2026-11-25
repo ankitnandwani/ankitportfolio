@@ -1,7 +1,20 @@
 import { withSentryConfig } from '@sentry/nextjs/config';
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {};
+import { CACHE_HEADERS } from './src/lib/performance/cacheHeaders';
+
+const nextConfig: NextConfig = {
+  /**
+   * The cache of the site.
+   *
+   * The rules are in `src/lib/performance/cacheHeaders.ts`, where the tests
+   * of the repository read them, and the configuration of the site uses them
+   * as they are.
+   */
+  async headers() {
+    return CACHE_HEADERS;
+  },
+};
 
 export default withSentryConfig(nextConfig, {
   // The organization and the project the source maps belong to. They are set

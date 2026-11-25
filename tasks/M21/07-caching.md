@@ -87,16 +87,41 @@ The page itself is cached by the platform for a year, with nothing that says wha
 4. **The page is checked with the running server.** The script of M21.01 asks the production server for the headers of the routes, the same way a browser does, and writes them in the baseline.
 5. **The configuration of the platform is the owner's.** The `s-maxage` of the pages comes from the deployment on Vercel. The rule of this task is the `headers()` of the repository, and it does not reach the configuration of the deployment.
 
+## What the implementation changed
+
+The task was carried out on 2026-11-25.
+
+**The site has rules of the cache now.** `next.config.ts` had no `headers()` at all until then. The rules live in `src/lib/performance/cacheHeaders.ts`, where the tests of the repository read them, and the configuration of the site uses them as they are.
+
+**The rule of every file is written by the use of it and not by its name.**
+
+| What                                       | The header                                                   | Why                                                                                                                                                                                |
+| ------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The pages of the site                      | `public, s-maxage=31536000, stale-while-revalidate=31536000` | The long cache of the platform is kept, and a copy that is a little old may be served while the platform makes the new one, so a visitor is never the first one to wait for a page |
+| The code and the fonts of `/_next/static/` | not touched                                                  | The name of the file holds the sum of its bytes, so it never changes under that name, and the platform already keeps it for a year                                                 |
+| `/favicon.ico`                             | `public, max-age=31536000, immutable`                        | The icon of the site changes a few times a year at most, and the browser asked for it on every visit until now                                                                     |
+| `/og-image.png`                            | `public, max-age=31536000, immutable`                        | The picture of the social networks is made once and it is in the repository                                                                                                        |
+| `/resume.pdf`                              | `public, max-age=3600, must-revalidate`                      | The owner replaces the CV, so the browser keeps it for an hour and asks again, and a new CV is seen the same day                                                                   |
+| `/api/*`                                   | `no-store`                                                   | The answers carry what a visitor wrote and what the model answered, and they are never to be kept                                                                                  |
+
+**The answers of the API are marked.** The premise of the task said that the four routes of the API answer with `no-store` today. **It was not true for two of them**: the stream of the chat carried `no-cache` and the answers of the feedback carried no header at all. Every answer of every route of the API carries `no-store` now, and the rule of the measurement fails the run when one of them is served with a cache that keeps it. The rule is a rule of the configuration of the site and not a change in the work of the routes.
+
+**The rule of the cache is checked.** `src/lib/performance/cacheRules.ts` reads the header of the cache of every page and of every route of the API, and it fails the run when a page does not keep the long cache of the platform, when a page does not let an old copy be served while the new one is made, and when an answer of the API is not marked as not to be kept or is kept. The numbers of the cache are in the budget of M21.01: the floor of the icon of the site and of the picture of the social networks went from zero to a year, and the answers of the API stay at zero.
+
+**It was proved on the real build.** The rule was put back the way it was before — the pages without the old copy and the API with an answer that is kept — and the measurement failed with sixteen failures and the exit code 1.
+
+**The files of `public/` are asked for once.** The icon of the site and the picture of the social networks were asked for on every visit until now. The CV of the owner is not in the repository yet, so its rule was checked with a file of a moment and with the rule of the configuration: the browser keeps it for an hour and asks again.
+
 ## Acceptance Criteria
 
-- The files of `public/` that never change are served with a long cache by the browser.
-- The CV is served with a short cache and is revalidated, so that a new CV is seen the same day.
-- The pages are served with the long cache of the platform and with `stale-while-revalidate`.
-- The four API routes are served with `no-store`, and the rule of the budget fails when one of them is not.
-- The code and the fonts of `/_next/static/` keep the cache of the platform, and the task does not touch them.
-- The rule of the budget checks the cache of the routes and of the files of `public/`, and it holds.
-- The table of the cache is in the baseline document.
-- The existing tests pass, the lint is clean, the typecheck is clean, and the build succeeds.
+- The files of `public/` that never change are served with a long cache by the browser. **Met**: `/favicon.ico` and `/og-image.png` are served with `public, max-age=31536000, immutable`, and the floor of the budget was raised from zero to a year on 2026-11-25.
+- The CV is served with a short cache and is revalidated, so that a new CV is seen the same day. **Met**: `/resume.pdf` is served with `public, max-age=3600, must-revalidate`. The file is not in the repository yet — M21.06 removed the empty one — so the rule was checked with a file of a moment on 2026-11-25 and with the test of the configuration.
+- The pages are served with the long cache of the platform and with `stale-while-revalidate`. **Met**: every page of the site is served with `public, s-maxage=31536000, stale-while-revalidate=31536000`, read from the running production server on 2026-11-25.
+- The four API routes are served with `no-store`, and the rule of the budget fails when one of them is not. **Met**: every route of the API is served with `no-store`, including the chat and the feedback that carried nothing before. The rule of the budget fails the run when one of them is served with a cache that keeps the answer, and it was proved on the real build.
+- The code and the fonts of `/_next/static/` keep the cache of the platform, and the task does not touch them. **Met**: they are served with `public, max-age=31536000, immutable`, and the rules of the configuration leave `/_next/` out.
+- The rule of the budget checks the cache of the routes and of the files of `public/`, and it holds. **Met**: 54 measures and 54 rules pass, and the rule of the cache is one of them.
+- The table of the cache is in the baseline document. **Met**: the table of `docs/performance-baseline.md` holds the header of every kind of file.
+- The existing tests pass, the lint is clean, the typecheck is clean, and the build succeeds. **Met**: 822 tests with 816 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds.
 
 ## Testing Requirements
 

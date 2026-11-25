@@ -1,3 +1,16 @@
+## [0.1.164] - 2026-11-25
+- Implemented M21.07 – Cache the pages and the assets the way they are used
+- **The site has rules of the cache now.** `next.config.ts` had no `headers()` at all until then. The rules live in `src/lib/performance/cacheHeaders.ts`, where the tests of the repository read them, and the configuration of the site uses them as they are
+- **The rule of every file is written by the use of it and not by its name.** The pages keep the long cache of the platform and gain the window of the old copy (`public, s-maxage=31536000, stale-while-revalidate=31536000`), the icon of the site and the picture of the social networks are kept for a year by the browser (`public, max-age=31536000, immutable`), the CV of the owner is kept for an hour and is checked again (`public, max-age=3600, must-revalidate`), and every answer of the API is marked as not to be kept (`no-store`)
+- **The files that were asked for on every visit are asked for once now.** The icon of the site and the picture of the social networks were asked for again on every visit, because nothing said that they do not change
+- **The premise of the task was wrong about two of the API routes.** The chat and the feedback carried no header of their own — the chat carried `no-cache` on its stream and the feedback carried nothing — and every answer of every route of the API carries `no-store` now
+- **The code and the fonts of `/_next/static/` are not touched.** Their name holds the sum of their bytes, so they never change under that name, and the platform keeps them for a year
+- **The rule of the cache is in the measurement.** Added `src/lib/performance/cacheRules.ts`, which reads the header of the cache of every page and of every route of the API. `npm run perf:budget` fails the run when a page does not keep the long cache of the platform, when a page does not let an old copy be served while the new one is made, and when an answer of the API is not marked as not to be kept or is kept. It was proved on the real build: the rules put back the way they were gave sixteen failures and the exit code 1
+- The floor of the budget of the icon of the site and of the picture of the social networks went from zero to a year, and the answers of the API stay at zero
+- 16 tests added. The whole suite: 822 tests with 816 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
+- The table of the cache is in `docs/performance-baseline.md`, and the task says what it changed in `tasks/M21/07-caching.md`
+- The next task is M21.08 – Put the build and the budget in the CI
+
 ## [0.1.163] - 2026-11-24
 - Implemented M21.06 – Give the site the images and the metadata it promises
 - **Everything the site announces exists now.** `public/og-image.png` is the picture of the social networks: 1200 × 630, 44,216 bytes, made with the colours and the typeface of the site. It carries the name, the role and the address of the site, and nothing private — no telephone number, no address of a mailbox, no photograph and no address of a machine

@@ -11,21 +11,23 @@ Performance: 90+, Accessibility: 95+, Best Practices: 95+, SEO: 95+
 
 ## Execution Order
 
-| Order | Task                                                                          | Depends On                             | Parallel                         |
-| ----- | ----------------------------------------------------------------------------- | -------------------------------------- | -------------------------------- |
-| 1     | M21.01 – Measure the site and write the performance budgets                   | M20                                    | Done (2026-11-13)                |
-| 2     | M21.04 – Keep one icon library                                                | M21.01                                 | Done (2026-11-17)                |
-| 3     | M21.05 – Load only the font family that the page uses                         | M21.01                                 | Done (2026-11-17)                |
-| 4     | M21.06 – Give the site the images and the metadata it promises                | M21.01                                 | Done (2026-11-24)                |
-| 5     | M21.07 – Cache the pages and the assets the way they are used                 | M21.01                                 | Yes, with M21.04, M21.05, M21.06 |
-| 6     | M21.03 – Stop shipping the animation library to the pages that do not animate | M21.01, M21.04                         | Done (2026-11-16)                |
-| 7     | M21.02 – Lazy-load the chat, the palette and the sections below the fold      | M21.01, M21.03                         | Done (2026-11-15)                |
-| 8     | M21.08 – Put the build and the budget in the CI                               | M21.01, M21.04, M21.05, M21.06, M21.07 | –                                |
-| 9     | M21.09 – Run Lighthouse against the built site and check the four targets     | M21.02, M21.08                         | –                                |
+| Order | Task                                                                          | Depends On                             | Parallel          |
+| ----- | ----------------------------------------------------------------------------- | -------------------------------------- | ----------------- |
+| 1     | M21.01 – Measure the site and write the performance budgets                   | M20                                    | Done (2026-11-13) |
+| 2     | M21.04 – Keep one icon library                                                | M21.01                                 | Done (2026-11-17) |
+| 3     | M21.05 – Load only the font family that the page uses                         | M21.01                                 | Done (2026-11-17) |
+| 4     | M21.06 – Give the site the images and the metadata it promises                | M21.01                                 | Done (2026-11-24) |
+| 5     | M21.07 – Cache the pages and the assets the way they are used                 | M21.01                                 | Done (2026-11-25) |
+| 6     | M21.03 – Stop shipping the animation library to the pages that do not animate | M21.01, M21.04                         | Done (2026-11-16) |
+| 7     | M21.02 – Lazy-load the chat, the palette and the sections below the fold      | M21.01, M21.03                         | Done (2026-11-15) |
+| 8     | M21.08 – Put the build and the budget in the CI                               | M21.01, M21.04, M21.05, M21.06, M21.07 | –                 |
+| 9     | M21.09 – Run Lighthouse against the built site and check the four targets     | M21.02, M21.08                         | –                 |
 
 M21.01 comes first because every other task is judged against the numbers it writes down. M21.04, M21.05, M21.06 and M21.07 touch four different sets of files and may be worked on in parallel once M21.01 is done. M21.03 and M21.02 are listed in order because both of them change how the components of the pages are loaded and would touch the same files if they ran at the same time.
 
-**M21.01, M21.02, M21.03, M21.04, M21.05 and M21.06 are done (2026-11-13, 2026-11-15, 2026-11-16, 2026-11-17, 2026-11-17 and 2026-11-24).** M21.07 to M21.09 are not started.
+**M21.01, M21.02, M21.03, M21.04, M21.05, M21.06 and M21.07 are done (2026-11-13, 2026-11-15, 2026-11-16, 2026-11-17, 2026-11-17, 2026-11-24 and 2026-11-25).** M21.08 and M21.09 are not started.
+
+**What M21.07 found, and what it changed.** `next.config.ts` had no `headers()` at all, and the two short caches came from the framework: the icon of the site and the file of `public/` were asked for again on **every visit**, and the page was cached by the platform for a year with nothing that said what to do with an old copy. **The rules are in the repository now**, written by the use of the file and not by its name: the pages keep the long cache of the platform and gain the window of the old copy, the files that never change are kept for a year by the browser, the CV of the owner is kept for an hour and is checked again, and every answer of the API is marked as not to be kept. **The premise of the task was wrong about two of the API routes**: the chat and the feedback were not marked at all, and they are marked now. The rule of the cache is in the measurement, and it was proved on the real build.
 
 **What M21.06 found, and what it changed.** The site announced three things that were not there: the picture of the social networks, the picture of the organisation and the CV of the owner, and the build warned about the base of the metadata that was missing. **The owner decided on 2026-11-24**: the button of the CV opens the page `/resume` and the empty file is gone, and the structured data announces no picture, because the site has no mark of its own. The picture of the social networks is a PNG of 1200 × 630 and 44,216 bytes in `public/`, made with the colours and the typeface of the site, and every page names it. The metadata has its base, and the warning of the build is gone. The seven files of `public/` that nothing used are gone, and the folder holds one file now. The rule of the pictures is in the measurement, so that the first picture that is added does not become the first complaint.
 
@@ -63,6 +65,16 @@ M21.01 comes first because every other task is judged against the numbers it wri
 | The slow requests are watched                                       | PRD §129                      | M20.06                 | Satisfied                                                                                                   |
 | The failures are watched                                            | PRD §79, §129                 | M20.01–M20.09          | Satisfied                                                                                                   |
 | The animation library is the one of the decision                    | DECISIONS (animation library) | M21.03                 | Satisfied — the decision is respected, and the removal of the library is a decision that needs a person     |
+
+## What the repository holds after M21.07
+
+- **The site has rules of the cache.** They are in `src/lib/performance/cacheHeaders.ts`, where the tests read them, and `next.config.ts` uses them as they are
+- **The rule of every file is written by the use of it.** The pages keep the long cache of the platform and gain `stale-while-revalidate`, the icon of the site and the picture of the social networks are kept for a year by the browser, the CV of the owner is kept for an hour and is checked again, and the answers of the API are never kept
+- **The files that nothing used to ask for are asked for once.** The icon of the site and the picture of the social networks were asked for on every visit until now
+- **Every answer of the API is marked as not to be kept.** The chat and the feedback carried nothing before, and the rule of the measurement fails the run when one of them is served with a cache that keeps the answer
+- **The code and the fonts of `/_next/static/` are not touched.** Their name holds the sum of their bytes, and the platform keeps them for a year
+- **The rule of the cache is in the measurement.** `src/lib/performance/cacheRules.ts` fails the run when a page does not keep the long cache, when a page does not let an old copy be served, and when an answer of the API is kept. It was proved on the real build
+- 16 tests added (nine of the rule and seven of the configuration). The whole suite: 822 tests with 816 pass, 0 fail and 6 skipped; lint clean with 0 errors and the same 58 warnings; typecheck clean; the build succeeds
 
 ## What the repository holds after M21.06
 

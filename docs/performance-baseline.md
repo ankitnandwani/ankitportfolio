@@ -206,21 +206,36 @@ design system took its place.
 ## The cache
 
 | What | The header today | How it is used |
-| The pages | `s-maxage=31536000` | The platform keeps them for a year, with nothing that says what to do with an old copy |
+| The pages | `public, s-maxage=31536000, stale-while-revalidate=31536000` | The platform keeps them for a year, and a copy that is a little old may be served while the new one is made |
 | The code and the fonts of `/_next/static/` | `public, max-age=31536000, immutable` | The name of the file holds the sum of its bytes, so it never changes under that name |
-| The files of `public/` | `public, max-age=0` | The browser asks for them on every visit |
-| The icon of the site | `public, max-age=0, must-revalidate` | The browser asks for it on every visit |
-| `POST /api/chat` | no header at all | The answer is not marked |
+| The icon of the site | `public, max-age=31536000, immutable` | The browser keeps it for a year and asks for it once |
+| The picture of the social networks | `public, max-age=31536000, immutable` | The browser keeps it for a year and asks for it once |
+| The CV of the owner | `public, max-age=3600, must-revalidate` | The browser keeps it for an hour and asks again, so a new CV is seen the same day |
+| `POST /api/chat` | `no-store` | The answer is not kept |
 | `POST /api/contact` | `no-store` | The answer is not kept |
 | `POST /api/job-fit` | `no-store` | The answer is not kept |
-| `POST /api/feedback` | no header at all | The answer is not marked |
+| `POST /api/feedback` | `no-store` | The answer is not kept |
 | `POST /api/analytics` | `no-store` | The answer is not kept |
 
-**The answers of the chat and of the feedback are not marked.** The stream of
-the chat and the answers of the form carry `no-store` or `no-cache` on some
-paths and carry nothing on the others, and an answer without a header may be
-kept by a browser on its own. The task that sets the rule of the cache is
-**M21.07**.
+**The rules of the cache are in the repository since 2026-11-25 (M21.07).**
+`next.config.ts` had no `headers()` at all until then, and the two short
+caches came from the framework: the icon of the site and the file of `public/`
+were asked for again on **every visit**, because nothing said that they do not
+change. The rules are written by the use of the file and not by its name, and
+they are in `src/lib/performance/cacheHeaders.ts`, where the tests of the
+repository read them.
+
+**The answers of the chat and of the feedback are marked now.** The stream of
+the chat carried `no-cache` and the answers of the form carried nothing at
+all, and an answer without a header may be kept by a browser on its own. Every
+answer of every route of the API carries `no-store` since M21.07, and the rule
+of the measurement fails the run when one of them is served with a cache that
+keeps it.
+
+**The CV of the owner is not in the repository yet.** Its rule is written and
+it was checked with a file of a moment: the browser keeps it for an hour and
+asks again. The empty file was removed by M21.06, and the owner puts the real
+one there when he wants it there.
 
 ## What the lazy loading of the sections costs and what it gives
 
